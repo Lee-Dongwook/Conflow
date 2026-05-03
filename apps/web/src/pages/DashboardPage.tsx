@@ -11,6 +11,7 @@ import {
   Separator,
 } from "@conflow/ui";
 
+import { CURRENT_USER } from "../data/current-session";
 import { MOCK_TEAM_DASHBOARD } from "../data/mock-team-dashboard";
 
 const statusBadge = (status: "todo" | "doing" | "done") => {
@@ -35,9 +36,12 @@ const statusBadge = (status: "todo" | "doing" | "done") => {
   );
 };
 
-/** 팀플·스터디 ICP — 이번 주·마감·할 일을 한 화면에서 스캔 */
+/** 팀플·스터디 ICP — 현재 세션 사용자({@link CURRENT_USER}) 기준 */
 export const DashboardPage = () => {
   const d = MOCK_TEAM_DASHBOARD;
+  const myTasks = d.tasks.filter(
+    (t) => t.assignee === CURRENT_USER.displayName,
+  );
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
@@ -46,9 +50,17 @@ export const DashboardPage = () => {
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{d.courseLabel}</Badge>
             <Badge variant="secondary">{d.weekLabel}</Badge>
+            <Badge variant="default" className="text-[10px]">
+              보는 사람: {CURRENT_USER.displayName}
+            </Badge>
           </div>
           <CardTitle className="mt-2 text-xl">{d.teamName}</CardTitle>
-          <CardDescription>{d.periodLabel} · 목 데이터 기준</CardDescription>
+          <CardDescription>
+            {d.periodLabel} · 목 세션{" "}
+            <span className="font-medium text-slate-700">
+              {CURRENT_USER.email}
+            </span>
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
           <p className="text-sm font-medium text-slate-700">이번 주 목표</p>
@@ -78,7 +90,8 @@ export const DashboardPage = () => {
           <CardContent className="space-y-2">
             <Progress value={d.progressPercent} />
             <p className="text-xs text-slate-500">
-              {String(d.progressPercent)}% · 로그인 없이 더미
+              {String(d.progressPercent)}% · 내 담당 {String(myTasks.length)}건
+              포함
             </p>
           </CardContent>
         </Card>
@@ -87,32 +100,55 @@ export const DashboardPage = () => {
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 pb-2">
           <div>
-            <CardTitle className="text-base">할 일</CardTitle>
-            <CardDescription>누가 뭘 하는지 바로 보이게</CardDescription>
+            <CardTitle className="text-base">팀 할 일</CardTitle>
+            <CardDescription>
+              담당 &quot;나&quot;({CURRENT_USER.displayName})는 배지로 표시 ·
+              전체 {String(d.tasks.length)}건
+            </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" disabled title="보드 화면 연결 후">
+            <Button
+              type="button"
+              variant="secondary"
+              disabled
+              title="보드 화면 연결 후"
+            >
               보드로 이동
             </Button>
-            <Button type="button" variant="ghost" disabled title="백로그 연결 후">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled
+              title="백로그 연결 후"
+            >
               백로그
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-0">
-          {d.tasks.map((task, index) => (
-            <div key={task.id}>
-              {index > 0 ? <Separator className="my-3" /> : null}
-              <div className="flex flex-wrap items-center gap-3">
-                <Avatar label={task.assignee} size="sm" />
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-slate-900">{task.title}</p>
-                  <p className="text-xs text-slate-500">{task.assignee}</p>
+          {d.tasks.map((task, index) => {
+            const isMine = task.assignee === CURRENT_USER.displayName;
+            return (
+              <div key={task.id}>
+                {index > 0 ? <Separator className="my-3" /> : null}
+                <div className="flex flex-wrap items-center gap-3">
+                  <Avatar label={task.assignee} size="sm" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="font-medium text-slate-900">{task.title}</p>
+                      {isMine ? (
+                        <Badge variant="default" className="text-[10px]">
+                          나
+                        </Badge>
+                      ) : null}
+                    </div>
+                    <p className="text-xs text-slate-500">{task.assignee}</p>
+                  </div>
+                  {statusBadge(task.status)}
                 </div>
-                {statusBadge(task.status)}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </CardContent>
       </Card>
 

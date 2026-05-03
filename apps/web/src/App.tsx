@@ -18,8 +18,7 @@ const NAV_TITLE: Record<string, string> = {
 };
 
 const NAV_SUBTITLE: Record<string, string> = {
-  dashboard:
-    "팀플·스터디 팀용 — 이번 주 목표·마감·할 일을 스캔. (포폴 목 데이터)",
+  dashboard: "팀플·스터디 팀용 · 목 세션 사용자 이땡땡 기준. (포폴 목 데이터)",
   profile: "목 프로필입니다. 로그인 붙이면 교체됩니다.",
 };
 

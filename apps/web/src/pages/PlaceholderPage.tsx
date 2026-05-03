@@ -1,4 +1,10 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@conflow/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@conflow/ui";
 
 const HINT: Record<string, string> = {
   sprint:
@@ -22,7 +28,7 @@ export const PlaceholderPage = ({ navId }: { readonly navId: string }) => {
       </CardHeader>
       <CardContent>
         <p className="text-sm text-slate-600">
-          대표 사용자: 팀플·취업 스터디 팀 (포트폴리오용 목 데이터)
+          목 세션: 이땡땡 · 팀플·취업 스터디 ICP (포폴용 더미)
         </p>
       </CardContent>
     </Card>
