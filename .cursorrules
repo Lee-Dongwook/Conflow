@@ -1,0 +1,113 @@
+# Project Overview
+
+Conflow is a **pnpm + Turbo monorepo** that delivers a Tanstack Start (SSR) front-end to user.
+It is a comprehensive IT business solution providing meeting summarization, Gantt chart management, and Agile sprint monitoring, designed with an **A2UI-ready** architecture.
+
+---
+
+## Core Principles
+
+- **Architecture**: Pragmatic Feature-Sliced Design (FSD).
+- **Strict Immutability**: Strictly no `let`. Use `const` only. Apply functional programming (`map`, `filter`, `reduce`).
+- **Logical Purity**: No emotional filler in comments. Use self-documenting TypeScript types.
+- **No Guessing**: State `Unknown` and request the schema if API/Library specs are unclear.
+- **SSR First**: Leverage TanStack Start's Server Functions for data mutations and secure API calls.
+
+---
+
+## Monorepo Structure & Dependency Rules
+
+**Flow**: `apps/web` → `packages/business` → `packages/ui` → `packages/core`.
+
+- **packages/core**: Infrastructure only (API Client, SSE Handlers, Date/Chart Utils). **Zero Business Logic, Zero UI**.
+- **packages/ui**: Atomic UI components. **Zero Business Logic, Zero API Calls**.
+- **packages/business**:
+  - **entities/**: Domain data schemas and pure state logic.
+  - **features/**: Independent user actions (e.g., `executeSummary`, `calculateGantt`). Must be logic-heavy and UI-agnostic.
+- **apps/web (TanStack Start)**:
+  - **routes/**: File-based routing and Loaders/Actions.
+  - **widgets/**: Complex UI blocks combining multiple features for the Dashboard.
+
+---
+
+## Coding Standards & A2UI Strategy
+
+- **Package Manager**: Strictly `pnpm`.
+- **Framework**: TanStack Start. Use `createServerFn` for all server-side operations (DB/External API).
+- **A2UI Readiness**:
+  - **Headless Logic**: Logic in `features/` must be decoupled from React lifecycle to allow AI Agent invocation.
+  - **Schema-First**: Every feature must have a defined Input/Output Schema (Zod) for AI interoperability.
+- **State Management**: Use TanStack Query for server state. Avoid direct mutation; use immutable updates only.
+
+---
+
+## Prohibited Practices
+
+- **No Circular Dependencies**: Strict layer isolation.
+- **No Direct `let`**: Use `const`.
+- **No `any`**: Use `unknown` or strict interfaces.
+- **No Layout Shift**: Use TanStack Start `Loaders` for pre-fetching essential dashboard data to ensure stable UX.
+
+---
+
+## Business Logic & Reliability (PM Perspective)
+
+- **Event Tracking**: All actions in `features/` must log `Context` (Feature ID, Runtime, Status).
+- **Third-party Abstraction**: Use **Adapter Pattern** in `core/` for external services (Slack, Jira) to prevent vendor lock-in.
+- **Validation Layer**: **Zod Mandatory** for AI-generated content and External API responses before reaching `entities/`.
+- **Dashboard Resiliency**: Mandatory `Skeleton` for async loading and `Error Boundary` for each widget to prevent full-page crashes.
+
+---
+
+## WorkSpace
+
+Configure Like this
+
+```
+conflow/
+├── apps/
+│   └── web/                        # TanStack Start (SSR Frontend)
+│       ├── src/
+│       │   ├── routes/             # TanStack Start File-based Routing
+│       │   │   ├── __root.tsx      # Root Layout & Global Providers
+│       │   │   ├── index.tsx       # Home / Marketing Page
+│       │   │   └── dashboard.tsx   # Main Dashboard Page
+│       │   ├── widgets/            # Feature combinations (e.g., GanttWidget, SummaryCard)
+│       │   ├── app/                # Global Styles & SSR Entry points
+│       │   └── main.tsx
+│       ├── public/
+│       └── package.json
+│
+├── packages/
+│   ├── business/                   # Logic & Domain Layer (FSD: Entities/Features)
+│   │   ├── src/
+│   │   │   ├── entities/           # Data Schemas (Zod) & Domain States
+│   │   │   │   ├── meeting.ts
+│   │   │   │   ├── sprint.ts
+│   │   │   │   └── gantt.ts
+│   │   │   └── features/           # Headless User Actions (A2UI Ready)
+│   │   │       ├── use-summary/    # Meeting summary logic
+│   │   │       ├── use-gantt/      # Gantt calculation logic
+│   │   │       └── use-agile/      # Sprint monitoring logic
+│   │   └── package.json
+│   │
+│   ├── ui/                         # Atomic Design System (Shared UI)
+│   │   ├── src/
+│   │   │   ├── components/         # Button, Input, Modal, Skeleton
+│   │   │   └── index.ts            # Public API for UI components
+│   │   └── package.json
+│   │
+│   └── core/                       # Infrastructure Layer (Shared Utils/Clients)
+│       ├── src/
+│       │   ├── api/                # Axios/Fetch client & SSE handlers
+│       │   ├── adapters/           # Slack/Jira/AI Model adapters
+│       │   ├── utils/              # Pure Date/Chart/String utils
+│       │   └── constants/          # Global Configs & Constants
+│       └── package.json
+│
+├── turbo.json                      # Turborepo Config
+├── pnpm-workspace.yaml             # pnpm Workspace Definition
+├── pnpm-lock.yaml
+└── package.json
+
+```
