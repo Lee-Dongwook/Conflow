@@ -37,3 +37,13 @@
 - [x] **Phase 1 (MVP):** 대시보드, 이번 주 할 일, Blocker 추적 (목 데이터 기반)
 - [ ] **Phase 2:** AI 기반 회의록 요약 및 자동 할 일 할당 (A2UI 실제 적용)
 - [ ] **Phase 3:** Slack/Discord 연동 어댑터 구현
+
+## 6. WireFrame Example
+
+### 대시보드
+
+![대시보드 와이어프레임](docs/wireframe/dashboard.png)
+
+### 이번 주
+
+![이번 주 와이어프레임](docs/wireframe/thisweek.png)
