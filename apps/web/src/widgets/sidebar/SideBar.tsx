@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { Avatar, Badge, Button, Separator, cn } from "@conflow/ui";
 
+import { MOCK_USER } from "../../data/mock-user";
 import type { SidebarGlyph } from "./icons";
 import { SidebarIcon } from "./icons";
 
@@ -197,17 +198,31 @@ export const SideBar = ({
       </div>
 
       <div className="border-t border-slate-100 p-3">
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
+        <button
+          type="button"
+          onClick={() => {
+            select("profile");
+          }}
+          className={cn(
+            "w-full rounded-lg border bg-slate-50 p-2.5 text-left transition-shadow",
+            activeNavId === "profile"
+              ? "border-teal-400 ring-2 ring-teal-400/40"
+              : "border-slate-200 hover:border-slate-300",
+          )}
+          aria-label="내 계정 페이지로 이동"
+        >
           <div className="flex gap-2.5">
-            <Avatar label="로컬 사용자" size="md" />
+            <Avatar label={MOCK_USER.displayName} size="md" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-slate-900">
-                로컬 사용자
+                {MOCK_USER.displayName}
               </p>
-              <p className="truncate text-xs text-slate-500">local@conflow.dev</p>
+              <p className="truncate text-xs text-slate-500">
+                {MOCK_USER.email}
+              </p>
             </div>
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );
