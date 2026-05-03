@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { BoardPage } from "./pages/BoardPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { ThisWeekPage } from "./pages/ThisWeekPage";
@@ -22,6 +23,7 @@ const NAV_SUBTITLE: Record<string, string> = {
   dashboard: "팀플·스터디 팀용 · 목 세션 사용자 이땡땡 기준. (포폴 목 데이터)",
   sprint:
     "월~일 한 줄 스캔 · 가장 임박 강조. 간트 대신 가벼운 주간 뷰 (목 데이터)",
+  board: "할 일 · 하는 중 · 완료 칸반. 드래그 없음 — 와이어·포폴용.",
   profile: "목 프로필입니다. 로그인 붙이면 교체됩니다.",
 };
 
@@ -39,6 +41,8 @@ export const App = () => {
       <DashboardPage />
     ) : activeNavId === "sprint" ? (
       <ThisWeekPage />
+    ) : activeNavId === "board" ? (
+      <BoardPage />
     ) : (
       <PlaceholderPage navId={activeNavId} />
     );
