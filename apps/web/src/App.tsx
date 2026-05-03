@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { BacklogPage } from "./pages/BacklogPage";
 import { BoardPage } from "./pages/BoardPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
@@ -24,6 +25,8 @@ const NAV_SUBTITLE: Record<string, string> = {
   sprint:
     "월~일 한 줄 스캔 · 가장 임박 강조. 간트 대신 가벼운 주간 뷰 (목 데이터)",
   board: "할 일 · 하는 중 · 완료 칸반. 드래그 없음 — 와이어·포폴용.",
+  backlog:
+    "보드에 넣기 전 작업 풀. 우선순위·담당만 표시 — 코어·스키마는 와이어 후.",
   profile: "목 프로필입니다. 로그인 붙이면 교체됩니다.",
 };
 
@@ -43,6 +46,8 @@ export const App = () => {
       <ThisWeekPage />
     ) : activeNavId === "board" ? (
       <BoardPage />
+    ) : activeNavId === "backlog" ? (
+      <BacklogPage />
     ) : (
       <PlaceholderPage navId={activeNavId} />
     );
