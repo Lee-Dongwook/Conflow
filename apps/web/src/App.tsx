@@ -1,20 +1,25 @@
 import { useState } from "react";
 
 import { DashboardPage } from "./pages/DashboardPage";
+import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { UserPage } from "./pages/UserPage";
 import { SideBar } from "./widgets/sidebar";
 
 const NAV_TITLE: Record<string, string> = {
   dashboard: "대시보드",
-  sprint: "스프린트",
+  sprint: "이번 주",
   board: "보드",
   backlog: "백로그",
-  metrics: "지표",
+  metrics: "한눈에",
   retro: "회고",
   profile: "내 계정",
+  inbox: "수신함",
+  workspace: "워크스페이스",
 };
 
 const NAV_SUBTITLE: Record<string, string> = {
+  dashboard:
+    "팀플·스터디 팀용 — 이번 주 목표·마감·할 일을 스캔. (포폴 목 데이터)",
   profile: "목 프로필입니다. 로그인 붙이면 교체됩니다.",
 };
 
@@ -23,9 +28,16 @@ export const App = () => {
   const navTitle = NAV_TITLE[activeNavId] ?? activeNavId;
   const navSubtitle =
     NAV_SUBTITLE[activeNavId] ??
-    "화면만 잡는 단계예요. 다음에 같이 정할 건 “이 제품이 줄여 줄 하루” 한 문장입니다.";
+    "와이어 단계입니다. 팀플 ICP에 맞춰 메뉴마다 채워 넣을 예정.";
 
-  const main = activeNavId === "profile" ? <UserPage /> : <DashboardPage />;
+  const main =
+    activeNavId === "profile" ? (
+      <UserPage />
+    ) : activeNavId === "dashboard" ? (
+      <DashboardPage />
+    ) : (
+      <PlaceholderPage navId={activeNavId} />
+    );
 
   return (
     <div className="flex min-h-screen bg-slate-50">

@@ -22,13 +22,13 @@ type NavDef = {
 
 const WORK: readonly NavDef[] = [
   { id: "dashboard", label: "대시보드", icon: "dashboard" },
-  { id: "sprint", label: "스프린트", icon: "calendar" },
+  { id: "sprint", label: "이번 주", icon: "calendar" },
   { id: "board", label: "보드", icon: "board" },
   { id: "backlog", label: "백로그", icon: "list" },
 ];
 
 const INSIGHT: readonly NavDef[] = [
-  { id: "metrics", label: "지표", icon: "chart" },
+  { id: "metrics", label: "한눈에", icon: "chart" },
   { id: "retro", label: "회고", icon: "clock" },
 ];
 
@@ -148,20 +148,50 @@ export const SideBar = ({
 
         <button
           type="button"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-50"
+          onClick={() => {
+            select("inbox");
+          }}
+          className={cn(
+            "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
+            activeNavId === "inbox"
+              ? "bg-teal-600 text-white shadow-sm"
+              : "text-slate-600 hover:bg-slate-50",
+          )}
         >
-          <SidebarIcon name="bell" className="text-slate-500" />
+          <SidebarIcon
+            name="bell"
+            className={activeNavId === "inbox" ? "text-white" : "text-slate-500"}
+          />
           <span className="min-w-0 flex-1 truncate">수신함</span>
-          <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-semibold text-white">
+          <span
+            className={cn(
+              "flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums",
+              activeNavId === "inbox" ? "bg-white/25 text-white" : "bg-rose-500 text-white",
+            )}
+          >
             3
           </span>
         </button>
 
         <button
           type="button"
-          className="mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-500 hover:bg-slate-50"
+          onClick={() => {
+            select("workspace");
+          }}
+          className={cn(
+            "mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
+            activeNavId === "workspace"
+              ? "bg-teal-600 font-medium text-white shadow-sm"
+              : "text-slate-500 hover:bg-slate-50",
+          )}
         >
-          <SidebarIcon name="settings" className="size-4 text-slate-400" />
+          <SidebarIcon
+            name="settings"
+            className={cn(
+              "size-4",
+              activeNavId === "workspace" ? "text-white" : "text-slate-400",
+            )}
+          />
           <span>워크스페이스</span>
         </button>
       </nav>
