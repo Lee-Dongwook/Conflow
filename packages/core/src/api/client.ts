@@ -1,8 +1,6 @@
-import axios, {
-  type AxiosError,
-  type AxiosInstance,
-  type AxiosRequestConfig,
-} from "axios";
+import axios, { type AxiosInstance } from "axios";
+
+import { DEFAULT_REQUEST_TIMEOUT_MS } from "../constants/http";
 
 export interface APIClientOptions {
   baseURL: string;
@@ -10,18 +8,13 @@ export interface APIClientOptions {
   withCredentials?: boolean;
 }
 
-type TokenAccessor = () => string | null;
-type TokenSetter = (token: string | null) => void;
-type OnRefreshToken = () => Promise<string | null>;
-type OnUnauthorized = () => void;
-
 export const createBaseAPIClient = (
   config: APIClientOptions,
 ): AxiosInstance => {
   const instance = axios.create({
     baseURL: config.baseURL,
     withCredentials: config.withCredentials ?? true,
-    timeout: config.timeout ?? 10000,
+    timeout: config.timeout ?? DEFAULT_REQUEST_TIMEOUT_MS,
   });
 
   return instance;

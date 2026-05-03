@@ -10,7 +10,7 @@ describe("Env Schema Test", () => {
 
     expect(parsed).toEqual({
       VITE_API_BASE_URL: "https://api.example.com",
-      VITE_USE_MOCKS: false,
+      VITE_USE_MOCK: false,
     });
   });
 });
