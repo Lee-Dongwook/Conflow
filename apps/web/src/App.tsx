@@ -3,7 +3,10 @@ import { useState } from "react";
 import { BacklogPage } from "./pages/BacklogPage";
 import { BoardPage } from "./pages/BoardPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { InboxPage } from "./pages/InboxPage";
+import { MetricsPage } from "./pages/MetricsPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
+import { RetroPage } from "./pages/RetroPage";
 import { ThisWeekPage } from "./pages/ThisWeekPage";
 import { UserPage } from "./pages/UserPage";
 import { SideBar } from "./widgets/sidebar";
@@ -27,6 +30,10 @@ const NAV_SUBTITLE: Record<string, string> = {
   board: "할 일 · 하는 중 · 완료 칸반. 드래그 없음 — 와이어·포폴용.",
   backlog:
     "보드에 넣기 전 작업 풀. 우선순위·담당만 표시 — 코어·스키마는 와이어 후.",
+  metrics:
+    "숫자·막대만 — 실제 차트·집계는 코어 연동 후. 포폴용 스냅샷 레이아웃.",
+  retro: "KPT 블록 목 — 익명·투표·타임라인은 회고 기능 설계 후 연결 예정.",
+  inbox: "멘션·마감·파일 알림 목록. 푸시·실시간은 인프라 붙인 뒤 교체.",
   profile: "목 프로필입니다. 로그인 붙이면 교체됩니다.",
 };
 
@@ -48,6 +55,12 @@ export const App = () => {
       <BoardPage />
     ) : activeNavId === "backlog" ? (
       <BacklogPage />
+    ) : activeNavId === "metrics" ? (
+      <MetricsPage />
+    ) : activeNavId === "retro" ? (
+      <RetroPage />
+    ) : activeNavId === "inbox" ? (
+      <InboxPage />
     ) : (
       <PlaceholderPage navId={activeNavId} />
     );
