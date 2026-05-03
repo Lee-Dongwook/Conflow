@@ -1,0 +1,27 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+.env
+.nitro
+.tanstack
+.wrangler
+.output
+.vinxi
+__unconfig*
+todos.json
+
+# TanStack Router regenerates this on every dev/build; its contents depend
+# on `routeFileIgnorePattern` (different in dev vs prod), so tracking it
+# causes spurious diffs and mode-dependent tsc failures.
+**/routeTree.gen.ts
+
+# Turborepo
+.turbo
+
+# Playwright
+**/test-results/
+**/playwright-report/
+**/blob-report/
+**/playwright/.cache/
