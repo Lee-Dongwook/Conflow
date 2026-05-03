@@ -111,3 +111,11 @@ conflow/
 └── package.json
 
 ```
+
+## Operational Boundaries
+
+- **Manual Execution Only**: The AI must never execute commands for package installation, testing, or build processes automatically.
+
+- **Guidance Only**: All command-line operations (e.g., pnpm install, pnpm test, turbo build) must be suggested as code blocks for the user to review and execute manually.
+
+- **Responsibility**: The user retains full control over the terminal environment and workspace state changes.
