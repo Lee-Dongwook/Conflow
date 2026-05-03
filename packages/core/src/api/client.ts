@@ -2,6 +2,8 @@ import axios, { type AxiosInstance } from "axios";
 
 import { DEFAULT_REQUEST_TIMEOUT_MS } from "../constants/http";
 
+import { toAPIError } from "./errors";
+
 export interface APIClientOptions {
   baseURL: string;
   timeout?: number;
@@ -16,6 +18,11 @@ export const createBaseAPIClient = (
     withCredentials: config.withCredentials ?? true,
     timeout: config.timeout ?? DEFAULT_REQUEST_TIMEOUT_MS,
   });
+
+  instance.interceptors.response.use(
+    (response) => response,
+    (error: unknown) => Promise.reject(toAPIError(error)),
+  );
 
   return instance;
 };
