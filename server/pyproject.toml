@@ -1,0 +1,6 @@
+[project]
+name = "conflow-server"
+version = "0.1.0"
+description = "Conflow Server"
+authors = [{name = "DongWook lee", email = "dlehddnr0713@gmail.com"}]
+requires-python = ">=3.13,<4.0"
