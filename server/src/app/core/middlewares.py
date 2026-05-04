@@ -160,6 +160,64 @@ class CamelCaseMiddleware(BaseHTTPMiddleware):
         return response
 
 
+class ContextRefreshMiddleware:
+    def __init__(self, app:ASGIApp) -> None:
+        self.app = app
+    
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message: Message) -> None:
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
+
+def setup_openapi(app: FastAPI) -> Callable:
+    def override_openapi() -> dict[str, Any]:
+        if app.openapi_schema:
+            return app.openapi_schema
+        
+        openapi_schema = get_openapi(
+            title=app.title,
+            version=app.version,
+            description=app.description,
+            routes=app.routes,
+        )
+
+        if "components" in openapi_schema and "schemas" in openapi_schema["components"]:
+            for schema_name, schema_body in openapi_schema["components"]["schemas"].items():
+                openapi_schema["components"]["schemas"][schema_name] = camelize_properties(schema_body)  # noqa: E501
+
+        
+        if "paths" in openapi_schema:
+            for path in openapi_schema["paths"].values():
+                for operation in path.values():
+                    if "parameters" in operation:
+                        for param in operation["parameters"]:
+                            if "schema" in param:
+                                param["schema"] = camelize_properties(param["schema"])
+
+                    if "requestBody" in operation and "content" in operation["requestBody"]:
+                        for content in operation["requestBody"]["content"].values():
+                            if "schema" in content:
+                                content["schema"] = camelize_properties(content["schema"])
+
+                    if "responses" in operation:
+                        for response in operation["responses"].values():
+                            if "content" in response:
+                                for content in response["content"].values():
+                                    if "schema" in content:
+                                        content["schema"] = camelize_properties(content["schema"])
+
+        app.openapi_schema = openapi_schema
+        return app.openapi_schema
+
+    return override_openapi
+
+
+
 def setup_middleware(app: FastAPI) -> None:
     cors_options = dict(
         allow_credentials=True,
@@ -188,3 +246,7 @@ def setup_middleware(app: FastAPI) -> None:
         allow_origins=combined_origins,
         **cors_options,
     )
+
+    app.add_middleware(ContextRefreshMiddleware)
+    app.add_middleware(CamelCaseMiddleware)
+    app.openapi = setup_openapi(app)
