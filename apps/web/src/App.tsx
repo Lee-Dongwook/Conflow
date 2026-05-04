@@ -3,6 +3,7 @@ import { useState } from "react";
 import { BacklogPage } from "./pages/BacklogPage";
 import { BoardPage } from "./pages/BoardPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DmPage } from "./pages/DmPage";
 import { InboxPage } from "./pages/InboxPage";
 import { MetricsPage } from "./pages/MetricsPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
@@ -21,6 +22,7 @@ const NAV_TITLE: Record<string, string> = {
   profile: "내 계정",
   inbox: "수신함",
   workspace: "워크스페이스",
+  dm: "다이렉트 메시지",
 };
 
 const NAV_SUBTITLE: Record<string, string> = {
@@ -35,6 +37,7 @@ const NAV_SUBTITLE: Record<string, string> = {
   retro: "KPT 블록 목 — 익명·투표·타임라인은 회고 기능 설계 후 연결 예정.",
   inbox: "멘션·마감·파일 알림 목록. 푸시·실시간은 인프라 붙인 뒤 교체.",
   profile: "목 프로필입니다. 로그인 붙이면 교체됩니다.",
+  dm: "1:1·그룹 DM 레이아웃 와이어만 — 송수신·저장 없음.",
 };
 
 export const App = () => {
@@ -61,6 +64,8 @@ export const App = () => {
       <RetroPage />
     ) : activeNavId === "inbox" ? (
       <InboxPage />
+    ) : activeNavId === "dm" ? (
+      <DmPage />
     ) : (
       <PlaceholderPage navId={activeNavId} />
     );

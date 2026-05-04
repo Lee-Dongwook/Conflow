@@ -32,6 +32,10 @@ const INSIGHT: readonly NavDef[] = [
   { id: "retro", label: "회고", icon: "clock" },
 ];
 
+const MESSAGES: readonly NavDef[] = [
+  { id: "dm", label: "다이렉트 메시지", icon: "chat" },
+];
+
 type ThemeChoice = "light" | "system" | "dark";
 
 const SectionLabel = ({ children }: { readonly children: ReactNode }) => (
@@ -160,13 +164,17 @@ export const SideBar = ({
         >
           <SidebarIcon
             name="bell"
-            className={activeNavId === "inbox" ? "text-white" : "text-slate-500"}
+            className={
+              activeNavId === "inbox" ? "text-white" : "text-slate-500"
+            }
           />
           <span className="min-w-0 flex-1 truncate">수신함</span>
           <span
             className={cn(
               "flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums",
-              activeNavId === "inbox" ? "bg-white/25 text-white" : "bg-rose-500 text-white",
+              activeNavId === "inbox"
+                ? "bg-white/25 text-white"
+                : "bg-rose-500 text-white",
             )}
           >
             3
@@ -194,6 +202,19 @@ export const SideBar = ({
           />
           <span>워크스페이스</span>
         </button>
+
+        <Separator className="my-3" />
+
+        {MESSAGES.map((item) => (
+          <NavButton
+            key={item.id}
+            item={item}
+            active={activeNavId === item.id}
+            onSelect={() => {
+              select(item.id);
+            }}
+          />
+        ))}
       </nav>
 
       <div className="border-t border-slate-100 px-2 py-2">
