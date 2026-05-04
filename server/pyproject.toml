@@ -2,5 +2,28 @@
 name = "conflow-server"
 version = "0.1.0"
 description = "Conflow Server"
-authors = [{name = "DongWook lee", email = "dlehddnr0713@gmail.com"}]
+authors = [{ name = "DongWook lee", email = "dlehddnr0713@gmail.com" }]
 requires-python = ">=3.13,<4.0"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.0",
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+src = ["main.py", "src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

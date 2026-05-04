@@ -1,9 +1,13 @@
+"""Process-wide shared handles (logging, optional background workers)."""
+
+from __future__ import annotations
+
 import logging
+from typing import Any
 
 # init logger using uvicorn.error
-logger = logging.getLogger('uvicorn.error')
+logger = logging.getLogger("uvicorn.error")
 
 # global shared variables
-scheduler = None
-celery_enabled = False
-
+scheduler: Any | None = None
+celery_enabled: bool = False
