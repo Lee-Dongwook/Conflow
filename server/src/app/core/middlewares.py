@@ -1,0 +1,190 @@
+import json
+import os
+import re
+from collections.abc import Callable
+from typing import Any
+
+import humps
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
+from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+from .shared import logger
+
+_UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)  # noqa: E501
+
+def camelize_dict(d: dict | list ) -> dict | list:
+    if isinstance(d, dict):
+        return {
+            (k if _UUID_RE.match(k) else humps.camelize(k)): camelize_dict(v)
+            for k, v in d.items()
+        }
+    elif isinstance(d, list):
+        return [camelize_dict(i) for i in d]
+    else:
+        return d
+
+def decamelize_dict(d: dict | list) -> dict | list:
+    if isinstance(d, dict):
+        return {
+            (k if _UUID_RE.match(k) else humps.decamelize(k)): decamelize_dict(v)
+            for k, v in d.items()
+        }
+    elif isinstance(d, list):
+        return [decamelize_dict(i) for i in d]
+    else:
+        return d
+
+async def handle_request(request: Request) -> Request:
+    body_bytes = await request.body()
+
+    if body_bytes:
+        try:
+          body = json.loads(body_bytes)
+
+          # Check MCP and return
+          if isinstance(body, dict) and "jsonrpc" in body:
+            return request
+          
+          snake_case_body = decamelize_dict(body)
+          new_body_bytes = json.dumps(snake_case_body).encode("utf-8")
+
+          request._body = new_body_bytes
+          request.scope["headers"] = [
+            ((k, v) if k.lower() != b"content-length" else (k, str(len(new_body_bytes)).encode()))
+            for k, v in request.scope["headers"]
+          ]
+
+        except Exception as e:
+            logger.error(f"Error decoding JSON: {e}")
+    
+    return request
+
+
+def is_swagger_path(path: str) -> bool:
+    return path.startswith("/docs") or path.startswith("/openapi.json") or path.startswith("/redoc")
+
+
+def camelize_properties(schema: dict) -> dict: # noqa: C901
+    if not isinstance(schema, dict):
+        return schema
+    
+    if "properties" in schema:
+        new_props = {}
+        for key, value in schema["properties"].items():
+            new_key = humps.camelize(key)
+            new_props[new_key] = camelize_properties(value)
+        schema["properties"] = new_props
+
+    if "required" in schema and isinstance(schema["required"], list):
+        schema["required"] = [humps.camelize(item) for item in schema["required"]]
+
+    if "items" in schema:
+        schema["items"] = camelize_properties(schema["items"])
+    
+    for field in ["allOf", "anyOf", "oneOf"]:
+        if field in schema and isinstance(schema[field], list):
+            schema[field] = [camelize_properties(item) for item in schema[field]]
+
+    for key, value in list(schema.items()):
+        if isinstance(value, dict):
+            schema[key] = camelize_properties(value)
+        elif isinstance(value, list):
+            new_list = []
+            for item in value:
+                if isinstance(item, dict):
+                    new_list.append(camelize_properties(item))
+                else:
+                    new_list.append(item)
+            schema[key] = new_list
+    return schema
+
+class CamelCaseMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+        if is_swagger_path(request.url.path):
+            return await call_next(request)
+
+        # MCP session ID
+        if request.headers.get("mcp-session-id", None):
+            return await call_next(request)
+
+        if request.headers.get("content-type", "").startswith("application/json"):
+            return await handle_request(request)
+
+        response = await call_next(request)
+
+        if response.headers.get("x-skip-camelize") == "1":
+            return response
+
+        if response.headers.get("content-type", "").startswith("application/json"):
+            body = b""
+            async for chunk in response.body_iterator:
+                body += chunk
+            
+            if not body or body.strip() == b"null":
+                return Response(
+                    content=body,
+                    status_code=response.status_code,
+                    headers=dict(response.headers),
+                )
+            try:
+                data = json.loads(body)
+
+                if data is None:
+                    return Response(
+                        content=body,
+                        status_code=response.status_code,
+                        headers=dict(response.headers),
+                    )
+                
+                camelized_data = camelize_dict(data)
+                headers = dict(response.headers.items())
+
+                if "content-length" in headers:
+                    del headers["content-length"]
+
+                return JSONResponse(
+                    content=camelized_data,
+                    status_code=response.status_code,
+                    headers=headers
+                )
+            
+            except Exception as e:
+                logger.error(f"Error decoding JSON: {e}")
+                return response
+            
+        return response
+
+
+def setup_middleware(app: FastAPI) -> None:
+    cors_options = dict(
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        expose_headers=["*"],
+    )
+
+    default_origins = [
+        "http://localhost:5173"
+    ]
+
+    env_origins_str = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+    env_origins = [origin.strip() for origin in env_origins_str.split(",") if origin.strip()]
+
+
+    combined_origins = list(dict.fromkeys(default_origins + env_origins))
+    os.environ["CORS_ALLOWED_ORIGINS"] = ",".join(combined_origins)
+
+    cors_origins_regex = os.environ.get("CORS_ALLOWED_ORIGINS_REGEX")
+    if cors_origins_regex:
+        cors_options["allow_origin_regex"] = cors_origins_regex
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=combined_origins,
+        **cors_options,
+    )
