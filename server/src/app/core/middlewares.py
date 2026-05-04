@@ -13,6 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from .logger import LoggingMiddleware
 from .shared import logger
 
 _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)  # noqa: E501
@@ -248,5 +249,6 @@ def setup_middleware(app: FastAPI) -> None:
     )
 
     app.add_middleware(ContextRefreshMiddleware)
+    app.add_middleware(LoggingMiddleware)
     app.add_middleware(CamelCaseMiddleware)
     app.openapi = setup_openapi(app)
