@@ -5,6 +5,7 @@ import { BoardPage } from "./pages/BoardPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DmPage } from "./pages/DmPage";
 import { HuddlePage } from "./pages/HuddlePage";
+import { MeetingSummaryPage } from "./pages/MeetingSummaryPage";
 import { InboxPage } from "./pages/InboxPage";
 import { MetricsPage } from "./pages/MetricsPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
@@ -25,6 +26,7 @@ const NAV_TITLE: Record<string, string> = {
   workspace: "워크스페이스",
   dm: "다이렉트 메시지",
   huddle: "허들",
+  meetingSummary: "AI 회의록",
 };
 
 const NAV_SUBTITLE: Record<string, string> = {
@@ -42,6 +44,8 @@ const NAV_SUBTITLE: Record<string, string> = {
   dm: "1:1·그룹 DM 레이아웃 와이어만 — 송수신·저장 없음.",
   huddle:
     "음성·영상 연동 전 축소 바·참가자·컨트롤 자리만 — WebRTC·시그널링 없음.",
+  meetingSummary:
+    "허들 기반 전사·AI 요약·액션 추출 목표 (A2UI). STT·모델·저장은 연동 전 — 와이어만.",
 };
 
 export const App = () => {
@@ -72,6 +76,8 @@ export const App = () => {
       <DmPage />
     ) : activeNavId === "huddle" ? (
       <HuddlePage />
+    ) : activeNavId === "meetingSummary" ? (
+      <MeetingSummaryPage />
     ) : (
       <PlaceholderPage navId={activeNavId} />
     );
