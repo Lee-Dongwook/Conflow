@@ -1,11 +1,12 @@
 """ASGI entrypoint for the Conflow API."""
 
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-
+from fastapi.middleware.cors import CORSMiddleware
 from src.app.home.api import router as home_router
 
 
@@ -21,6 +22,17 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+_cors_raw = os.environ.get("CORS_ORIGIN", "")
+_cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 app.include_router(home_router)
 
