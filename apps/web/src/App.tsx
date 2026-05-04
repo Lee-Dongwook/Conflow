@@ -4,6 +4,7 @@ import { BacklogPage } from "./pages/BacklogPage";
 import { BoardPage } from "./pages/BoardPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { DmPage } from "./pages/DmPage";
+import { HuddlePage } from "./pages/HuddlePage";
 import { InboxPage } from "./pages/InboxPage";
 import { MetricsPage } from "./pages/MetricsPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
@@ -23,6 +24,7 @@ const NAV_TITLE: Record<string, string> = {
   inbox: "수신함",
   workspace: "워크스페이스",
   dm: "다이렉트 메시지",
+  huddle: "허들",
 };
 
 const NAV_SUBTITLE: Record<string, string> = {
@@ -38,6 +40,8 @@ const NAV_SUBTITLE: Record<string, string> = {
   inbox: "멘션·마감·파일 알림 목록. 푸시·실시간은 인프라 붙인 뒤 교체.",
   profile: "목 프로필입니다. 로그인 붙이면 교체됩니다.",
   dm: "1:1·그룹 DM 레이아웃 와이어만 — 송수신·저장 없음.",
+  huddle:
+    "음성·영상 연동 전 축소 바·참가자·컨트롤 자리만 — WebRTC·시그널링 없음.",
 };
 
 export const App = () => {
@@ -66,6 +70,8 @@ export const App = () => {
       <InboxPage />
     ) : activeNavId === "dm" ? (
       <DmPage />
+    ) : activeNavId === "huddle" ? (
+      <HuddlePage />
     ) : (
       <PlaceholderPage navId={activeNavId} />
     );

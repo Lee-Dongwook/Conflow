@@ -34,6 +34,7 @@ const INSIGHT: readonly NavDef[] = [
 
 const MESSAGES: readonly NavDef[] = [
   { id: "dm", label: "다이렉트 메시지", icon: "chat" },
+  { id: "huddle", label: "허들", icon: "huddle" },
 ];
 
 type ThemeChoice = "light" | "system" | "dark";

@@ -17,7 +17,8 @@ export type SidebarGlyph =
   | "chevronDown"
   | "board"
   | "list"
-  | "chart";
+  | "chart"
+  | "huddle";
 
 type IconProps = {
   readonly name: SidebarGlyph;
@@ -127,7 +128,11 @@ const Glyph = ({ name }: { readonly name: SidebarGlyph }) => {
       return (
         <>
           <path d="M10 8h10M10 12h10M10 16h10" />
-          <path d="M6 8h.01M6 12h.01M6 16h.01" strokeLinecap="round" strokeWidth={3} />
+          <path
+            d="M6 8h.01M6 12h.01M6 16h.01"
+            strokeLinecap="round"
+            strokeWidth={3}
+          />
         </>
       );
     case "chart":
@@ -135,6 +140,15 @@ const Glyph = ({ name }: { readonly name: SidebarGlyph }) => {
         <>
           <path d="M4 20h16" />
           <polyline points="6 16 10 9 14 13 18 5 21 10" fill="none" />
+        </>
+      );
+    case "huddle":
+      return (
+        <>
+          <path d="M12 3a7 7 0 0 0-7 7v3a2 2 0 0 0 2 2h1" />
+          <path d="M12 3a7 7 0 0 1 7 7v3a2 2 0 0 1-2 2h-1" />
+          <path d="M9 18v2a3 3 0 0 0 6 0v-2" />
+          <path d="M8 15h8" />
         </>
       );
     default:
