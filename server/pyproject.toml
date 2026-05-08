@@ -23,6 +23,7 @@ dependencies = [
     "mcp>=1.27.0",
     "humps>=0.2.2",
     "structlog>=25.5.0",
+    "alembic>=1.18.4",
 ]
 
 [dependency-groups]
