@@ -9,11 +9,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from scalar_fastapi import get_scalar_api_reference
+from src.app.core import shared_init
 from src.app.core.exceptions import global_exception_handler
 from src.app.home.api import router as home_router
 from src.app.user.api import router as user_router
 
 env_type = os.environ.get("ENV", "development")
+shared_init.load_dotenv(env_type)
 
 
 @asynccontextmanager
