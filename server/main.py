@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.app.home.api import router as home_router
+from src.app.user.api import router as user_router
 
 
 @asynccontextmanager
@@ -35,6 +36,7 @@ if _cors_origins:
     )
 
 app.include_router(home_router)
+app.include_router(user_router)
 
 
 def main() -> None:

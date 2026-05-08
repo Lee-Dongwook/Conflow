@@ -5,6 +5,8 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class UserCreate(BaseModel):
+    """Payload for creating a new user."""
+
     name: str
     email: EmailStr
     profile_image_url: str | None = None
@@ -12,7 +14,19 @@ class UserCreate(BaseModel):
     auth_id: str | None = None
     access_token: str | None = None
 
+
+class UserUpdate(BaseModel):
+    """Payload for partially updating an existing user."""
+
+    name: str | None = None
+    email: EmailStr | None = None
+    profile_image_url: str | None = None
+    auth_id: str | None = None
+
+
 class UserRead(BaseModel):
+    """Read model exposed by user APIs."""
+
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
@@ -25,4 +39,6 @@ class UserRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class TokenRefresh(BaseModel):
+    """Payload for requesting a token refresh."""
+
     refresh_token: str
