@@ -1,0 +1,10 @@
+[project]
+name="sample-mcp"
+version="0.1.0"
+description=""
+requires-python=">=3.13, <4.0"
+dependencies=[
+   "fastapi>=0.118.3",
+   "langchain-core>=0.3.79",
+   "mcp>=1.17.0", 
+]
