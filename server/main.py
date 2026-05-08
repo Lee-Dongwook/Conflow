@@ -6,11 +6,11 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from scalar_fastapi import get_scalar_api_reference
 from src.app.core import shared_init
 from src.app.core.exceptions import global_exception_handler
+from src.app.core.middlewares import setup_middleware
 from src.app.home.api import router as home_router
 from src.app.user.api import router as user_router
 
@@ -21,6 +21,7 @@ shared_init.load_dotenv(env_type)
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Manage application startup and shutdown."""
+    shared_init.initialize()
     yield
 
 
@@ -31,16 +32,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_cors_raw = os.environ.get("CORS_ORIGIN", "")
-_cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
-if _cors_origins:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=_cors_origins,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+setup_middleware(app)
 
 app.include_router(home_router)
 app.include_router(user_router, prefix="/api")
