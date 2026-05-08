@@ -18,8 +18,11 @@ dependencies = [
     "uvicorn (>=0.35.0,<0.45.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
     "sqlalchemy>=2.0,<3.0",
+    "greenlet>=3.0.0",
     "email-validator>=2.3.0",
     "mcp>=1.27.0",
+    "humps>=0.2.2",
+    "structlog>=25.5.0",
 ]
 
 [dependency-groups]

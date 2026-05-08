@@ -18,10 +18,46 @@ from .shared import logger
 
 _UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)  # noqa: E501
 
+
+def _camelize_key(value: str) -> str:
+    """Convert a key to camelCase with safe fallback behavior."""
+    camelize_fn = getattr(humps, "camelize", None)
+    if callable(camelize_fn):
+        return str(camelize_fn(value))
+
+    camel_module = getattr(humps, "camel", None)
+    camel_case_fn = getattr(camel_module, "case", None)
+    if callable(camel_case_fn):
+        return str(camel_case_fn(value))
+
+    normalized_value = re.sub(r"[^0-9A-Za-z]+", "_", value).strip("_")
+    if not normalized_value:
+        return value
+
+    parts = [part for part in normalized_value.split("_") if part]
+    if not parts:
+        return value
+
+    first_part = parts[0].lower()
+    rest_part = "".join(part[:1].upper() + part[1:] for part in parts[1:])
+    return f"{first_part}{rest_part}"
+
+
+def _decamelize_key(value: str) -> str:
+    """Convert a key to snake_case with safe fallback behavior."""
+    decamelize_fn = getattr(humps, "decamelize", None)
+    if callable(decamelize_fn):
+        return str(decamelize_fn(value))
+
+    normalized_value = value.replace("-", "_")
+    snake_case = re.sub(r"([a-z0-9])([A-Z])", r"\1_\2", normalized_value)
+    return snake_case.lower()
+
+
 def camelize_dict(d: dict | list ) -> dict | list:
     if isinstance(d, dict):
         return {
-            (k if _UUID_RE.match(k) else humps.camelize(k)): camelize_dict(v)
+            (k if _UUID_RE.match(k) else _camelize_key(k)): camelize_dict(v)
             for k, v in d.items()
         }
     elif isinstance(d, list):
@@ -32,7 +68,7 @@ def camelize_dict(d: dict | list ) -> dict | list:
 def decamelize_dict(d: dict | list) -> dict | list:
     if isinstance(d, dict):
         return {
-            (k if _UUID_RE.match(k) else humps.decamelize(k)): decamelize_dict(v)
+            (k if _UUID_RE.match(k) else _decamelize_key(k)): decamelize_dict(v)
             for k, v in d.items()
         }
     elif isinstance(d, list):
@@ -77,12 +113,12 @@ def camelize_properties(schema: dict) -> dict: # noqa: C901
     if "properties" in schema:
         new_props = {}
         for key, value in schema["properties"].items():
-            new_key = humps.camelize(key)
+            new_key = _camelize_key(key)
             new_props[new_key] = camelize_properties(value)
         schema["properties"] = new_props
 
     if "required" in schema and isinstance(schema["required"], list):
-        schema["required"] = [humps.camelize(item) for item in schema["required"]]
+        schema["required"] = [_camelize_key(item) for item in schema["required"]]
 
     if "items" in schema:
         schema["items"] = camelize_properties(schema["items"])

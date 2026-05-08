@@ -58,7 +58,7 @@ def parse_body_content(body_bytes: bytes, content_type: str) -> Any:
     else:
         return f"<{content_type or 'unknown'} data: {len(body_bytes)} bytes>"
 
-def setup_logging():
+def setup_logging() -> None:
     timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", utc=False)
     """
     TODO: Next Step
@@ -114,8 +114,8 @@ class LoggingMiddleware:
                 content_type = headers.get("content-type", "")
                 log_data["body"] = parse_body_content(body_bytes, content_type)
             
-            logger.error("Unhandled exception in request", **log_data)
-            raise e
+            logger.error("Unhandled exception in request", extra=log_data)
+            raise
         
         process_time = round((time.time() - start_time) * 1000, 2)
 
@@ -135,11 +135,11 @@ class LoggingMiddleware:
 
         if status_code is not None:
             if status_code >= 400:
-                logger.error("HTTP request failed", **log_data)
+                logger.error("HTTP request failed", extra=log_data)
             else:
-                logger.info("HTTP request", **log_data)
+                logger.info("HTTP request", extra=log_data)
         else:
-            logger.warning("HTTP request without status code", **log_data)
+            logger.warning("HTTP request without status code", extra=log_data)
 
 
 
