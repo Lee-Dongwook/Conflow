@@ -36,6 +36,11 @@ class User(Base, AutoUUIDMixin):
         onupdate=lambda: datetime.now(timezone.utc),  # noqa: UP017
         nullable=False,
     )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     name: Mapped[str] = mapped_column(String(32))
     email: Mapped[str] = mapped_column(String(100), unique=True)
+    profile_image_url: Mapped[str] = mapped_column(String(255), nullable=True)
+    supabase_uuid: Mapped[str | None] = mapped_column(UUID(as_uuid=False), nullable=True)
+    auth_id: Mapped[str | None] = mapped_column(String(500), nullable=True)
+
