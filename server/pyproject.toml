@@ -5,8 +5,20 @@ description = "Conflow Server"
 authors = [{ name = "DongWook lee", email = "dlehddnr0713@gmail.com" }]
 requires-python = ">=3.13,<4.0"
 dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.32.0",
+    "aiosqlite>=0.22.1",
+    "apscheduler>=3.11.0",
+    "celery>=5.5.3",
+    "docling>=2.69.1",
+    "docling-core[chunking-openai]>=2.60.0",
+    "fastapi (>=0.115.8,<0.130.0)",
+    "psycopg[binary,pool] (>=3.2.9,<4.0.0)",
+    "scalar-fastapi>=1.2.3",
+    "starlette>=0.40.1",
+    "supabase (>=2.15.0,<3.0.0)",
+    "uvicorn (>=0.35.0,<0.45.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)",
+    "sqlalchemy>=2.0,<3.0",
+    "email-validator>=2.3.0",
 ]
 
 [dependency-groups]
@@ -14,6 +26,7 @@ dev = [
     "httpx>=0.28.0",
     "pytest>=8.0.0",
     "ruff>=0.8.0",
+    "respx>=0.22.0",
 ]
 
 [tool.ruff]

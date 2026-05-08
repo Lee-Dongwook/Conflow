@@ -7,8 +7,13 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
+from scalar_fastapi import get_scalar_api_reference
+from src.app.core.exceptions import global_exception_handler
 from src.app.home.api import router as home_router
 from src.app.user.api import router as user_router
+
+env_type = os.environ.get("ENV", "development")
 
 
 @asynccontextmanager
@@ -36,7 +41,16 @@ if _cors_origins:
     )
 
 app.include_router(home_router)
-app.include_router(user_router)
+app.include_router(user_router, prefix="/api")
+
+app.add_exception_handler(Exception, global_exception_handler)
+
+@app.get("/scalar", include_in_schema=False)
+async def scalar_html() -> HTMLResponse:
+    return get_scalar_api_reference(
+        openapi_url = app.openapi_url,
+        title = app.title,
+    )
 
 
 def main() -> None:
