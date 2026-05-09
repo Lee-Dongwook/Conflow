@@ -99,3 +99,16 @@ async def delete_user(db: AsyncSession, user_uuid: str) -> None:
     user = await get_user_or_404(db, user_uuid)
     user.deleted_at = datetime.now(timezone.utc)  # noqa: UP017
     await db.flush()
+
+
+async def get_user_by_supabase_uuid(supabase_uuid: str, db: AsyncSession, active_only: bool = True) -> User | None:  # noqa: E501
+    query = select(User).where(User.supabase_uuid == supabase_uuid)
+    if active_only:
+        query = query.where(User.is_active)
+    result = await db.execute(query)
+    return result.scalars().first()
+
+
+async def get_user_by_uuid(user_uuid: str, db: AsyncSession) -> User | None:
+    result = await db.execute(select(User).where(User.uuid == user_uuid))
+    return result.scalars().first()

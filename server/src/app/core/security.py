@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
 import os
+import time
 
 from cryptography.fernet import Fernet
 
@@ -63,3 +65,20 @@ def verify_signature(message: str, signature: str) -> bool:
 # ----
 
 
+def parse_execution_token(token: str) -> tuple[str, str] | None:
+    if not token.startswith("lbe."):
+        return None
+    try:
+        parts = token.split(".")
+        if len(parts) != 3:
+            return None
+        _, b64, sig = parts
+        padded = b64 + "=" * (-len(b64) % 4)
+        message = base64.urlsafe_b64decode(padded).decode()
+        if not verify_signature(message, sig):
+            return None
+        user_uuid, execution_uuid, exp_str = message.split(":")
+        if int(exp_str) < int(time.time()):
+            return None
+    except Exception:
+        return None
