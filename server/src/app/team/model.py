@@ -68,7 +68,7 @@ class Team(Base, AutoUUIDMixin):
     sprints: Mapped[list[Sprint]] = relationship(
         "Sprint",
         back_populates="team",
-        passive_deletes=True,
+        cascade="all, delete-orphan",
     )
 
 
