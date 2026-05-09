@@ -1,4 +1,5 @@
 """HTTP routes for user CRUD operations."""
+import logging
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,6 +8,7 @@ from ..core.database import get_async_db
 from .schemas import UserCreate, UserRead, UserUpdate
 from .service import create_user, delete_user, get_user_or_404, list_users, update_user
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
 
 
