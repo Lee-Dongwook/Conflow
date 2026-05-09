@@ -4,10 +4,10 @@ import os
 from datetime import datetime, timezone
 from typing import Protocol, runtime_checkable
 
-from sqlalchemy import DateTime, Index, String, event, update
+from sqlalchemy import DateTime, Index, event, update
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ..core.database import Base
 
@@ -36,3 +36,45 @@ class AutoUUIDMixin:
         def _auto_uuid(target: AutoUUIDMixin, args: tuple, kwargs: dict) -> None: # type: ignore[type-arg]
             if not kwargs.get("uuid"):
                 kwargs["uuid"] = _uuid_generator.generate()
+
+
+class CommonResource(Base):
+    __tablename__ = "common_resources"
+
+    uuid: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        primary_key=True,
+    )
+
+    user_uuid: Mapped[str | None] = mapped_column(
+        UUID(as_uuid=False),
+        nullable=True,
+    )
+
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        default=None,
+    )
+
+    __table_args__ = (
+        Index("idx_common_resources_user_uuid", "user_uuid"),
+    )
+
+    @property
+    def is_deleted(self) -> bool:
+        return self.deleted_at is not None
+
+
+class ResourceRegistry:
+    def generate(self) -> str:
+        return _uuid_generator.generate()
+    
+    async def soft_delete(self, db: AsyncSession, uuid: str) -> None:
+        await db.execute(
+            update(CommonResource).where(CommonResource.uuid == uuid)
+            .values(deleted_at=datetime.now(timezone.utc))
+        )
+
+
+resource_registry = ResourceRegistry()
