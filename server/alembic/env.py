@@ -30,6 +30,7 @@ _load_dotenv_for_migrations()
 # Imports after env: database URI depends on DB_* from dotenv.
 # Register user tables on Base.metadata. Listing UserProfile is optional (same module as User).
 from src.app.core.database import Base  # noqa: E402
+from src.app.team.model import Team, TeamMembership  # noqa: E402, F401
 from src.app.user.model import User, UserProfile  # noqa: E402, F401
 
 # When agent.model imports cleanly (e.g. RegistryMixin present), add:

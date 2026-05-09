@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import enum
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     DateTime,
-    ForeignKey,
     Enum,
+    ForeignKey,
     String,
     UniqueConstraint,
 )
@@ -15,6 +16,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..common.models import AutoUUIDMixin
 from ..core.database import Base
+
+if TYPE_CHECKING:
+    from ..team.model import TeamMembership
+
 
 class UserRole(enum.Enum):
     ADMIN = "admin"
@@ -58,6 +63,11 @@ class User(Base, AutoUUIDMixin):
         back_populates="user",
         cascade="all, delete-orphan",
         uselist=False,
+    )
+
+    team_memberships: Mapped[list[TeamMembership]] = relationship(
+        "TeamMembership",
+        back_populates="user",
     )
 
     __table_args__ = (UniqueConstraint("auth_id", name="uq_user_auth_id"),)
