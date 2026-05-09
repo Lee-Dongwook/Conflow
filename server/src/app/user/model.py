@@ -4,10 +4,12 @@ from datetime import datetime, timezone
 
 from sqlalchemy import (
     DateTime,
+    ForeignKey,
     String,
+    UniqueConstraint,
 )
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..common.models import AutoUUIDMixin
 from ..core.database import Base
@@ -44,3 +46,29 @@ class User(Base, AutoUUIDMixin):
     supabase_uuid: Mapped[str | None] = mapped_column(UUID(as_uuid=False), nullable=True)
     auth_id: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
+    user_profile: Mapped[UserProfile | None] = relationship(
+        "UserProfile",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+    __table_args__ = (UniqueConstraint("auth_id", name="uq_user_auth_id"),)
+
+
+class UserProfile(Base):
+    """Extended profile fields (1:1 with User)."""
+
+    __tablename__ = "user_profiles"
+
+    user_uuid: Mapped[str] = mapped_column(
+        UUID(as_uuid=False),
+        ForeignKey("users.uuid"),
+        primary_key=True,
+    )
+    job_title: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    timezone: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    locale: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    joined_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    user: Mapped[User] = relationship("User", back_populates="user_profile")
