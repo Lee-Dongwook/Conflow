@@ -47,3 +47,14 @@
 ### 이번 주
 
 ![이번 주 와이어프레임](docs/wireframe/thisweek.png)
+
+## 7. ERD - Diagram
+
+- **사용자·팀:** `users`와 `teams`는 `team_memberships`로 N:M이며, 멤버십마다 팀 내 역할을 둡니다.
+- **프로필:** `user_profiles`는 `users`와 1:1로 확장 필드만 분리합니다.
+- **스프린트:** `sprints`는 `teams`에 속하며, 기간·목표 등 주차 단위 묶음의 중심입니다.
+- **업무·보드:** `backlog_items`, `board_cards`, `week_milestones`는 팀·스프린트·담당자(`users`)에 연결됩니다.
+- **알림·회고·지표:** `inbox_entries`는 수신 사용자 중심, `retro_*`는 스프린트당 회고 구조, `sprint_metric_snapshots`는 스프린트별 스냅샷(예: JSON)으로 둡니다.
+
+![erd-1](docs/wireframe/erd-1.png)
+![erd-2](docs/wireframe/erd-2.png)
