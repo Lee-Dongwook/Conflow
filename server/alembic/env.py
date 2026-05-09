@@ -9,7 +9,6 @@ from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
 
-# Interpret the config file for Python logging.
 config = context.config
 
 if config.config_file_name is not None:
@@ -29,10 +28,37 @@ def _load_dotenv_for_migrations() -> None:
 _load_dotenv_for_migrations()
 
 # Imports after env: database URI depends on DB_* from dotenv.
+# Register user tables on Base.metadata. Listing UserProfile is optional (same module as User).
 from src.app.core.database import Base  # noqa: E402
-from src.app.user.model import User  # noqa: E402, F401 — register model with metadata
+from src.app.user.model import User, UserProfile  # noqa: E402, F401
+
+# When agent.model imports cleanly (e.g. RegistryMixin present), add:
+# from src.app.agent.model import Agent  # noqa: E402, F401
 
 target_metadata = Base.metadata
+
+# Tables created by LangGraph / similar libs: ignore for autogenerate so they are not dropped.
+_EXCLUDED_TABLE_NAMES = frozenset(
+    {
+        "checkpoint_blobs",
+        "checkpoint_migrations",
+        "checkpoint_writes",
+        "checkpoints",
+    },
+)
+
+
+def include_object(
+    object_: object,
+    name: str | None,
+    type_: str,
+    reflected: bool,
+    compare_to: object | None,
+) -> bool:
+    """Filter objects during autogenerate (exclude third-party tables not owned by this repo)."""
+    if type_ == "table" and name in _EXCLUDED_TABLE_NAMES:
+        return False
+    return True
 
 
 def _sync_database_url() -> str:
@@ -62,6 +88,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -85,7 +112,11 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(
+            connection=connection,
+            target_metadata=target_metadata,
+            include_object=include_object,
+        )
 
         with context.begin_transaction():
             context.run_migrations()
