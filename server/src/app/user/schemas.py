@@ -3,6 +3,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
+from .model import UserRole
+
 
 class UserCreate(BaseModel):
     """Payload for creating a new user."""
@@ -34,6 +36,7 @@ class UserRead(BaseModel):
     name: str
     email: EmailStr
     profile_image_url: str | None = None
+    role: UserRole
     auth_id: str | None = None
 
     model_config = ConfigDict(from_attributes=True)

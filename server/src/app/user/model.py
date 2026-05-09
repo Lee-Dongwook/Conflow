@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import (
     DateTime,
     ForeignKey,
+    Enum,
     String,
     UniqueConstraint,
 )
@@ -13,6 +15,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from ..common.models import AutoUUIDMixin
 from ..core.database import Base
+
+class UserRole(enum.Enum):
+    ADMIN = "admin"
+    USER = "user"
 
 
 class User(Base, AutoUUIDMixin):
@@ -42,6 +48,7 @@ class User(Base, AutoUUIDMixin):
 
     name: Mapped[str] = mapped_column(String(32), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.USER)
     profile_image_url: Mapped[str | None] = mapped_column(String(255), nullable=True)
     supabase_uuid: Mapped[str | None] = mapped_column(UUID(as_uuid=False), nullable=True)
     auth_id: Mapped[str | None] = mapped_column(String(500), nullable=True)
