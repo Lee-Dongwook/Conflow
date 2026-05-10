@@ -18,6 +18,7 @@ from ..common.models import AutoUUIDMixin
 from ..core.database import Base
 
 if TYPE_CHECKING:
+    from ..backlog.model import BacklogItem
     from ..team.model import TeamMembership
 
 
@@ -68,6 +69,12 @@ class User(Base, AutoUUIDMixin):
     team_memberships: Mapped[list[TeamMembership]] = relationship(
         "TeamMembership",
         back_populates="user",
+    )
+
+    assigned_backlog_items: Mapped[list[BacklogItem]] = relationship(
+        "BacklogItem",
+        back_populates="assignee",
+        foreign_keys="BacklogItem.assignee_user_uuid",
     )
 
     __table_args__ = (UniqueConstraint("auth_id", name="uq_user_auth_id"),)

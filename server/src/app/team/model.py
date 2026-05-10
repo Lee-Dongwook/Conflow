@@ -19,6 +19,7 @@ from ..common.models import AutoUUIDMixin
 from ..core.database import Base
 
 if TYPE_CHECKING:
+    from ..backlog.model import BacklogItem
     from ..sprint.model import Sprint
     from ..user.model import User
 
@@ -69,6 +70,12 @@ class Team(Base, AutoUUIDMixin):
         "Sprint",
         back_populates="team",
         cascade="all, delete-orphan",
+    )
+
+    backlog_items: Mapped[list[BacklogItem]] = relationship(
+        "BacklogItem",
+        back_populates="team",
+        passive_deletes=True,
     )
 
 
