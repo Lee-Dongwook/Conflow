@@ -20,6 +20,7 @@ from ..core.database import Base
 
 if TYPE_CHECKING:
     from ..backlog.model import BacklogItem
+    from ..board.model import BoardCard
     from ..sprint.model import Sprint
     from ..user.model import User
 
@@ -74,6 +75,12 @@ class Team(Base, AutoUUIDMixin):
 
     backlog_items: Mapped[list[BacklogItem]] = relationship(
         "BacklogItem",
+        back_populates="team",
+        passive_deletes=True,
+    )
+
+    board_cards: Mapped[list[BoardCard]] = relationship(
+        "BoardCard",
         back_populates="team",
         passive_deletes=True,
     )

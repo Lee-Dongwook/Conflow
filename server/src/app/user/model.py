@@ -19,7 +19,11 @@ from ..core.database import Base
 
 if TYPE_CHECKING:
     from ..backlog.model import BacklogItem
+    from ..board.model import BoardCard
+    from ..inbox.model import InboxEntry
+    from ..retro.model import RetroItem
     from ..team.model import TeamMembership
+    from ..week.model import WeekMilestone
 
 
 class UserRole(enum.Enum):
@@ -78,6 +82,42 @@ class User(Base, AutoUUIDMixin):
         "BacklogItem",
         back_populates="assignee",
         foreign_keys="BacklogItem.assignee_user_uuid",
+    )
+
+    assigned_board_cards: Mapped[list[BoardCard]] = relationship(
+        "BoardCard",
+        back_populates="assignee",
+        foreign_keys="BoardCard.assignee_user_uuid",
+    )
+
+    reported_board_cards: Mapped[list[BoardCard]] = relationship(
+        "BoardCard",
+        back_populates="reporter",
+        foreign_keys="BoardCard.reporter_user_uuid",
+    )
+
+    received_inbox_entries: Mapped[list[InboxEntry]] = relationship(
+        "InboxEntry",
+        back_populates="recipient",
+        foreign_keys="InboxEntry.recipient_user_uuid",
+    )
+
+    sent_inbox_entries: Mapped[list[InboxEntry]] = relationship(
+        "InboxEntry",
+        back_populates="sender",
+        foreign_keys="InboxEntry.sender_user_uuid",
+    )
+
+    authored_retro_items: Mapped[list[RetroItem]] = relationship(
+        "RetroItem",
+        back_populates="author",
+        foreign_keys="RetroItem.author_user_uuid",
+    )
+
+    owned_week_milestones: Mapped[list[WeekMilestone]] = relationship(
+        "WeekMilestone",
+        back_populates="owner",
+        foreign_keys="WeekMilestone.owner_user_uuid",
     )
 
     __table_args__ = (UniqueConstraint("auth_id", name="uq_user_auth_id"),)

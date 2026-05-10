@@ -30,10 +30,14 @@ _load_dotenv_for_migrations()
 # Imports after env: database URI depends on DB_* from dotenv.
 # Import every ORM class so tables register on Base.metadata before autogenerate runs.
 from src.app.backlog.model import BacklogItem  # noqa: E402, F401
+from src.app.board.model import BoardCard  # noqa: E402, F401
 from src.app.core.database import Base  # noqa: E402
+from src.app.inbox.model import InboxEntry  # noqa: E402, F401
+from src.app.retro.model import RetroBoard, RetroColumn, RetroItem  # noqa: E402, F401
 from src.app.sprint.model import Sprint, SprintMetricSnapshot  # noqa: E402, F401
 from src.app.team.model import Team, TeamMembership  # noqa: E402, F401
 from src.app.user.model import User, UserProfile  # noqa: E402, F401
+from src.app.week.model import WeekMilestone  # noqa: E402, F401
 
 # Optional: CommonResource (common_resources), Agent (agent) — add when you want them migrated.
 # from src.app.common.models import CommonResource  # noqa: E402, F401

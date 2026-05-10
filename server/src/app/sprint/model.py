@@ -12,7 +12,10 @@ from ..core.database import Base
 
 if TYPE_CHECKING:
     from ..backlog.model import BacklogItem
+    from ..board.model import BoardCard
+    from ..retro.model import RetroBoard
     from ..team.model import Team
+    from ..week.model import WeekMilestone
 
 
 class Sprint(Base, AutoUUIDMixin):
@@ -70,6 +73,24 @@ class Sprint(Base, AutoUUIDMixin):
 
     backlog_items: Mapped[list[BacklogItem]] = relationship(
         "BacklogItem",
+        back_populates="sprint",
+        passive_deletes=True,
+    )
+
+    board_cards: Mapped[list[BoardCard]] = relationship(
+        "BoardCard",
+        back_populates="sprint",
+        passive_deletes=True,
+    )
+
+    retro_boards: Mapped[list[RetroBoard]] = relationship(
+        "RetroBoard",
+        back_populates="sprint",
+        passive_deletes=True,
+    )
+
+    week_milestones: Mapped[list[WeekMilestone]] = relationship(
+        "WeekMilestone",
         back_populates="sprint",
         passive_deletes=True,
     )
