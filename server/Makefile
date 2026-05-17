@@ -38,16 +38,14 @@ test:
 
 langgraph-dev:
 	@echo "Starting LangGraph dev server (http://127.0.0.1:2024)..."
-	@if [ -f .env ]; then \
-		set -a && . ./.env && set +a; \
-	fi
+	@if [ -f .env ]; then set -a && . ./.env && set +a; fi
+	@if [ -f .env.local ]; then set -a && . ./.env.local && set +a; fi
 	uv run langgraph dev
 
 agent-smoke:
 	@echo "Running meeting_summary graph (mock mode)..."
-	@if [ -f .env ]; then \
-		set -a && . ./.env && set +a; \
-	fi
+	@if [ -f .env ]; then set -a && . ./.env && set +a; fi
+	@if [ -f .env.local ]; then set -a && . ./.env.local && set +a; fi
 	uv run python scripts/smoke_meeting_summary.py
 
 # --- Database migrations (Alembic) ---

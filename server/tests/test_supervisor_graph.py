@@ -91,6 +91,41 @@ def test_natural_language_meeting_minutes_korean() -> None:
     assert len(result.get("bullets") or []) > 0
 
 
+def _collect_stream_node_names(chunks: object) -> set[str]:
+    """Flatten parent + subgraph node names from stream chunks."""
+    names: set[str] = set()
+    for chunk in chunks:
+        payload = chunk[1] if isinstance(chunk, tuple) else chunk
+        if not isinstance(payload, dict):
+            continue
+        for key, value in payload.items():
+            names.add(key)
+            if isinstance(value, dict):
+                names.update(value.keys())
+    return names
+
+
+def test_supervisor_stream_exposes_meeting_summary_subgraph_nodes() -> None:
+    """Subgraph node emits validate_input / summarize when stream(subgraphs=True)."""
+    chunks = list(
+        supervisor_agent_graph.stream(
+            {
+                "current_task": "회의록 만들어줘",
+                "transcript": SAMPLE_TRANSCRIPT,
+                "chat_history": [{"type": "human", "content": "이 전사로 회의록 만들어줘"}],
+            },
+            subgraphs=True,
+        ),
+    )
+    node_names = _collect_stream_node_names(chunks)
+
+    assert "prepare_meeting_summary" in node_names
+    assert "meeting_summary" in node_names
+    assert "finalize_meeting_summary" in node_names
+    assert "validate_input" in node_names
+    assert "summarize" in node_names
+
+
 def test_supervisor_infers_task_from_chat_only() -> None:
     """Studio-style input without current_task still works."""
     result = supervisor_agent_graph.invoke(

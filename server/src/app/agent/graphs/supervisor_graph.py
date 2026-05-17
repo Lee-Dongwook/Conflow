@@ -1,8 +1,8 @@
 """
 Supervisor Agent Graph — orchestrates worker agents (meeting_summary, blocker_triage, …).
 
-LangGraph API (`langgraph dev`): no custom checkpointer; nodes return state patches.
-`meeting_summary` worker invokes the real child graph (mock/llm via CONFLOW_AGENT_MODE).
+`meeting_summary` is attached as a **compiled subgraph node** so LangGraph Studio shows
+validate_input → summarize inside the parent run. Other workers remain placeholders.
 """
 
 from __future__ import annotations
@@ -11,13 +11,12 @@ from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langgraph.graph import END, StateGraph
-from typing_extensions import TypedDict
-
+from src.app.agent.graphs.meeting_summary import graph as meeting_summary_graph
 from src.app.agent.graphs.workers import (
     default_transcript_when_missing,
     format_meeting_summary_for_supervisor,
-    invoke_meeting_summary,
 )
+from typing_extensions import TypedDict
 
 RouteKey = Literal[
     "meeting_summary",
@@ -30,7 +29,7 @@ RouteKey = Literal[
 
 
 class AgentState(TypedDict, total=False):
-    """Supervisor graph state (Studio / API input)."""
+    """Supervisor state; includes keys shared with meeting_summary subgraph."""
 
     current_task: str
     agent_output: str
@@ -44,6 +43,8 @@ class AgentState(TypedDict, total=False):
     decisions: list[str]
     actions: list[dict[str, str]]
     next_steps: list[str]
+    agent_mode: Literal["mock", "llm"]
+    error: str | None
 
 
 def _message_content(message: BaseMessage | dict[str, Any]) -> str:
@@ -83,7 +84,6 @@ def _meeting_title_from_state(state: AgentState, current_task: str) -> str:
     return title or current_task[:256] or "회의"
 
 
-# Natural-language hints → route to meeting_summary (no LLM; keyword router).
 _MEETING_SUMMARY_HINTS: tuple[str, ...] = (
     "meeting",
     "summary",
@@ -164,7 +164,18 @@ def supervisor_decide(state: AgentState) -> dict[str, Any]:
         "chat_history": chat_history,
         "next_agent": next_agent,
     }
-    for key in ("overview", "bullets", "decisions", "actions", "next_steps"):
+    for key in (
+        "overview",
+        "bullets",
+        "decisions",
+        "actions",
+        "next_steps",
+        "meeting_title",
+        "transcript",
+        "team_context",
+        "agent_mode",
+        "error",
+    ):
         if key in state:
             patch[key] = state[key]
     return patch
@@ -175,44 +186,52 @@ def route_after_decide(state: AgentState) -> RouteKey:
     return state.get("next_agent") or "FINISH"
 
 
-def _invoke_meeting_summary_worker(
-    state: AgentState,
-    current_task: str,
-) -> dict[str, Any]:
-    """Call meeting_summary graph and map result into supervisor state."""
+def prepare_meeting_summary_input(state: AgentState) -> dict[str, Any]:
+    """Map supervisor state → meeting_summary subgraph input (shared keys)."""
+    current_task = state.get("current_task") or _task_from_chat(
+        state.get("chat_history") or [],
+    )
     meeting_title = _meeting_title_from_state(state, current_task)
     transcript = _transcript_from_state(state)
-    team_context = state.get("team_context")
 
     print(
-        f"--- Supervisor: invoking meeting_summary "
+        f"--- Supervisor: prepare subgraph meeting_summary "
         f"title={meeting_title!r} transcript_len={len(transcript)} ---",
     )
 
-    result = invoke_meeting_summary(
-        meeting_title=meeting_title,
-        transcript=transcript,
-        team_context=team_context,
-    )
-    agent_output = format_meeting_summary_for_supervisor(result)
-    prior = list(state.get("chat_history") or [])
-    new_history = [*prior, AIMessage(content=agent_output)]
-
     patch: dict[str, Any] = {
         "current_task": current_task,
-        "agent_output": agent_output,
-        "chat_history": new_history,
         "meeting_title": meeting_title,
         "transcript": transcript,
+        "error": None,
     }
+    team_context = state.get("team_context")
     if team_context:
         patch["team_context"] = team_context
-
-    for key in ("overview", "bullets", "decisions", "actions", "next_steps", "error"):
-        if key in result and result[key] is not None:
-            patch[key] = result[key]
-
     return patch
+
+
+def finalize_meeting_summary(state: AgentState) -> dict[str, Any]:
+    """Format subgraph output for supervisor (agent_output + chat)."""
+    summary_payload: dict[str, Any] = {
+        "overview": state.get("overview"),
+        "bullets": state.get("bullets"),
+        "decisions": state.get("decisions"),
+        "actions": state.get("actions"),
+        "next_steps": state.get("next_steps"),
+        "error": state.get("error"),
+    }
+    agent_output = format_meeting_summary_for_supervisor(summary_payload)
+    prior = list(state.get("chat_history") or [])
+    current_task = state.get("current_task") or ""
+
+    print("--- Supervisor: finalize meeting_summary → agent_output ---")
+
+    return {
+        "current_task": current_task,
+        "agent_output": agent_output,
+        "chat_history": [*prior, AIMessage(content=agent_output)],
+    }
 
 
 def _invoke_placeholder_worker(next_agent: RouteKey, current_task: str) -> str:
@@ -224,19 +243,17 @@ def _invoke_placeholder_worker(next_agent: RouteKey, current_task: str) -> str:
     return f"Mock output from {next_agent} for '{current_task}'. ({completion_tag})"
 
 
-def call_worker_agent_node(state: AgentState) -> dict[str, Any]:
-    """Invoke the selected worker graph or placeholder."""
-    next_agent = state.get("next_agent") or "meeting_summary"
+def call_placeholder_worker(state: AgentState) -> dict[str, Any]:
+    """Placeholder for blocker_triage / retro_insights (not subgraphs yet)."""
+    next_agent = state.get("next_agent") or "blocker_triage"
     current_task = state.get("current_task") or _task_from_chat(
         state.get("chat_history") or [],
     )
 
-    if next_agent == "meeting_summary":
-        return _invoke_meeting_summary_worker(state, current_task)
-
     print(f"--- Supervisor: placeholder worker={next_agent} ---")
     worker_text = _invoke_placeholder_worker(next_agent, current_task)
     prior = list(state.get("chat_history") or [])
+
     return {
         "current_task": current_task,
         "agent_output": worker_text,
@@ -246,21 +263,28 @@ def call_worker_agent_node(state: AgentState) -> dict[str, Any]:
 
 workflow = StateGraph(AgentState)
 workflow.add_node("decide_next_step", supervisor_decide)
-workflow.add_node("call_worker_agent", call_worker_agent_node)
+workflow.add_node("prepare_meeting_summary", prepare_meeting_summary_input)
+workflow.add_node("meeting_summary", meeting_summary_graph)
+workflow.add_node("finalize_meeting_summary", finalize_meeting_summary)
+workflow.add_node("call_placeholder_worker", call_placeholder_worker)
+
 workflow.set_entry_point("decide_next_step")
 workflow.add_conditional_edges(
     "decide_next_step",
     route_after_decide,
     {
-        "meeting_summary": "call_worker_agent",
-        "blocker_triage": "call_worker_agent",
-        "retro_insights": "call_worker_agent",
-        "DELEGATE": "call_worker_agent",
+        "meeting_summary": "prepare_meeting_summary",
+        "blocker_triage": "call_placeholder_worker",
+        "retro_insights": "call_placeholder_worker",
+        "DELEGATE": "call_placeholder_worker",
         "FINISH": END,
         "REVISE": "decide_next_step",
     },
 )
-workflow.add_edge("call_worker_agent", "decide_next_step")
+workflow.add_edge("prepare_meeting_summary", "meeting_summary")
+workflow.add_edge("meeting_summary", "finalize_meeting_summary")
+workflow.add_edge("finalize_meeting_summary", "decide_next_step")
+workflow.add_edge("call_placeholder_worker", "decide_next_step")
 
 supervisor_agent_graph = workflow.compile()
 

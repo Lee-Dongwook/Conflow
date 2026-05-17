@@ -27,6 +27,17 @@ Phase 2 MVP 에이전트 범위: **허들(음성) 종료 → 전사 텍스트 �
 START → validate_input → summarize → END
 ```
 
+## `supervisor_graph` + subgraph (Studio 시연)
+
+회의록 라우팅 시 **compiled `meeting_summary`를 subgraph 노드**로 붙여 Studio에서 안쪽 단계가 보입니다.
+
+```
+decide_next_step → prepare_meeting_summary → [meeting_summary subgraph] → finalize_meeting_summary → decide_next_step → END
+                                      └ validate_input → summarize ─┘
+```
+
+Studio 타임라인에서 subgraph 안쪽이 보이려면 `langgraph dev` 재시작 후 **새 thread**로 `supervisor_graph` 실행.
+
 - **validate_input**: 전사 본문 필수, 길이 상한(토큰 보호).
 - **summarize**:
   - `CONFLOW_AGENT_MODE=mock` (기본): API 키 없이 로컬 스모크·Studio 테스트.
