@@ -8,6 +8,8 @@ RUN pip install --no-cache-dir uv
 # Build context must be the monorepo root (e.g. docker compose / docker build -f server/Dockerfile .)
 COPY packages/rag /packages/rag
 COPY server/pyproject.toml server/uv.lock ./
+COPY server/alembic.ini ./
+COPY server/alembic ./alembic/
 COPY server/main.py ./
 COPY server/src ./src/
 

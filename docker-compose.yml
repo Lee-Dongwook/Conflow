@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   db:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     restart: always
     environment:
       POSTGRES_DB: conflow_db
@@ -26,7 +24,14 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://conflow_user:conflow_password@db:5432/conflow_db
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: conflow_db
+      DB_USER: conflow_user
+      DB_PASSWORD: conflow_password
+      # Optional for auth routes; set real values for Supabase integration.
+      SUPABASE_URL: ""
+      SUPABASE_KEY: ""
     depends_on:
       db:
         condition: service_healthy
@@ -39,8 +44,8 @@ services:
     ports:
       - "8001:8001"
     environment:
-      DATABASE_URL: postgresql://conflow_user:conflow_password@db:5432/conflow_db
-      OPENAI_API_KEY: "YOUR_OPENAI_API_KEY" # IMPORTANT: Replace with your actual OpenAI API Key
+      RAG_DATABASE_URL: postgresql+psycopg://conflow_user:conflow_password@db:5432/conflow_db
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     depends_on:
       db:
         condition: service_healthy
@@ -49,11 +54,11 @@ services:
     build:
       context: .
       dockerfile: docker/web.Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
     restart: always
     ports:
       - "3000:80"
-    environment:
-      VITE_API_URL: http://backend:8000
     depends_on:
       backend:
         condition: service_started
