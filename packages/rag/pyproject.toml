@@ -1,0 +1,16 @@
+[project]
+name = "vector-rag"
+version = "0.1.0"
+description = "Vector RAG"
+requires-python = ">=3.13"
+dependencies = [
+    "langchain-openai>=0.3.0",
+    "langchain-text-splitters>=0.3.0",
+    "logging>=0.4.9.6",
+    "numpy>=1.26.0",
+    "pgvector>=0.3.6",
+    "psycopg[binary]>=3.2.0",
+    "pydantic>=2.11.2",
+    "pydantic-settings>=2.0.0",
+    "sqlalchemy>=2.0.0",
+]
