@@ -29,6 +29,23 @@ test:
 	@echo "Running tests..."
 	uv run pytest tests/ -v
 
+# --- LangGraph (see docs/agent-purpose.md) ---
+.PHONY: langgraph-dev agent-smoke
+
+langgraph-dev:
+	@echo "Starting LangGraph dev server (http://127.0.0.1:2024)..."
+	@if [ -f .env ]; then \
+		set -a && . ./.env && set +a; \
+	fi
+	uv run langgraph dev
+
+agent-smoke:
+	@echo "Running meeting_summary graph (mock mode)..."
+	@if [ -f .env ]; then \
+		set -a && . ./.env && set +a; \
+	fi
+	uv run python scripts/smoke_meeting_summary.py
+
 # --- Database migrations (Alembic) ---
 # Examples:
 #   make db-upgrade

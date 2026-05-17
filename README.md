@@ -35,7 +35,7 @@
 ## 5. Roadmap (MVP Focus)
 
 - [x] **Phase 1 (MVP):** 대시보드, 이번 주 할 일, Blocker 추적 (목 데이터 기반)
-- [ ] **Phase 2:** AI 기반 회의록 요약 및 자동 할 일 할당 (A2UI 실제 적용)
+- [ ] **Phase 2:** AI 기반 회의록 요약 및 자동 할 일 할당 (A2UI 실제 적용) — LangGraph `meeting_summary` 로컬 구성 중 ([에이전트 목적](docs/agent-purpose.md))
 - [ ] **Phase 3:** Slack/Discord 연동 어댑터 구현
 
 ## 6. WireFrame Example

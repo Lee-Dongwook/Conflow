@@ -27,11 +27,17 @@ dependencies = [
 ]
 
 [dependency-groups]
+agent = [
+    "langgraph>=0.4.0",
+    "langchain-core>=0.3.0",
+    "langchain-openai>=0.3.0",
+]
 dev = [
     "httpx>=0.28.0",
     "pytest>=8.0.0",
     "ruff>=0.8.0",
     "respx>=0.22.0",
+    "langgraph-cli[inmem]>=0.3.0",
 ]
 
 [tool.uv.sources]
