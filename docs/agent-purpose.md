@@ -17,6 +17,7 @@ Phase 2 MVP 에이전트 범위: **허들(음성) 종료 → 전사 텍스트 �
 | Graph ID | 상태 | 입력 | 출력 (A2UI / API) |
 |----------|------|------|-------------------|
 | `meeting_summary` | **로컬 구현 (v0)** | `meeting_title`, `transcript`, `team_context?` | `overview`, `bullets`, `decisions`, `actions[]`, `next_steps[]` |
+| `supervisor_graph` | **v0 — meeting_summary 연동** | `current_task`, `chat_history`, `transcript?` | 위 필드 + `agent_output` (supervisor가 child `invoke`) |
 | `blocker_triage` | 예정 | 스프린트 컨텍스트, 보드 카드, 인박스 | Blocker 후보 + 근거 |
 | `retro_insights` | 예정 | 회고 카드 텍스트 | KPT 클러스터·투표 요약 |
 
@@ -55,7 +56,40 @@ uv run python scripts/smoke_meeting_summary.py
 
 Studio: 터미널에 출력되는 `https://smith.langchain.com/studio/?baseUrl=...` 링크.
 
-**샘플 입력** (`scripts/smoke_meeting_summary.py` 또는 Studio):
+**supervisor_graph — 자연어 지시만 (회의록/미팅 minutes)**
+
+`current_task` 없이 `chat_history` 한 줄만 넣어도 됩니다. 키워드로 `meeting_summary` worker를 고릅니다.
+
+```json
+{
+  "chat_history": [
+    { "type": "human", "content": "지난 허들 회의록 정리해줘" }
+  ]
+}
+```
+
+```json
+{
+  "chat_history": [
+    { "type": "human", "content": "Please prepare meeting minutes from the last standup." }
+  ]
+}
+```
+
+전사가 짧으면 dev용 `SAMPLE_TRANSCRIPT`로 요약합니다. 실제 회의 내용을 쓰려면 `transcript`를 함께 넣으세요.
+
+**supervisor_graph — transcript 포함 (권장)**
+
+```json
+{
+  "current_task": "Generate a meeting summary for the last standup.",
+  "transcript": "오늘은 이번 주 범위를 쪼개고 ...",
+  "meeting_title": "FE 스터디 — 스프린트 계획",
+  "chat_history": [{ "type": "human", "content": "Please summarize the standup meeting." }]
+}
+```
+
+**meeting_summary 단독** (`scripts/smoke_meeting_summary.py` 또는 Studio):
 
 ```json
 {
