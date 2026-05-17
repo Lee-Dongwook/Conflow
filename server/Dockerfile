@@ -5,9 +5,11 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir uv
 
-COPY pyproject.toml uv.lock ./
-COPY main.py ./
-COPY src ./src/
+# Build context must be the monorepo root (e.g. docker compose / docker build -f server/Dockerfile .)
+COPY packages/rag /packages/rag
+COPY server/pyproject.toml server/uv.lock ./
+COPY server/main.py ./
+COPY server/src ./src/
 
 RUN uv sync --frozen --no-dev
 
