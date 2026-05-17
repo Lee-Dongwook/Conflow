@@ -1,167 +1,152 @@
 """
-Supervisor Agent Graph Definition.
+Supervisor Agent Graph — orchestrates worker agents (meeting_summary, blocker_triage, …).
 
-This module defines the LangGraph for the Supervisor Agent, which orchestrates
-various worker agents to achieve complex tasks. It includes the graph state,
-nodes for calling worker agents and making decisions, and the graph's
-conditional edges.
+LangGraph API (`langgraph dev`): no custom checkpointer; nodes must return state patches,
+not routing strings. Routing uses a separate function reading `next_agent` from state.
 """
 
-from typing import Literal
+from __future__ import annotations
+
+from typing import Any, Literal
 
 from langchain_core.messages import BaseMessage, HumanMessage
 from langgraph.graph import END, StateGraph
 from typing_extensions import TypedDict
 
+RouteKey = Literal[
+    "meeting_summary",
+    "blocker_triage",
+    "retro_insights",
+    "FINISH",
+    "REVISE",
+    "DELEGATE",
+]
 
-class AgentState(TypedDict):
-    """
-    Represents the state of the agent's current task and conversation history.
 
-    Attributes:
-        current_task (str): The description of the current task the supervisor is managing.
-        agent_output (str): The output received from the last executed worker agent.
-        chat_history (List[BaseMessage]): A history of the conversation or interactions.
-        next_agent (Literal["meeting_summary", "blocker_triage", "retro_insights", "FINISH", "REVISE"]):
-            The name of the next agent to call, or a special action.
-    """  # noqa: E501
+class AgentState(TypedDict, total=False):
+    """Supervisor graph state (Studio / API input)."""
+
     current_task: str
     agent_output: str
     chat_history: list[BaseMessage]
-    next_agent: Literal["meeting_summary", "blocker_triage", "retro_insights", "FINISH", "REVISE", "DELEGATE"]  # noqa: E501
+    next_agent: RouteKey
 
-# --- Nodes Definition ---
 
-def call_worker_agent_node(state: AgentState) -> AgentState:
-    """
-    A placeholder node that simulates calling a specific worker agent
-    based on the 'next_agent' in the state.
-    """
-    next_agent_to_call = state['next_agent']
-    current_task = state['current_task']
+def _message_content(message: BaseMessage | dict[str, Any]) -> str:
+    """Extract text from a message object or Studio JSON dict."""
+    if isinstance(message, dict):
+        return str(message.get("content", ""))
+    return str(getattr(message, "content", ""))
 
-    print(f"--- Supervisor: Calling Worker Agent: {next_agent_to_call} for task: {current_task} ---")
 
-    # TODO: Replace with actual calls to worker agents based on next_agent_to_call
-    # For now, it's a mock output
-    mock_output = f"Mock output from {next_agent_to_call} for '{current_task}'."
-    new_history = state.get("chat_history", []) + [HumanMessage(content=mock_output)]
+def _task_from_chat(chat_history: list[BaseMessage | dict[str, Any]]) -> str:
+    """Infer task text when Studio omits `current_task`."""
+    if not chat_history:
+        return "Process the team collaboration request."
+    return _message_content(chat_history[-1]) or "Process the team collaboration request."
 
-    return {
-        "agent_output": mock_output,
-        "chat_history": new_history,
-        "next_agent": "REVISE" # After a worker, always go to decision node for next step
-    }
 
-def decide_next_step_node(state: AgentState) -> Literal["meeting_summary", "blocker_triage", "retro_insights", "FINISH", "REVISE", "DELEGATE"]:
-    """
-    Decides the next step based on the current task, agent output, and history.
-    This node acts as the brain of the supervisor, determining if more work is needed,
-    if a different agent should be called, or if the overall task is complete.
-    """
-    current_task = state['current_task']
-    agent_output = state['agent_output']
-    chat_history = state['chat_history']
+def _pick_route(current_task: str, agent_output: str) -> RouteKey:
+    """Rule-based routing (mock supervisor brain)."""
+    task_lower = current_task.lower()
+    output_lower = agent_output.lower()
 
-    print(f"--- Supervisor: Deciding next step for task: '{current_task}' with output: '{agent_output}' ---")
-
-    # TODO: Implement complex decision logic here.
-    # This might involve:
-    # 1. Parsing agent_output for keywords (e.g., "summary complete", "blocker found").
-    # 2. Using an LLM call to decide based on current_task and chat_history.
-    # 3. Checking predefined rules or a state machine.
-
-    # For the initial draft, let's have a simple decision flow:
-    if "Meeting summary" in current_task and "summary complete" not in agent_output:
-        print("Decision: Need Meeting Summary Agent.")
-        return "meeting_summary"
-    elif "blocker" in current_task.lower() and "blocker found" not in agent_output:
-        print("Decision: Need Blocker Triage Agent.")
-        return "blocker_triage"
-    elif "retro" in current_task.lower() and "insights generated" not in agent_output:
-        print("Decision: Need Retro Insights Agent.")
-        return "retro_insights"
-    elif "mock output" in agent_output:
-        # If we just got a mock output, let's simulate a revision or finish
-        if "summary complete" in agent_output or "blocker found" in agent_output or "insights generated" in agent_output:
-            print("Decision: Task seems complete (mock). Finishing.")
-            return "FINISH"
-        else:
-            print("Decision: Output received, but task not complete. Delegating (mock).")
-            return "DELEGATE" # Or REVISE, depending on next steps
-    else:
-        print("Decision: Unknown state or task complete. Finishing.")
+    if "mock output" in output_lower:
         return "FINISH"
 
-# --- Graph Definition ---
+    if "meeting" in task_lower or "summary" in task_lower or "standup" in task_lower:
+        if "summary complete" not in output_lower:
+            return "meeting_summary"
 
-# Initialize the StateGraph
+    if "blocker" in task_lower and "blocker found" not in output_lower:
+        return "blocker_triage"
+
+    if "retro" in task_lower and "insights generated" not in output_lower:
+        return "retro_insights"
+
+    return "FINISH"
+
+
+def supervisor_decide(state: AgentState) -> dict[str, Any]:
+    """Update state with routing decision (`next_agent`)."""
+    current_task = (state.get("current_task") or "").strip() or _task_from_chat(
+        state.get("chat_history") or [],
+    )
+    agent_output = state.get("agent_output") or ""
+    chat_history = list(state.get("chat_history") or [])
+    next_agent = _pick_route(current_task, agent_output)
+
+    print(
+        f"--- Supervisor: task={current_task!r} output={agent_output!r} -> {next_agent} ---",
+    )
+
+    return {
+        "current_task": current_task,
+        "agent_output": agent_output,
+        "chat_history": chat_history,
+        "next_agent": next_agent,
+    }
+
+
+def route_after_decide(state: AgentState) -> RouteKey:
+    """Conditional edge: read `next_agent` set by supervisor_decide."""
+    return state.get("next_agent") or "FINISH"
+
+
+def call_worker_agent_node(state: AgentState) -> dict[str, Any]:
+    """Invoke a worker agent (mock) and append to chat history."""
+    next_agent = state.get("next_agent") or "meeting_summary"
+    current_task = state.get("current_task") or _task_from_chat(
+        state.get("chat_history") or [],
+    )
+
+    print(f"--- Supervisor: worker={next_agent} task={current_task!r} ---")
+
+    completion_tag = {
+        "meeting_summary": "summary complete",
+        "blocker_triage": "blocker found",
+        "retro_insights": "insights generated",
+    }.get(next_agent, "step complete")
+    mock_output = (
+        f"Mock output from {next_agent} for '{current_task}'. ({completion_tag})"
+    )
+    prior = list(state.get("chat_history") or [])
+    new_history = [*prior, HumanMessage(content=mock_output)]
+
+    return {
+        "current_task": current_task,
+        "agent_output": mock_output,
+        "chat_history": new_history,
+    }
+
+
 workflow = StateGraph(AgentState)
-
-# Add nodes
+workflow.add_node("decide_next_step", supervisor_decide)
 workflow.add_node("call_worker_agent", call_worker_agent_node)
-workflow.add_node("decide_next_step", decide_next_step_node)
-
-# Set entry point
 workflow.set_entry_point("decide_next_step")
-
-# Define edges
-# The supervisor always decides first.
-# If the decision is to call a worker, it transitions to 'call_worker_agent'.
 workflow.add_conditional_edges(
     "decide_next_step",
-    decide_next_step_node,
+    route_after_decide,
     {
         "meeting_summary": "call_worker_agent",
         "blocker_triage": "call_worker_agent",
         "retro_insights": "call_worker_agent",
-        "DELEGATE": "call_worker_agent", # Delegate to a generic worker or another round of decision
+        "DELEGATE": "call_worker_agent",
         "FINISH": END,
-        "REVISE": "decide_next_step", # Loop back to decide if revision is needed
+        "REVISE": "decide_next_step",
     },
 )
-
-# After a worker agent is called, it always returns to the decision node.
 workflow.add_edge("call_worker_agent", "decide_next_step")
 
-
-# LangGraph API (`langgraph dev`) manages persistence — do not pass a custom checkpointer.
 supervisor_agent_graph = workflow.compile()
 
-if __name__ == "__main__":
-    print("--- Running Supervisor Agent Graph Example ---")
 
-    # Example 1: Meeting Summary Task
-    print("\n[Example 1: Meeting Summary Task]")
-    initial_state_1 = {
+if __name__ == "__main__":
+    initial: AgentState = {
         "current_task": "Generate a meeting summary for the last standup.",
         "agent_output": "",
-        "chat_history": [HumanMessage(content="Please summarize the standup meeting.")]
+        "chat_history": [HumanMessage(content="Please summarize the standup meeting.")],
     }
-    for s in supervisor_agent_graph.stream(initial_state_1):
-        print(s)
+    for chunk in supervisor_agent_graph.stream(initial):
+        print(chunk)
         print("---")
-
-    # Example 2: Blocker Triage Task (simulating a specific output)
-    print("\n[Example 2: Blocker Triage Task]")
-    initial_state_2 = {
-        "current_task": "Identify any blockers from the team's progress.",
-        "agent_output": "",
-        "chat_history": [HumanMessage(content="Are there any blockers?")]
-    }
-    for s in supervisor_agent_graph.stream(initial_state_2):
-        print(s)
-        print("---")
-    
-    # Example 3: Task completion
-    print("\n[Example 3: Task Completion]")
-    initial_state_3 = {
-        "current_task": "Review and finalize the quarterly report.",
-        "agent_output": "The quarterly report is finalized and ready for submission.",
-        "chat_history": [HumanMessage(content="Finalize quarterly report.")]
-    }
-    for s in supervisor_agent_graph.stream(initial_state_3):
-        print(s)
-        print("---")
-    
-    print("\n--- Supervisor Agent Graph Example Finished ---")
