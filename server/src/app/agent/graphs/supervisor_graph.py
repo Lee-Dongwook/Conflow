@@ -10,7 +10,6 @@ conditional edges.
 from typing import Literal
 
 from langchain_core.messages import BaseMessage, HumanMessage
-from langgraph.checkpoint import MemorySaver
 from langgraph.graph import END, StateGraph
 from typing_extensions import TypedDict
 
@@ -126,9 +125,8 @@ workflow.add_conditional_edges(
 workflow.add_edge("call_worker_agent", "decide_next_step")
 
 
-# Compile the graph
-memory = MemorySaver()
-supervisor_agent_graph = workflow.compile(checkpointer=memory)
+# LangGraph API (`langgraph dev`) manages persistence — do not pass a custom checkpointer.
+supervisor_agent_graph = workflow.compile()
 
 if __name__ == "__main__":
     print("--- Running Supervisor Agent Graph Example ---")

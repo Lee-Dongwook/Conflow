@@ -3,6 +3,10 @@ install:
 	@echo "Installing dependencies..."
 	uv sync
 
+sync-agent:
+	@echo "Syncing agent dependencies..."
+	uv sync --group agent --group dev
+
 dev: 
 	@echo "Starting development server..."
 	@if [ -f .env ]; then \
