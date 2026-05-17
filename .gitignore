@@ -11,6 +11,7 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+**/__pycache__/
 
 # TanStack Router regenerates this on every dev/build; its contents depend
 # on `routeFileIgnorePattern` (different in dev vs prod), so tracking it

@@ -24,6 +24,7 @@ dependencies = [
     "humps>=0.2.2",
     "structlog>=25.5.0",
     "alembic>=1.18.4",
+    "vector-rag",
 ]
 
 [dependency-groups]
@@ -41,6 +42,7 @@ dev = [
 ]
 
 [tool.uv.sources]
+vector-rag = { path = "../packages/rag", editable = true }
 torch = [
     { index = "pytorch-cpu", extra = "cpu" },
     { index = "default", extra = "gpu" }, 
