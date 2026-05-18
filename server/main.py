@@ -13,6 +13,7 @@ from src.app.core.exceptions import global_exception_handler
 from src.app.core.middlewares import setup_middleware
 from src.app.home.api import router as home_router
 from src.app.user.api import router as user_router
+from src.app.websockets.api import router as signaling_router
 
 env_type = os.environ.get("ENV", "development")
 shared_init.load_dotenv(env_type)
@@ -36,6 +37,7 @@ setup_middleware(app)
 
 app.include_router(home_router)
 app.include_router(user_router, prefix="/api")
+app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
 
