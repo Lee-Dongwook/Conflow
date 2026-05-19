@@ -1,5 +1,5 @@
-from typing import Annotated
-from pydantic import BaseModel, Field
+from typing import Annotated, Literal
+from pydantic import BaseModel, Field, field_validator
 
 class FileInfo(BaseModel):
     uuid: str
@@ -59,3 +59,29 @@ class FileSubgraphState(BaseModel):
     file_info_list: list[FileInfo] | None
     file_process_results: Annotated[list[FileSubgraphOutputState] | None, file_results_reducer] = None
     structured_response: dict | None = None
+
+class FileContentAnalysisState(BaseModel):
+    file_path: str = Field(..., description="The path to the file to analyze")
+    user_uuid: str | None = None
+    user_question: str = Field(..., description="The question to ask the file")
+    file_task: Literal["extract", "extract_and_process"] = Field(
+        ...,
+        description="The task to perform on the file"
+    )
+    start_page: int | None = Field(None, description="The start page of the file to analyze")
+    end_page: int | None = Field(None, description="The end page of the file to analyze")
+
+    extracted_content: str | None = None
+    processed_content: str | None = None
+
+    @field_validator("file_task", mode="before")
+    @classmethod
+    def validate_file(cls, v: str) -> str:
+        if isinstance(v, str):
+            lower_v = v.lower()
+            if "analyze" in lower_v or "process" in lower_v:
+                return "extract_and_process"
+            elif "extract" in lower_v or "save" in lower_v:
+                return "extract"
+            
+        return v if v in ["extract", "extract_and_process"] else "extract"
