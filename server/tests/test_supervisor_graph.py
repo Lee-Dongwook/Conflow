@@ -105,8 +105,27 @@ def _collect_stream_node_names(chunks: object) -> set[str]:
     return names
 
 
+def test_supervisor_stream_exposes_user_query_subgraph_nodes() -> None:
+    """user_query subgraph emits analyze_user_query when stream(subgraphs=True)."""
+    chunks = list(
+        supervisor_agent_graph.stream(
+            {
+                "current_task": "회의록 만들어줘",
+                "transcript": SAMPLE_TRANSCRIPT,
+                "chat_history": [{"type": "human", "content": "이 전사로 회의록 만들어줘"}],
+            },
+            subgraphs=True,
+        ),
+    )
+    node_names = _collect_stream_node_names(chunks)
+
+    assert "prepare_user_query" in node_names
+    assert "user_query" in node_names
+    assert "analyze_user_query" in node_names
+
+
 def test_supervisor_stream_exposes_meeting_summary_subgraph_nodes() -> None:
-    """Subgraph node emits validate_input / summarize when stream(subgraphs=True)."""
+    """meeting_summary subgraph emits validate_input / summarize."""
     chunks = list(
         supervisor_agent_graph.stream(
             {
@@ -124,6 +143,21 @@ def test_supervisor_stream_exposes_meeting_summary_subgraph_nodes() -> None:
     assert "finalize_meeting_summary" in node_names
     assert "validate_input" in node_names
     assert "summarize" in node_names
+
+
+def test_supervisor_routing_metadata_from_user_query() -> None:
+    """user_query subgraph populates intent_text and route_reason on supervisor state."""
+    result = supervisor_agent_graph.invoke(
+        {
+            "chat_history": [
+                {"type": "human", "content": "지난 허들 회의록 정리해줘"},
+            ],
+        },
+    )
+
+    assert result.get("intent_text")
+    assert result.get("route_reason")
+    assert result.get("next_agent") == "FINISH"
 
 
 def test_supervisor_infers_task_from_chat_only() -> None:

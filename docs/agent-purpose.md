@@ -29,11 +29,14 @@ START → validate_input → summarize → END
 
 ## `supervisor_graph` + subgraph (Studio 시연)
 
-회의록 라우팅 시 **compiled `meeting_summary`를 subgraph 노드**로 붙여 Studio에서 안쪽 단계가 보입니다.
+라우팅은 **compiled `user_query` subgraph** (`analyze_user_query`)에서 수행합니다. 회의록 작업 시 **compiled `meeting_summary`** subgraph가 이어집니다.
 
 ```
-decide_next_step → prepare_meeting_summary → [meeting_summary subgraph] → finalize_meeting_summary → decide_next_step → END
-                                      └ validate_input → summarize ─┘
+prepare_user_query → [user_query subgraph] → route
+        └ analyze_user_query ─┘
+        → prepare_meeting_summary → [meeting_summary subgraph] → finalize_meeting_summary
+                                              └ validate_input → summarize ─┘
+        → prepare_user_query → … → FINISH
 ```
 
 Studio 타임라인에서 subgraph 안쪽이 보이려면 `langgraph dev` 재시작 후 **새 thread**로 `supervisor_graph` 실행.

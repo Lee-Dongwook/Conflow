@@ -1,8 +1,9 @@
 """
 Supervisor Agent Graph — orchestrates worker agents (meeting_summary, blocker_triage, …).
 
-`meeting_summary` is attached as a **compiled subgraph node** so LangGraph Studio shows
-validate_input → summarize inside the parent run. Other workers remain placeholders.
+Routing runs through the compiled ``user_query`` subgraph (``analyze_user_query``) so
+LangGraph Studio shows intent classification inside the parent run. ``meeting_summary``
+is a second subgraph for the minutes worker.
 """
 
 from __future__ import annotations
@@ -12,13 +13,7 @@ from typing import Any
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langgraph.graph import END, StateGraph
 from src.app.agent.graphs.meeting_summary import graph as meeting_summary_graph
-from src.app.agent.graphs.user_query import (
-    RouteKey,
-    build_intent_text,
-    chat_text,
-    pick_route,
-    task_from_chat,
-)
+from src.app.agent.graphs.user_query import RouteKey, graph as user_query_graph, task_from_chat
 from src.app.agent.graphs.workers import (
     default_transcript_when_missing,
     format_meeting_summary_for_supervisor,
@@ -28,7 +23,7 @@ from typing_extensions import TypedDict
 
 
 class AgentState(TypedDict, total=False):
-    """Supervisor state; includes keys shared with meeting_summary subgraph."""
+    """Supervisor state; shared with user_query and meeting_summary subgraphs."""
 
     current_task: str
     agent_output: str
@@ -51,6 +46,8 @@ class AgentState(TypedDict, total=False):
 
 def _chat_text(chat_history: list[BaseMessage | dict[str, Any]]) -> str:
     """Join human-side chat lines for transcript fallback."""
+    from src.app.agent.graphs.user_query import chat_text
+
     return chat_text(chat_history)
 
 
@@ -68,56 +65,21 @@ def _meeting_title_from_state(state: AgentState, current_task: str) -> str:
     return title or current_task[:256] or "회의"
 
 
-def supervisor_decide(state: AgentState) -> dict[str, Any]:
-    """Update state with routing decision (`next_agent`)."""
+def prepare_user_query_input(state: AgentState) -> dict[str, Any]:
+    """Normalize supervisor state before the user_query subgraph."""
     current_task = (state.get("current_task") or "").strip() or task_from_chat(
         state.get("chat_history") or [],
     )
-    agent_output = state.get("agent_output") or ""
-    chat_history = list(state.get("chat_history") or [])
-    intent = build_intent_text(current_task=current_task, chat_history=chat_history)
-    next_agent, route_reason, urls = pick_route(
-        current_task=current_task,
-        agent_output=agent_output,
-        chat_history=chat_history,
-        intent_text=intent,
-    )
-
-    logger.info(
-        "supervisor route: %s — %s",
-        next_agent,
-        route_reason,
-        extra={"task": current_task},
-    )
-
-    patch: dict[str, Any] = {
+    logger.info("supervisor prepare user_query", extra={"task": current_task})
+    return {
         "current_task": current_task,
-        "agent_output": agent_output,
-        "chat_history": chat_history,
-        "next_agent": next_agent,
-        "intent_text": intent,
-        "detected_urls": urls,
-        "route_reason": route_reason,
+        "agent_output": state.get("agent_output") or "",
+        "chat_history": list(state.get("chat_history") or []),
     }
-    for key in (
-        "overview",
-        "bullets",
-        "decisions",
-        "actions",
-        "next_steps",
-        "meeting_title",
-        "transcript",
-        "team_context",
-        "agent_mode",
-        "error",
-    ):
-        if key in state:
-            patch[key] = state[key]
-    return patch
 
 
-def route_after_decide(state: AgentState) -> RouteKey:
-    """Conditional edge: read `next_agent` set by supervisor_decide."""
+def route_after_user_query(state: AgentState) -> RouteKey:
+    """Conditional edge: read ``next_agent`` set by the user_query subgraph."""
     return state.get("next_agent") or "FINISH"
 
 
@@ -129,9 +91,10 @@ def prepare_meeting_summary_input(state: AgentState) -> dict[str, Any]:
     meeting_title = _meeting_title_from_state(state, current_task)
     transcript = _transcript_from_state(state)
 
-    print(
-        f"--- Supervisor: prepare subgraph meeting_summary "
-        f"title={meeting_title!r} transcript_len={len(transcript)} ---",
+    logger.info(
+        "supervisor prepare meeting_summary title=%r transcript_len=%d",
+        meeting_title,
+        len(transcript),
     )
 
     patch: dict[str, Any] = {
@@ -160,7 +123,7 @@ def finalize_meeting_summary(state: AgentState) -> dict[str, Any]:
     prior = list(state.get("chat_history") or [])
     current_task = state.get("current_task") or ""
 
-    print("--- Supervisor: finalize meeting_summary → agent_output ---")
+    logger.info("supervisor finalize meeting_summary")
 
     return {
         "current_task": current_task,
@@ -181,7 +144,7 @@ def _invoke_placeholder_worker(next_agent: RouteKey, current_task: str) -> str:
 
 
 def call_placeholder_worker(state: AgentState) -> dict[str, Any]:
-    """Placeholder for blocker_triage / retro_insights (not subgraphs yet)."""
+    """Placeholder for blocker_triage / retro_insights / file / search."""
     next_agent = state.get("next_agent") or "blocker_triage"
     current_task = state.get("current_task") or task_from_chat(
         state.get("chat_history") or [],
@@ -199,16 +162,18 @@ def call_placeholder_worker(state: AgentState) -> dict[str, Any]:
 
 
 workflow = StateGraph(AgentState)
-workflow.add_node("decide_next_step", supervisor_decide)
+workflow.add_node("prepare_user_query", prepare_user_query_input)
+workflow.add_node("user_query", user_query_graph)
 workflow.add_node("prepare_meeting_summary", prepare_meeting_summary_input)
 workflow.add_node("meeting_summary", meeting_summary_graph)
 workflow.add_node("finalize_meeting_summary", finalize_meeting_summary)
 workflow.add_node("call_placeholder_worker", call_placeholder_worker)
 
-workflow.set_entry_point("decide_next_step")
+workflow.set_entry_point("prepare_user_query")
+workflow.add_edge("prepare_user_query", "user_query")
 workflow.add_conditional_edges(
-    "decide_next_step",
-    route_after_decide,
+    "user_query",
+    route_after_user_query,
     {
         "meeting_summary": "prepare_meeting_summary",
         "blocker_triage": "call_placeholder_worker",
@@ -220,8 +185,8 @@ workflow.add_conditional_edges(
 )
 workflow.add_edge("prepare_meeting_summary", "meeting_summary")
 workflow.add_edge("meeting_summary", "finalize_meeting_summary")
-workflow.add_edge("finalize_meeting_summary", "decide_next_step")
-workflow.add_edge("call_placeholder_worker", "decide_next_step")
+workflow.add_edge("finalize_meeting_summary", "prepare_user_query")
+workflow.add_edge("call_placeholder_worker", "prepare_user_query")
 
 supervisor_agent_graph = workflow.compile()
 

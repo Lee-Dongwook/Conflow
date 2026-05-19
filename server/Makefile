@@ -34,7 +34,7 @@ test:
 	uv run pytest tests/ -v
 
 # --- LangGraph (see docs/agent-purpose.md) ---
-.PHONY: langgraph-dev agent-smoke
+.PHONY: langgraph-dev agent-smoke agent-smoke-user-query agent-smoke-supervisor agent-test-graphs
 
 langgraph-dev:
 	@echo "Starting LangGraph dev server (http://127.0.0.1:2024)..."
@@ -47,6 +47,22 @@ agent-smoke:
 	@if [ -f .env ]; then set -a && . ./.env && set +a; fi
 	@if [ -f .env.local ]; then set -a && . ./.env.local && set +a; fi
 	uv run python scripts/smoke_meeting_summary.py
+
+agent-smoke-user-query:
+	@echo "Running user_query graph (mock mode)..."
+	@if [ -f .env ]; then set -a && . ./.env && set +a; fi
+	@if [ -f .env.local ]; then set -a && . ./.env.local && set +a; fi
+	uv run python scripts/smoke_user_query.py --preset all
+
+agent-smoke-supervisor:
+	@echo "Running supervisor_graph (user_query + meeting_summary, mock mode)..."
+	@if [ -f .env ]; then set -a && . ./.env && set +a; fi
+	@if [ -f .env.local ]; then set -a && . ./.env.local && set +a; fi
+	uv run python scripts/smoke_supervisor_graph.py --preset all --stream
+
+agent-test-graphs:
+	@echo "Running agent graph pytest (user_query + supervisor)..."
+	uv run pytest tests/test_user_query.py tests/test_supervisor_graph.py -v
 
 # --- Database migrations (Alembic) ---
 # Examples:
