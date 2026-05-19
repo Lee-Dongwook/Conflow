@@ -2,10 +2,10 @@ import textwrap
 
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
-
 from src.app.agent.graphs.file.model import FileContentAnalysisState
-from src.app.core.logger import logger
 from src.app.core.base import get_model
+from src.app.core.logger import logger
+
 
 async def analysis_file(state: FileContentAnalysisState, config: RunnableConfig) -> dict:
     logger.info(f"Analyzing file: {state.file_path}")

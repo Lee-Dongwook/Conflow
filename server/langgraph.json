@@ -3,6 +3,7 @@
   "dependencies": ["."],
   "graphs": {
     "meeting_summary": "src.app.agent.graphs.meeting_summary:graph",
+    "user_query": "src.app.agent.graphs.user_query:graph",
     "supervisor_graph": "src.app.agent.graphs.supervisor_graph:supervisor_agent_graph"
   },
   "env": ".env",
