@@ -27,6 +27,8 @@ dependencies = [
     "vector-rag",
     "aiortc>=1.14.0",
     "websockets>=15.0.1",
+    "python-magic>=0.4.27",
+    "pytesseract>=0.3.13",
 ]
 
 [dependency-groups]
