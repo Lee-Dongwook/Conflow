@@ -2,7 +2,6 @@ from langchain_core.messages import ChatMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from src.app.agent.graphs.image.model import ImageSubgraphState
 from src.app.core.base import get_model
-from src.app.core.logger import logger
 
 
 async def analysis_image(state: ImageSubgraphState, config: RunnableConfig) -> dict:
@@ -31,7 +30,6 @@ async def analysis_image(state: ImageSubgraphState, config: RunnableConfig) -> d
             }
         )
         processed_content = (response.content or "").strip()
-        logger.info(f"Processed content: {processed_content}")
         return {
             "processed_content": processed_content,
             "messages": [
@@ -44,5 +42,4 @@ async def analysis_image(state: ImageSubgraphState, config: RunnableConfig) -> d
         }
 
     except Exception as e:
-        logger.error(f"Error analyzing image: {e}")
         return {"processed_content": f"Error: {e}"}
