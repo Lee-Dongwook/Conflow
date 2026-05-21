@@ -8,6 +8,8 @@ import logging
 from aiortc import MediaStreamTrack
 from av.audio.frame import AudioFrame
 
+from src.app.websockets.agent_orchestrator import HuddleAgentOrchestrator
+
 logger = logging.getLogger(__name__)
 
 class HuddleMediaProcessor(MediaStreamTrack):
@@ -15,12 +17,14 @@ class HuddleMediaProcessor(MediaStreamTrack):
 
     kind = "audio"
 
-    def __init__(self, track: MediaStreamTrack):
+    def __init__(self, track: MediaStreamTrack, room_id: str):
         super().__init__()
         self.track = track
+        self.room_id = room_id
         self.audio_queue: asyncio.Queue[bytes] = asyncio.Queue()
         self.is_running = True
         self.processing_task = asyncio.create_task(self._stt_pipeline_loop())
+        self.orchestrator = HuddleAgentOrchestrator(room_id=self.room_id)
 
     async def recv(self) -> AudioFrame:
         try:
@@ -64,13 +68,13 @@ class HuddleMediaProcessor(MediaStreamTrack):
     async def _execute_stt(self, audio_data: bytes):
         logger.info("Captured %d bytes of audio chunk. Triggering STT inference...", len(audio_data))
 
-        mocked_text = "스프린트 백엔드 API 명세서 작업이 계속 지연되고 있어서 프론트 개발이 막혔습니다."
+        mocked_text = "스프린트 백엔드 API 명세서 작업이 계속 지연되고 있어서 프론트 개발이 막혔습니다."  # noqa: E501
 
         await self._forward_to_langgraph_agent(mocked_text)
 
     async def _forward_to_langgraph_agent(self, text: str):
         logger.info(f"Forwarding text to LangGraph agent: {text}")
-        pass
+        await self.orchestrator.trigger_agent(transcribed_text=text)
     
     def stop(self):
         if self.is_running:
