@@ -36,6 +36,7 @@ app = FastAPI(
 setup_middleware(app)
 
 app.include_router(home_router)
+app.include_router(user_router)
 app.include_router(user_router, prefix="/api")
 app.include_router(signaling_router)
 

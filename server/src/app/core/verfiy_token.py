@@ -69,6 +69,7 @@ async def verify_token_from_db(token: str, db: AsyncSession) -> UserRead:
             name=user.name,
             email=user.email,
             profile_image_url=user.profile_image_url,
+            role=user.role,
             created_at=user.created_at,
             updated_at=user.updated_at,
         )
@@ -93,7 +94,7 @@ async def verify_token_from_db(token: str, db: AsyncSession) -> UserRead:
         
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            details=detail,
+            detail=detail,
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
     
@@ -111,6 +112,7 @@ async def verify_token_from_db(token: str, db: AsyncSession) -> UserRead:
         name=user.name,
         email=user.email,
         profile_image_url=user.profile_image_url,
+        role=user.role,
         created_at=user.created_at,
         updated_at=user.updated_at,
     )

@@ -150,7 +150,7 @@ class CamelCaseMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         if request.headers.get("content-type", "").startswith("application/json"):
-            return await handle_request(request)
+            request = await handle_request(request)
 
         response = await call_next(request)
 

@@ -36,6 +36,7 @@ def _build_user(**overrides: Any) -> SimpleNamespace:
         "name": "conflow",
         "email": "conflow@example.com",
         "profile_image_url": None,
+        "role": "user",
         "auth_id": None,
     }
     merged_user = {**base_user, **overrides}

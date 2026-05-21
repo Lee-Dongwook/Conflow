@@ -22,7 +22,7 @@ from src.app.agent.graphs.workers import (
     default_transcript_when_missing,
     format_meeting_summary_for_supervisor,
 )
-from src.app.core import logger
+from src.app.core.shared import logger
 from typing_extensions import TypedDict
 
 
@@ -133,6 +133,7 @@ def finalize_meeting_summary(state: AgentState) -> dict[str, Any]:
 
     return {
         "current_task": current_task,
+        "next_agent": "FINISH",
         "agent_output": agent_output,
         "chat_history": [*prior, AIMessage(content=agent_output)],
         "user_feedback": None,

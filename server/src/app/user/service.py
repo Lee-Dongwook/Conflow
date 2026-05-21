@@ -1,15 +1,21 @@
-from datetime import datetime, timezone
 from uuid import UUID
 
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .utils import select_user_by_email, insert_user
 from .model import User
 from .schemas import UserCreate, UserUpdate
+from .utils import (
+    delete_user as delete_user_by_uuid,
+    get_user_by_supabase_uuid,
+    get_user_by_uuid,
+    insert_user,
+    select_user_by_email,
+)
 
-async def create_user(user_in: UserCreate, db: AsyncSession) -> User:
+
+async def create_user(db: AsyncSession, user_in: UserCreate) -> User:
     """Create a user after validating email uniqueness."""
 
     existing_user = await select_user_by_email(str(user_in.email), db)
@@ -85,3 +91,9 @@ async def update_user(db: AsyncSession, user_uuid: str, payload: UserUpdate) -> 
     await db.flush()
     await db.refresh(user)
     return user
+
+
+async def delete_user(db: AsyncSession, user_uuid: str) -> None:
+    """Soft-delete an active user by UUID."""
+
+    await delete_user_by_uuid(user_uuid, db)

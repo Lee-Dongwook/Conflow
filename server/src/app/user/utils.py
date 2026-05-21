@@ -48,4 +48,5 @@ async def delete_user(user_uuid: str, db: AsyncSession) -> None:
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    user.deleted_at = datetime.now(timezone.utc)
     await db.flush()

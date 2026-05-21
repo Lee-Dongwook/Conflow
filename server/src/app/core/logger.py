@@ -12,6 +12,8 @@ from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 from . import shared
 
+logger = shared.logger
+
 
 def parse_body_content(body_bytes: bytes, content_type: str) -> Any:
     if content_type.startswith("application/json"):
@@ -140,6 +142,5 @@ class LoggingMiddleware:
                 logger.info("HTTP request", extra=log_data)
         else:
             logger.warning("HTTP request without status code", extra=log_data)
-
 
 

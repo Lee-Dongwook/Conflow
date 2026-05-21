@@ -29,3 +29,5 @@ todos.json
 
 # Agent Skills
 .gemini/skills/**
+.codex/**/SKILL.md
+.codex/**/openai.yaml

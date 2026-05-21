@@ -10,7 +10,7 @@ from langchain_core.messages import BaseMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel, Field
-from src.app.core import logger
+from src.app.core.shared import logger
 from typing_extensions import TypedDict
 
 URL_PATTERN = re.compile(
