@@ -10,7 +10,14 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    RemoveMessage,
+    SystemMessage,
+)
+from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
 from src.app.agent.graphs.blocker_triage import graph as blocker_triage_graph
 from src.app.agent.graphs.file_analysis import graph as file_analysis_graph
@@ -29,6 +36,8 @@ FINISH: Literal["FINISH"] = "FINISH"
 RETRY: Literal["RETRY"] = "RETRY"
 DEFAULT_MEETING_TITLE = "회의"
 MAX_MEETING_TITLE_CHARS = 256
+MAX_WINDOW_SIZE = 6
+
 PLACEHOLDER_COMPLETION_TAGS: dict[RouteKey, str] = {
     "blocker_triage": "blocker found",
     "retro_insights": "insights generated",
@@ -43,6 +52,7 @@ class AgentState(TypedDict, total=False):
     current_task: str
     agent_output: str
     chat_history: list[BaseMessage]
+    summary: str
     next_agent: RouteKey
     meeting_title: str
     transcript: str
@@ -59,6 +69,45 @@ class AgentState(TypedDict, total=False):
     route_reason: str
     user_feedback: Literal["approve", "reject"] | None
     review_comment: str | None
+
+async def compress_context_node(state: AgentState) -> dict[str, Any]:
+    """Compress the context window to the last MAX_WINDOW_SIZE messages."""
+    messages = state.get("chat_history") or []
+    current_summary = state.get("summary") or ""
+
+    if len(messages) <= MAX_WINDOW_SIZE:
+        return {}
+    
+    messages_to_summarize = messages[:-4]
+
+    summary_prompt = (
+    "You are an expert context compressor for Conflow Project Management System.\n"
+        "Analyze the following conversation segment and update the existing summary.\n"
+        "Focus on core task updates, project blockers, and engineering decisions.\n\n"
+        f"■ Current Summary Base:\n{current_summary}\n\n"
+        "■ New Conversation Segment to integrate:"
+    )
+
+    formatted_chat = ""
+    for msg in messages_to_summarize:
+        role = "User" if msg.type == "human" else "Agent"
+        formatted_chat += f"{role}: {msg.content}\n"
+    
+    summary_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
+    response = await summary_llm.ainvoke([
+        SystemMessage(content=summary_prompt),
+        HumanMessage(content=formatted_chat),
+    ])
+
+    updated_summary = str(response.content).strip()
+
+    purge_signals = [RemoveMessage(id=msg.id) for msg in messages_to_summarize]
+
+    return {
+        "summary": updated_summary,
+        "chat_history": purge_signals
+    }
+
 
 
 def _chat_text(chat_history: list[BaseMessage | dict[str, Any]]) -> str:
@@ -97,6 +146,7 @@ def prepare_user_query_input(state: AgentState) -> dict[str, Any]:
         "current_task": current_task,
         "agent_output": state.get("agent_output") or "",
         "chat_history": list(state.get("chat_history") or []),
+        "summary": state.get("summary") or "",
     }
 
 
@@ -121,8 +171,10 @@ def prepare_meeting_summary_input(state: AgentState) -> dict[str, Any]:
         "current_task": current_task,
         "meeting_title": meeting_title,
         "transcript": transcript,
+        "summary": state.get("summary") or "",
         "error": None,
     }
+
     team_context = state.get("team_context")
     if team_context:
         patch["team_context"] = team_context
@@ -205,10 +257,10 @@ def call_placeholder_worker(state: AgentState) -> dict[str, Any]:
         "chat_history": [*prior, AIMessage(content=worker_text)],
     }
 
-
 def build_graph() -> StateGraph:
     """Build the supervisor graph with routing and worker subgraphs."""
     workflow = StateGraph(AgentState)
+    workflow.add_node("compress_context", compress_context_node)
     workflow.add_node("prepare_user_query", prepare_user_query_input)
     workflow.add_node("user_query", user_query_graph)
     workflow.add_node("prepare_meeting_summary", prepare_meeting_summary_input)
@@ -220,7 +272,8 @@ def build_graph() -> StateGraph:
     workflow.add_node("retro_insights_graph", retro_insights_graph)
     workflow.add_node("file_analysis_graph", file_analysis_graph)
 
-    workflow.set_entry_point("prepare_user_query")
+    workflow.set_entry_point("compress_context")
+    workflow.add_edge("compress_context", "prepare_user_query")
     workflow.add_edge("prepare_user_query", "user_query")
     workflow.add_conditional_edges(
         "user_query",
@@ -237,15 +290,16 @@ def build_graph() -> StateGraph:
     workflow.add_edge("prepare_meeting_summary", "meeting_summary")
     workflow.add_edge("meeting_summary", "finalize_meeting_summary")
     workflow.add_edge("finalize_meeting_summary", "commit_meeting_summary")
+
     workflow.add_conditional_edges(
         "commit_meeting_summary",
         route_after_review,
         {
             FINISH: END,
-            RETRY: "prepare_user_query",
+            RETRY: "compress_context",
         },
     )
-    workflow.add_edge("call_placeholder_worker", "prepare_user_query")
+    workflow.add_edge("call_placeholder_worker", "compress_context")
     return workflow
 
 
@@ -259,6 +313,7 @@ if __name__ == "__main__":
         "current_task": "Generate a meeting summary for the last standup.",
         "agent_output": "",
         "chat_history": [HumanMessage(content="Please summarize the standup meeting.")],
+        "summary": ""
     }
     for chunk in supervisor_agent_graph.stream(initial):
         print(chunk)
