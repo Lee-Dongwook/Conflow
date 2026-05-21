@@ -1,2 +1,485 @@
-project_doc_fallback_filenames = ["TEAM_GUIDE.md", ".agents.md"]
-project_doc_max_bytes = 65536
+# Codex example configuration (config.toml)
+#
+# This file lists the main keys Codex reads from config.toml, along with default
+# behaviors, recommended examples, and concise explanations. Adjust as needed.
+#
+# Notes
+# - Root keys must appear before tables in TOML.
+# - Optional keys that default to "unset" are shown commented out with notes.
+# - MCP servers, profiles, and model providers are examples; remove or edit.
+
+################################################################################
+
+# Core Model Selection
+
+################################################################################
+
+# Primary model used by Codex. Recommended example for most users: "gpt-5.5".
+
+model = "gpt-5.5"
+
+# Communication style for supported models. Allowed values: none | friendly | pragmatic
+
+# personality = "pragmatic"
+
+# Optional model override for /review. Default: unset (uses current session model).
+
+# review_model = "gpt-5.5"
+
+# Provider id selected from [model_providers]. Default: "openai".
+
+# Default OSS provider for --oss sessions. When unset, Codex prompts. Default: unset.
+
+# oss_provider = "ollama"
+
+# Preferred service tier. Built-in examples: fast | flex; model catalogs can add more.
+
+# service_tier = "flex"
+
+# Optional manual model metadata. When unset, Codex uses model or preset defaults.
+
+# model_context_window = 128000 # tokens; default: auto for model
+
+# model_auto_compact_token_limit = 64000 # tokens; unset uses model defaults
+
+# tool_output_token_limit = 12000 # tokens stored per tool output
+
+# background_terminal_max_timeout = 300000 # ms; max empty write_stdin poll window (default 5m)
+
+model_provider = "openai"
+
+################################################################################
+
+# Reasoning & Verbosity (Responses API capable models)
+
+################################################################################
+
+# Reasoning effort: minimal | low | medium | high | xhigh
+
+# model_reasoning_effort = "medium"
+
+# Optional override used when Codex runs in plan mode: none | minimal | low | medium | high | xhigh
+
+# plan_mode_reasoning_effort = "high"
+
+# Reasoning summary: auto | concise | detailed | none
+
+# model_reasoning_summary = "auto"
+
+# Text verbosity for GPT-5 family (Responses API): low | medium | high
+
+# model_verbosity = "medium"
+
+# Force enable or disable reasoning summaries for current model.
+
+# model_supports_reasoning_summaries = true
+
+################################################################################
+
+# Notifications
+
+################################################################################
+
+# External notifier program (argv array). When unset: disabled.
+
+# notify = ["notify-send", "Codex"]
+
+################################################################################
+
+# Approval & Sandbox
+
+################################################################################
+
+# When to ask for command approval:
+
+# - untrusted: only known-safe read-only commands auto-run; others prompt
+
+# - on-request: model decides when to ask (default)
+
+# - never: never prompt (risky)
+
+# - { granular = { ... } }: allow or auto-reject selected prompt categories
+
+approval_policy = "on-request"
+
+# Who reviews eligible approval prompts: user (default) | auto_review
+
+# approvals_reviewer = "user"
+
+# Example granular policy:
+
+# approval_policy = { granular = {
+
+# sandbox_approval = true,
+
+# rules = true,
+
+# mcp_elicitations = true,
+
+# request_permissions = false,
+
+# skill_approval = false
+
+# } }
+
+# Allow login-shell semantics for shell-based tools when they request `login = true`.
+
+# Default: true. Set false to force non-login shells and reject explicit login-shell requests.
+
+allow_login_shell = true
+
+# Filesystem/network sandbox policy for tool calls:
+
+# - read-only (default)
+
+# - workspace-write
+
+# - danger-full-access (no sandbox; extremely risky)
+
+sandbox_mode = "read-only"
+
+# Named permissions profile to apply by default. Built-ins:
+
+# :read-only | :workspace | :danger-full-access
+
+# Use a custom name such as "workspace" only when you also define [permissions.workspace].
+
+# default_permissions = ":workspace"
+
+################################################################################
+
+# Project Documentation Controls
+
+################################################################################
+
+# Max bytes from AGENTS.md to embed into first-turn instructions. Default: 32768
+
+project_doc_max_bytes = 32768
+
+# Ordered fallbacks when AGENTS.md is missing at a directory level. Default: []
+
+project_doc_fallback_filenames = []
+
+# Project root marker filenames used when searching parent directories. Default: [".git"]
+
+# project_root_markers = [".git"]
+
+################################################################################
+
+# History & File Opener
+
+################################################################################
+
+# URI scheme for clickable citations: vscode (default) | vscode-insiders | windsurf | cursor | none
+
+file_opener = "vscode"
+
+################################################################################
+
+# UI, Notifications, and Misc
+
+################################################################################
+
+# Suppress internal reasoning events from output. Default: false
+
+hide_agent_reasoning = false
+
+# Show raw reasoning content when available. Default: false
+
+show_raw_agent_reasoning = false
+
+# Disable burst-paste detection in the TUI. Default: false
+
+disable_paste_burst = false
+
+# Track Windows onboarding acknowledgement (Windows only). Default: false
+
+windows_wsl_setup_acknowledged = false
+
+# Check for updates on startup. Default: true
+
+check_for_update_on_startup = true
+
+################################################################################
+
+# Web Search
+
+################################################################################
+
+# Web search mode: disabled | cached | live. Default: "cached"
+
+# cached serves results from a web search cache (an OpenAI-maintained index).
+
+# cached returns pre-indexed results; live fetches the most recent data.
+
+# If you use --yolo or another full access sandbox setting, web search defaults to live.
+
+web_search = "cached"
+
+# Active profile name. When unset, no profile is applied.
+
+# profile = "default"
+
+# Suppress the warning shown when under-development feature flags are enabled.
+
+# suppress_unstable_features_warning = true
+
+# Agents (multi-agent roles and limits)
+
+################################################################################
+
+[agents]
+
+# Maximum concurrently open agent threads. Default: 6
+
+# max_threads = 6
+
+# Maximum nested spawn depth. Root session starts at depth 0. Default: 1
+
+# max_depth = 1
+
+# Default timeout per worker for spawn_agents_on_csv jobs. When unset, the tool defaults to 1800 seconds.
+
+# job_max_runtime_seconds = 1800
+
+# [agents.reviewer]
+
+# description = "Find correctness, security, and test risks in code."
+
+# nickname_candidates = ["Athena", "Ada"]
+
+################################################################################
+
+# Sandbox settings (tables)
+
+################################################################################
+
+# Extra settings used only when sandbox_mode = "workspace-write".
+
+[sandbox_workspace_write]
+
+# Additional writable roots beyond the workspace (cwd). Default: []
+
+writable_roots = []
+
+# Allow outbound network access inside the sandbox. Default: false
+
+network_access = false
+
+# Exclude $TMPDIR from writable roots. Default: false
+
+exclude_tmpdir_env_var = false
+
+# Exclude /tmp from writable roots. Default: false
+
+exclude_slash_tmp = false
+
+################################################################################
+
+# Shell Environment Policy for spawned processes (table)
+
+################################################################################
+
+[shell_environment_policy]
+
+# inherit: all (default) | core | none
+
+inherit = "all"
+
+# Skip default excludes for names containing KEY/SECRET/TOKEN (case-insensitive). Default: false
+
+ignore_default_excludes = false
+
+# Case-insensitive glob patterns to remove (e.g., "AWS**", "AZURE**"). Default: []
+
+exclude = []
+
+# Explicit key/value overrides (always win). Default: {}
+
+set = {}
+
+# Whitelist; if non-empty, keep only matching vars. Default: []
+
+include_only = []
+
+# Experimental: run via user shell profile. Default: false
+
+experimental_use_profile = false
+
+################################################################################
+
+# Sandboxed networking settings
+
+################################################################################
+
+# Enable the feature before configuring sandboxed networking rules.
+
+# [features.network_proxy]
+
+# enabled = true
+
+# domains = { "api.openai.com" = "allow", "example.com" = "deny" }
+
+#
+
+# Exact hosts match only themselves.
+
+# "*.example.com" matches subdomains only; "**.example.com" matches the apex plus subdomains.
+
+# "*" allows any public host that is not denied, so prefer scoped rules when possible.
+
+# `allow_local_binding = false` blocks loopback and private destinations by default.
+
+# Add an exact local IP literal or `localhost` allow rule for one target, or set it to true only when broader local access is required.
+
+#
+
+# Set `default_permissions = "workspace"` before enabling this profile.
+
+# Example additional workspace roots that inherit this profile's
+
+# `:workspace_roots` filesystem rules.
+
+# [permissions.workspace.workspace_roots]
+
+# "~/code/app" = true
+
+# "~/code/shared-lib" = true
+
+#
+
+# Example filesystem profile. Use `"deny"` to deny reads for exact paths or
+
+# glob patterns. On platforms that need pre-expanded glob matches, set
+
+# glob_scan_max_depth when using unbounded patterns such as `**`.
+
+# [permissions.workspace.filesystem]
+
+# glob_scan_max_depth = 3
+
+# ":workspace_roots" = { "." = "write", "**/*.env" = "deny" }
+
+# "/absolute/path/to/secrets" = "deny"
+
+################################################################################
+
+# History (table)
+
+################################################################################
+
+[history]
+
+# save-all (default) | none
+
+persistence = "save-all"
+
+# Maximum bytes for history file; oldest entries are trimmed when exceeded. Example: 5242880
+
+# max_bytes = 5242880
+
+################################################################################
+
+# UI, Notifications, and Misc (tables)
+
+################################################################################
+
+[tui]
+
+# Desktop notifications from the TUI: boolean or filtered list. Default: true
+
+# Examples: false | ["agent-turn-complete", "approval-requested"]
+
+notifications = false
+
+# Notification mechanism for terminal alerts: auto | osc9 | bel. Default: "auto"
+
+# notification_method = "auto"
+
+# When notifications fire: unfocused (default) | always
+
+# notification_condition = "unfocused"
+
+# Enables welcome/status/spinner animations. Default: true
+
+show_tooltips = true
+
+# Control alternate screen usage (auto skips it in Zellij to preserve scrollback).
+
+# alternate_screen = "auto"
+
+# Ordered list of footer status-line item IDs. When unset, Codex uses:
+
+# ["model-with-reasoning", "context-remaining", "current-dir"].
+
+# Set to [] to hide the footer.
+
+# status_line = ["model", "context-remaining", "git-branch"]
+
+# Ordered list of terminal window/tab title item IDs. When unset, Codex uses:
+
+# ["spinner", "project"]. Set to [] to clear the title.
+
+# Available IDs include app-name, project, spinner, status, thread, git-branch, model,
+
+# and task-progress.
+
+# terminal_title = ["spinner", "project"]
+
+# Syntax-highlighting theme (kebab-case). Use /theme in the TUI to preview and save.
+
+# You can also add custom .tmTheme files under $CODEX_HOME/themes.
+
+# theme = "catppuccin-mocha"
+
+# Custom key bindings. Context-specific bindings override [tui.keymap.global].
+
+# Use [] to unbind an action.
+
+# [tui.keymap.global]
+
+# open_transcript = "ctrl-t"
+
+# open_external_editor = []
+
+#
+
+# [tui.keymap.composer]
+
+# submit = ["enter", "ctrl-m"]
+
+# Internal tooltip state keyed by model slug. Usually managed by Codex.
+
+# [tui.model_availability_nux]
+
+# "gpt-5.4" = 1
+
+# Enable or disable analytics for this machine. When unset, Codex uses its default behavior.
+
+[analytics]
+enabled = true
+
+[feedback]
+enabled = true
+
+# In-product notices (mostly set automatically by Codex).
+
+[notice]
+
+# hide_full_access_warning = true
+
+# hide_world_writable_warning = true
+
+# hide_rate_limit_model_nudge = true
+
+# hide_gpt5_1_migration_prompt = true
+
+# "hide_gpt-5.1-codex-max_migration_prompt" = true
+
+# model_migrations = { "gpt-5.3-codex" = "gpt-5.4" }
+
+[windows]
+
+# Native Windows sandbox mode (Windows only): unelevated | elevated
+
+sandbox = "unelevated"
