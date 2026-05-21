@@ -10,6 +10,18 @@ from langgraph.graph import END, START, StateGraph
 from src.app.agent.graphs.schemas import MeetingSummaryOutput
 
 MAX_TRANSCRIPT_CHARS = 48_000
+MAX_OVERVIEW_CHARS = 200
+OVERVIEW_TRUNCATION_CHARS = MAX_OVERVIEW_CHARS - 3
+DEFAULT_MEETING_TITLE = "회의"
+DEFAULT_TEAM_CONTEXT = "팀 컨텍스트 없음"
+AGENT_MODE_ENV = "CONFLOW_AGENT_MODE"
+OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
+OPENAI_MODEL_ENV = "OPENAI_MODEL"
+DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+DECISION_KEYWORDS = ("하기로", "로 한다", "필수", "유지", "제한", "기준")
+ACTION_KEYWORDS = ("보강", "남기", "터치", "제안", "담당", "코멘트")
+NEXT_STEP_KEYWORDS = ("다음", "수요일", "금요일", "허들", "까지")
+OWNER_PATTERN = re.compile(r"([가-힣A-Za-z○]+)가\s")
 
 
 class MeetingSummaryState(TypedDict, total=False):
@@ -29,8 +41,15 @@ class MeetingSummaryState(TypedDict, total=False):
 
 def _resolve_agent_mode() -> Literal["mock", "llm"]:
     """Resolve runtime mode from environment."""
-    raw = os.environ.get("CONFLOW_AGENT_MODE", "mock").strip().lower()
+    raw = os.environ.get(AGENT_MODE_ENV, "mock").strip().lower()
     return "llm" if raw == "llm" else "mock"
+
+
+def _truncate_overview(text: str) -> str:
+    """Clamp overview text to the UI-oriented one-line length."""
+    if len(text) <= MAX_OVERVIEW_CHARS:
+        return text
+    return f"{text[:OVERVIEW_TRUNCATION_CHARS]}..."
 
 
 def _sentences(text: str) -> list[str]:
@@ -41,29 +60,21 @@ def _sentences(text: str) -> list[str]:
 
 def _mock_summarize(state: MeetingSummaryState) -> dict[str, object]:
     """Heuristic summary for local dev without an LLM API key."""
-    title = state.get("meeting_title", "회의")
+    title = state.get("meeting_title", DEFAULT_MEETING_TITLE)
     sentences = _sentences(state.get("transcript", ""))
     overview_source = sentences[0] if sentences else title
-    overview = (
-        overview_source
-        if len(overview_source) <= 200
-        else f"{overview_source[:197]}..."
-    )
+    overview = _truncate_overview(overview_source)
 
-    decision_keywords = ("하기로", "로 한다", "필수", "유지", "제한", "기준")
-    action_keywords = ("보강", "남기", "터치", "제안", "담당", "코멘트")
-    next_keywords = ("다음", "수요일", "금요일", "허들", "까지")
-
-    decisions = [s for s in sentences if any(k in s for k in decision_keywords)][:5]
+    decisions = [s for s in sentences if any(k in s for k in DECISION_KEYWORDS)][:5]
     bullets = [s for s in sentences if s not in decisions][:6]
-    next_steps = [s for s in sentences if any(k in s for k in next_keywords)][:5]
+    next_steps = [s for s in sentences if any(k in s for k in NEXT_STEP_KEYWORDS)][:5]
 
     actions: list[dict[str, str]] = []
     for sentence in sentences:
-        if not any(k in sentence for k in action_keywords):
+        if not any(k in sentence for k in ACTION_KEYWORDS):
             continue
         owner = "미정"
-        owner_match = re.search(r"([가-힣A-Za-z○]+)가\s", sentence)
+        owner_match = OWNER_PATTERN.search(sentence)
         if owner_match:
             owner = owner_match.group(1)
         actions.append({"task": sentence, "owner": owner})
@@ -88,16 +99,16 @@ def _llm_summarize(state: MeetingSummaryState) -> dict[str, object]:
     from langchain_core.messages import HumanMessage, SystemMessage
     from langchain_openai import ChatOpenAI
 
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    api_key = os.environ.get(OPENAI_API_KEY_ENV, "").strip()
     if not api_key:
         return {
-            "error": "CONFLOW_AGENT_MODE=llm but OPENAI_API_KEY is missing",
+            "error": f"{AGENT_MODE_ENV}=llm but {OPENAI_API_KEY_ENV} is missing",
             "agent_mode": "llm",
         }
 
-    model_name = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-    team_context = state.get("team_context") or "팀 컨텍스트 없음"
-    title = state.get("meeting_title", "회의")
+    model_name = os.environ.get(OPENAI_MODEL_ENV, DEFAULT_OPENAI_MODEL)
+    team_context = state.get("team_context") or DEFAULT_TEAM_CONTEXT
+    title = state.get("meeting_title", DEFAULT_MEETING_TITLE)
     transcript = state.get("transcript", "")
 
     system = SystemMessage(

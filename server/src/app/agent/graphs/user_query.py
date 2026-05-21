@@ -13,6 +13,11 @@ from pydantic import BaseModel, Field
 from src.app.core.shared import logger
 from typing_extensions import TypedDict
 
+DEFAULT_TASK = "Process the team collaboration request."
+AGENT_MODE_ENV = "CONFLOW_AGENT_MODE"
+OPENAI_MODEL_ENV = "OPENAI_MODEL"
+OPENAI_API_KEY_ENV = "OPENAI_API_KEY"
+
 URL_PATTERN = re.compile(
     r"https?://"
     r"(?:[^\s/?#]+)"
@@ -152,8 +157,8 @@ def chat_text(chat_history: list[BaseMessage | dict[str, Any]]) -> str:
 def task_from_chat(chat_history: list[BaseMessage | dict[str, Any]]) -> str:
     """Infer task text when the caller omits ``current_task``."""
     if not chat_history:
-        return "Process the team collaboration request."
-    return message_content(chat_history[-1]) or "Process the team collaboration request."
+        return DEFAULT_TASK
+    return message_content(chat_history[-1]) or DEFAULT_TASK
 
 
 def build_intent_text(
@@ -218,7 +223,7 @@ def pick_route_rule_based(
 
 
 def _resolve_agent_mode() -> Literal["mock", "llm"]:
-    raw = os.environ.get("CONFLOW_AGENT_MODE", "mock").strip().lower()
+    raw = os.environ.get(AGENT_MODE_ENV, "mock").strip().lower()
     return "llm" if raw == "llm" else "mock"
 
 
@@ -232,16 +237,16 @@ def pick_route_llm(
     from langchain_core.messages import HumanMessage, SystemMessage
     from langchain_openai import ChatOpenAI
 
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    api_key = os.environ.get(OPENAI_API_KEY_ENV, "").strip()
     if not api_key:
-        logger.warning("CONFLOW_AGENT_MODE=llm but OPENAI_API_KEY is missing; using rules")
+        logger.warning("%s=llm but %s is missing; using rules", AGENT_MODE_ENV, OPENAI_API_KEY_ENV)
         return pick_route_rule_based(
             intent_text=intent_text,
             agent_output=agent_output,
             detected_urls=detected_urls,
         )
 
-    model_name = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+    model_name = os.environ.get(OPENAI_MODEL_ENV, "gpt-4o-mini")
     system = SystemMessage(
         content=(
             "You route user requests for Conflow, a team collaboration assistant. "

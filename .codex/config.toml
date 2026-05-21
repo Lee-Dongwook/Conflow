@@ -42,7 +42,7 @@ model = "gpt-5.5"
 
 # model_auto_compact_token_limit = 64000 # tokens; unset uses model defaults
 
-# tool_output_token_limit = 12000 # tokens stored per tool output
+# tool_output_token_limit = 2000 # tokens stored per tool output
 
 # background_terminal_max_timeout = 300000 # ms; max empty write_stdin poll window (default 5m)
 
@@ -214,7 +214,7 @@ check_for_update_on_startup = true
 
 # If you use --yolo or another full access sandbox setting, web search defaults to live.
 
-web_search = "cached"
+web_search = "disabled"
 
 # Active profile name. When unset, no profile is applied.
 

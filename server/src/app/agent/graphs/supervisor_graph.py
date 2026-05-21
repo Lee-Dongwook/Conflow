@@ -25,6 +25,17 @@ from src.app.agent.graphs.workers import (
 from src.app.core.shared import logger
 from typing_extensions import TypedDict
 
+FINISH: Literal["FINISH"] = "FINISH"
+RETRY: Literal["RETRY"] = "RETRY"
+DEFAULT_MEETING_TITLE = "회의"
+MAX_MEETING_TITLE_CHARS = 256
+PLACEHOLDER_COMPLETION_TAGS: dict[RouteKey, str] = {
+    "blocker_triage": "blocker found",
+    "retro_insights": "insights generated",
+    "file_analysis": "file analysis complete",
+    "search": "search complete",
+}
+
 
 class AgentState(TypedDict, total=False):
     """Supervisor state; shared with user_query and meeting_summary subgraphs."""
@@ -68,14 +79,19 @@ def _transcript_from_state(state: AgentState) -> str:
 def _meeting_title_from_state(state: AgentState, current_task: str) -> str:
     """Resolve meeting title for the child graph."""
     title = (state.get("meeting_title") or "").strip()
-    return title or current_task[:256] or "회의"
+    return title or current_task[:MAX_MEETING_TITLE_CHARS] or DEFAULT_MEETING_TITLE
+
+
+def _current_task_from_state(state: AgentState) -> str:
+    """Return explicit task text, falling back to the latest chat message."""
+    return (state.get("current_task") or "").strip() or task_from_chat(
+        state.get("chat_history") or [],
+    )
 
 
 def prepare_user_query_input(state: AgentState) -> dict[str, Any]:
     """Normalize supervisor state before the user_query subgraph."""
-    current_task = (state.get("current_task") or "").strip() or task_from_chat(
-        state.get("chat_history") or [],
-    )
+    current_task = _current_task_from_state(state)
     logger.info("supervisor prepare user_query", extra={"task": current_task})
     return {
         "current_task": current_task,
@@ -86,14 +102,12 @@ def prepare_user_query_input(state: AgentState) -> dict[str, Any]:
 
 def route_after_user_query(state: AgentState) -> RouteKey:
     """Conditional edge: read ``next_agent`` set by the user_query subgraph."""
-    return state.get("next_agent") or "FINISH"
+    return state.get("next_agent") or FINISH
 
 
 def prepare_meeting_summary_input(state: AgentState) -> dict[str, Any]:
     """Map supervisor state → meeting_summary subgraph input (shared keys)."""
-    current_task = state.get("current_task") or task_from_chat(
-        state.get("chat_history") or [],
-    )
+    current_task = _current_task_from_state(state)
     meeting_title = _meeting_title_from_state(state, current_task)
     transcript = _transcript_from_state(state)
 
@@ -133,18 +147,17 @@ def finalize_meeting_summary(state: AgentState) -> dict[str, Any]:
 
     return {
         "current_task": current_task,
-        "next_agent": "FINISH",
+        "next_agent": FINISH,
         "agent_output": agent_output,
         "chat_history": [*prior, AIMessage(content=agent_output)],
         "user_feedback": None,
     }
 
+
 def commit_meeting_summary(state: AgentState) -> dict[str, Any]:
-    """
-    HITL Gate Node
-    """
-    logger.info("User feedback received: %s", state.get("user_feedback"))
+    """Commit or retry a generated meeting summary after HITL review."""
     user_feedback = state.get("user_feedback")
+    logger.info("User feedback received: %s", user_feedback)
 
     if user_feedback == "approve":
         logger.info("User feedback approved, committing meeting summary")
@@ -152,40 +165,35 @@ def commit_meeting_summary(state: AgentState) -> dict[str, Any]:
             "user_feedback": "approve",
             "error": None,
         }
-    elif user_feedback == "reject": 
+
+    if user_feedback == "reject":
         logger.info("User feedback rejected, retrying")
         return {
             "user_feedback": "reject",
             "current_task": state.get("current_task") or "",
         }
-    
+
     return {"user_feedback": "reject", "error": "Invalid user feedback"}
-    
-    
+
 
 def route_after_review(state: AgentState) -> Literal["FINISH", "RETRY"]:
+    """Route from the HITL review node."""
     feedback = state.get("user_feedback")
     if feedback == "approve":
-        return "FINISH"
-    return "RETRY"
+        return FINISH
+    return RETRY
+
 
 def _invoke_placeholder_worker(next_agent: RouteKey, current_task: str) -> str:
     """Stub workers not yet implemented as graphs."""
-    completion_tag = {
-        "blocker_triage": "blocker found",
-        "retro_insights": "insights generated",
-        "file_analysis": "file analysis complete",
-        "search": "search complete",
-    }.get(next_agent, "step complete")
+    completion_tag = PLACEHOLDER_COMPLETION_TAGS.get(next_agent, "step complete")
     return f"Mock output from {next_agent} for '{current_task}'. ({completion_tag})"
 
 
 def call_placeholder_worker(state: AgentState) -> dict[str, Any]:
     """Placeholder for blocker_triage / retro_insights / file / search."""
     next_agent = state.get("next_agent") or "blocker_triage"
-    current_task = state.get("current_task") or task_from_chat(
-        state.get("chat_history") or [],
-    )
+    current_task = _current_task_from_state(state)
 
     logger.info("supervisor placeholder worker: %s", next_agent)
     worker_text = _invoke_placeholder_worker(next_agent, current_task)
@@ -198,51 +206,50 @@ def call_placeholder_worker(state: AgentState) -> dict[str, Any]:
     }
 
 
-workflow = StateGraph(AgentState)
-workflow.add_node("prepare_user_query", prepare_user_query_input)
-workflow.add_node("user_query", user_query_graph)
-workflow.add_node("prepare_meeting_summary", prepare_meeting_summary_input)
-workflow.add_node("meeting_summary", meeting_summary_graph)
-workflow.add_node("finalize_meeting_summary", finalize_meeting_summary)
-workflow.add_node("commit_meeting_summary", commit_meeting_summary)
-workflow.add_node("call_placeholder_worker", call_placeholder_worker)
+def build_graph() -> StateGraph:
+    """Build the supervisor graph with routing and worker subgraphs."""
+    workflow = StateGraph(AgentState)
+    workflow.add_node("prepare_user_query", prepare_user_query_input)
+    workflow.add_node("user_query", user_query_graph)
+    workflow.add_node("prepare_meeting_summary", prepare_meeting_summary_input)
+    workflow.add_node("meeting_summary", meeting_summary_graph)
+    workflow.add_node("finalize_meeting_summary", finalize_meeting_summary)
+    workflow.add_node("commit_meeting_summary", commit_meeting_summary)
+    workflow.add_node("call_placeholder_worker", call_placeholder_worker)
+    workflow.add_node("blocker_triage_graph", blocker_triage_graph)
+    workflow.add_node("retro_insights_graph", retro_insights_graph)
+    workflow.add_node("file_analysis_graph", file_analysis_graph)
 
-workflow.add_node("blocker_triage_graph", blocker_triage_graph)
-workflow.add_node("retro_insights_graph", retro_insights_graph)
-workflow.add_node("file_analysis_graph", file_analysis_graph)
+    workflow.set_entry_point("prepare_user_query")
+    workflow.add_edge("prepare_user_query", "user_query")
+    workflow.add_conditional_edges(
+        "user_query",
+        route_after_user_query,
+        {
+            "meeting_summary": "prepare_meeting_summary",
+            "blocker_triage": "blocker_triage_graph",
+            "retro_insights": "retro_insights_graph",
+            "file_analysis": "file_analysis_graph",
+            "search": "call_placeholder_worker",
+            FINISH: END,
+        },
+    )
+    workflow.add_edge("prepare_meeting_summary", "meeting_summary")
+    workflow.add_edge("meeting_summary", "finalize_meeting_summary")
+    workflow.add_edge("finalize_meeting_summary", "commit_meeting_summary")
+    workflow.add_conditional_edges(
+        "commit_meeting_summary",
+        route_after_review,
+        {
+            FINISH: END,
+            RETRY: "prepare_user_query",
+        },
+    )
+    workflow.add_edge("call_placeholder_worker", "prepare_user_query")
+    return workflow
 
-workflow.set_entry_point("prepare_user_query")
-workflow.add_edge("prepare_user_query", "user_query")
 
-workflow.add_conditional_edges(
-    "user_query",
-    route_after_user_query,
-    {
-        "meeting_summary": "prepare_meeting_summary",
-        "blocker_triage": "blocker_triage_graph",
-        "retro_insights": "retro_insights_graph",
-        "file_analysis": "file_analysis_graph",
-        "search": "call_placeholder_worker",
-        "FINISH": END,
-    },
-)
-workflow.add_edge("prepare_meeting_summary", "meeting_summary")
-workflow.add_edge("meeting_summary", "finalize_meeting_summary")
-
-workflow.add_edge("finalize_meeting_summary", "commit_meeting_summary")
-
-workflow.add_conditional_edges(
-    "commit_meeting_summary",
-    route_after_review,
-    {
-        "FINISH": END,
-        "RETRY": "prepare_user_query",
-    },
-)
-
-workflow.add_edge("call_placeholder_worker", "prepare_user_query")
-
-supervisor_agent_graph = workflow.compile(
+supervisor_agent_graph = build_graph().compile(
     interrupt_before=["commit_meeting_summary"],
 )
 
