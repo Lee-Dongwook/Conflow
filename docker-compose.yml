@@ -65,5 +65,30 @@ services:
       rag:
         condition: service_started
 
+  vllm-server:
+    image: vllm/vllm-openai:latest
+    container_name: conflow-vllm-engine
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    ports:
+      - "8000:8000"
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: >
+      --model Qwen/Qwen2.5-7B-Instruct-AWQ
+      --quantization awq
+      --port 8000
+      --max-model-len 4096
+      --gpu-memory-utilization 0.90
+      --enable-prompt-caching
+
 volumes:
   db_data:
