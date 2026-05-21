@@ -4,17 +4,14 @@ from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 from src.app.agent.graphs.file.model import FileContentAnalysisState
 from src.app.core.base import get_model
-from src.app.core.logger import logger
 
 
 async def analysis_file(state: FileContentAnalysisState, config: RunnableConfig) -> dict:
-    logger.info(f"Analyzing file: {state.file_path}")
     extracted_content = state.extracted_content
 
     result_content = ""
 
     if not extracted_content or extracted_content.startswith("Error:"):
-        logger.warning("No extracted content found")
         result_content = extracted_content or "Error: No extracted content found"
         return {
             "processed_content": result_content,
@@ -22,7 +19,6 @@ async def analysis_file(state: FileContentAnalysisState, config: RunnableConfig)
         }
     
     if state.file_task == "extract":
-        logger.info("Extracting content from file")
         result_content = extracted_content
         return {
             "processed_content": result_content,
@@ -48,9 +44,7 @@ async def analysis_file(state: FileContentAnalysisState, config: RunnableConfig)
         model = get_model(config, "gpt-4o-mini", "file_analysis_model")
         response = await model.ainvoke(messages, config=config)
         result_content = (response.content or "").strip()
-        logger.info(f"Processed content: {result_content}")
     except Exception as e:
-        logger.error(f"Error analyzing file: {e}")
         result_content = f"Error: {e}"
     
     return {

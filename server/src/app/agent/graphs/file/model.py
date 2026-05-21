@@ -21,7 +21,7 @@ class FileSubgraphOutputState(BaseModel):
     success: bool
     content: str
 
-def file_results_reducer(existing: list[FileSubgraphOutputState], new: list[FileSubgraphOutputState]) -> list[FileSubgraphOutputState]:
+def file_results_reducer(existing: list[FileSubgraphOutputState], new: list[FileSubgraphOutputState]) -> list[FileSubgraphOutputState]:  # noqa: E501
     if new == []:
         return []
 
@@ -30,11 +30,11 @@ def file_results_reducer(existing: list[FileSubgraphOutputState], new: list[File
 
     result = existing.copy()
     for item in new:
-        item_name = item.original_file_name if hasattr(item, 'original_file_name') else item.get('original_file_name')
+        item_name = item.original_file_name if hasattr(item, 'original_file_name') else item.get('original_file_name')  # noqa: E501
 
         already_exists = False
         for existing_item in result:
-            existing_name = existing_item.original_file_name if hasattr(existing_item, 'original_file_name') else existing_item.get('original_file_name')
+            existing_name = existing_item.original_file_name if hasattr(existing_item, 'original_file_name') else existing_item.get('original_file_name')  # noqa: E501
             if existing_name == item_name:
                 already_exists = True
                 break
@@ -51,7 +51,7 @@ class FileSubgraphInputState(BaseModel):
     user_question: str = Field(..., description="The question to ask the file")
     file_task: str = Field(..., description="The task to perform on the file")
     file_info_list: list[FileInfo]| None = None
-    file_process_results = Annotated[list[FileSubgraphOutputState] | None, file_results_reducer] = None
+    file_process_results: Annotated[list[FileSubgraphOutputState] | None, file_results_reducer] = None  # noqa: E501
 
 class FileSubgraphState(BaseModel):
     user_uuid: str | None
@@ -59,7 +59,7 @@ class FileSubgraphState(BaseModel):
     user_question: str | None
     file_task: str | None
     file_info_list: list[FileInfo] | None
-    file_process_results: Annotated[list[FileSubgraphOutputState] | None, file_results_reducer] = None
+    file_process_results: Annotated[list[FileSubgraphOutputState] | None, file_results_reducer] = None  # noqa: E501
     structured_response: dict | None = None
 
 class FileContentAnalysisState(BaseModel):

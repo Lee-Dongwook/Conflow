@@ -1,14 +1,11 @@
 from langchain_core.runnables import RunnableConfig
 from pydantic import BaseModel
 from src.app.agent.graphs.file.model import FileSubgraphInputState, FileSubgraphState
-from src.app.core.logger import logger
 
 
 async def start_process(state: FileSubgraphInputState, config: RunnableConfig) -> FileSubgraphState:
     if isinstance(state, BaseModel):
         state_dict = state.model_dump(exclude_none=True)
-    else:
-        state_dict = state
     
     file_path = state_dict.get("file_path")
     user_question = state_dict.get("user_question")
@@ -20,7 +17,6 @@ async def start_process(state: FileSubgraphInputState, config: RunnableConfig) -
         target_file_lists = file_path
     
     if not state_dict.get("file_info_list"):
-        logger.warning("File info list not found")
         state_dict["file_path"] = None
         state_dict["user_question"] = None
         return state_dict
@@ -35,7 +31,7 @@ async def start_process(state: FileSubgraphInputState, config: RunnableConfig) -
                 break
         
         if not is_found:
-            logger.warning(f"File not found: {target_file}")
+            continue
     
 
     state_dict["file_path"] = None

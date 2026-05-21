@@ -13,10 +13,11 @@ from typing import Any, Literal
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langgraph.graph import END, StateGraph
 from src.app.agent.graphs.blocker_triage import graph as blocker_triage_graph
+from src.app.agent.graphs.file_analysis import graph as file_analysis_graph
 from src.app.agent.graphs.meeting_summary import graph as meeting_summary_graph
+from src.app.agent.graphs.retro_insights import graph as retro_insights_graph
 from src.app.agent.graphs.user_query import RouteKey, task_from_chat
 from src.app.agent.graphs.user_query import graph as user_query_graph
-from src.app.agent.graphs.retro_insights import graph as retro_insights_graph
 from src.app.agent.graphs.workers import (
     default_transcript_when_missing,
     format_meeting_summary_for_supervisor,
@@ -207,6 +208,7 @@ workflow.add_node("call_placeholder_worker", call_placeholder_worker)
 
 workflow.add_node("blocker_triage_graph", blocker_triage_graph)
 workflow.add_node("retro_insights_graph", retro_insights_graph)
+workflow.add_node("file_analysis_graph", file_analysis_graph)
 
 workflow.set_entry_point("prepare_user_query")
 workflow.add_edge("prepare_user_query", "user_query")
@@ -218,7 +220,7 @@ workflow.add_conditional_edges(
         "meeting_summary": "prepare_meeting_summary",
         "blocker_triage": "blocker_triage_graph",
         "retro_insights": "retro_insights_graph",
-        "file_analysis": "call_placeholder_worker",
+        "file_analysis": "file_analysis_graph",
         "search": "call_placeholder_worker",
         "FINISH": END,
     },
