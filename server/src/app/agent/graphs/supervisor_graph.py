@@ -11,8 +11,8 @@ from __future__ import annotations
 from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
-from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
+from src.app.agent.graphs.blocker_triage import graph as blocker_triage_graph
 from src.app.agent.graphs.meeting_summary import graph as meeting_summary_graph
 from src.app.agent.graphs.user_query import RouteKey, task_from_chat
 from src.app.agent.graphs.user_query import graph as user_query_graph
@@ -204,6 +204,8 @@ workflow.add_node("finalize_meeting_summary", finalize_meeting_summary)
 workflow.add_node("commit_meeting_summary", commit_meeting_summary)
 workflow.add_node("call_placeholder_worker", call_placeholder_worker)
 
+workflow.add_node("blocker_triage_graph", blocker_triage_graph)
+
 workflow.set_entry_point("prepare_user_query")
 workflow.add_edge("prepare_user_query", "user_query")
 
@@ -212,7 +214,7 @@ workflow.add_conditional_edges(
     route_after_user_query,
     {
         "meeting_summary": "prepare_meeting_summary",
-        "blocker_triage": "call_placeholder_worker",
+        "blocker_triage": "blocker_triage_graph",
         "retro_insights": "call_placeholder_worker",
         "file_analysis": "call_placeholder_worker",
         "search": "call_placeholder_worker",
