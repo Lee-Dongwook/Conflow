@@ -4,22 +4,25 @@ Conflow 에이전트는 **협업 관제탑 UI를 대체하는 것이 아니라**
 
 ## 제품 맥락 (README / 와이어 기준)
 
-| Pain | 에이전트가 할 일 |
-|------|------------------|
-| 병목·무임승차 | 회의/채팅에서 **막힌 일(Blocker)**·담당 공백을 추출해 알림·보드 후보로 제안 |
-| 마감 망각 | 논의에서 **마감·다음 단계**를 구조화해 이번 주·인박스에 반영 가능한 형태로 출력 |
-| 툴 피로 | Notion 대신 **한 줄 요약 + 액션 리스트** (MeetingSummary 와이어와 동일 스키마) |
+| Pain          | 에이전트가 할 일                                                                |
+| ------------- | ------------------------------------------------------------------------------- |
+| 병목·무임승차 | 회의/채팅에서 **막힌 일(Blocker)**·담당 공백을 추출해 알림·보드 후보로 제안     |
+| 마감 망각     | 논의에서 **마감·다음 단계**를 구조화해 이번 주·인박스에 반영 가능한 형태로 출력 |
+| 툴 피로       | Notion 대신 **한 줄 요약 + 액션 리스트** (MeetingSummary 와이어와 동일 스키마)  |
 
-Phase 2 MVP 에이전트 범위: **허들(음성) 종료 → 전사 텍스트 → AI 회의록** (`MeetingSummaryPage`와 동일 필드).
+Phase 2 MVP의 1차 데모 범위는 **허들(음성) 종료 → 전사 텍스트 → AI 회의록** (`MeetingSummaryPage`와 동일 필드)입니다. 현재 구현은 이 흐름을 중심으로, 이후 Multi-Agent 확장을 검증하기 위한 `user_query`, `blocker_triage`, `retro_insights`, `file_analysis` mock/LLM 그래프까지 포함합니다.
 
 ## 그래프 로드맵
 
-| Graph ID | 상태 | 입력 | 출력 (A2UI / API) |
-|----------|------|------|-------------------|
-| `meeting_summary` | **로컬 구현 (v0)** | `meeting_title`, `transcript`, `team_context?` | `overview`, `bullets`, `decisions`, `actions[]`, `next_steps[]` |
-| `supervisor_graph` | **v0 — meeting_summary 연동** | `current_task`, `chat_history`, `transcript?` | 위 필드 + `agent_output` (supervisor가 child `invoke`) |
-| `blocker_triage` | 예정 | 스프린트 컨텍스트, 보드 카드, 인박스 | Blocker 후보 + 근거 |
-| `retro_insights` | 예정 | 회고 카드 텍스트 | KPT 클러스터·투표 요약 |
+| Graph ID           | 상태                                    | 입력                                                             | 출력 (A2UI / API)                                                                       |
+| ------------------ | --------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `user_query`       | **로컬 구현 (v0)**                      | `current_task`, `chat_history`, `agent_output?`                  | `next_agent`, `intent_text`, `detected_urls`, `route_reason`                            |
+| `meeting_summary`  | **로컬 구현 (v0)**                      | `meeting_title`, `transcript`, `team_context?`                   | `overview`, `bullets`, `decisions`, `actions[]`, `next_steps[]`, `agent_mode`, `error?` |
+| `supervisor_graph` | **v0 — routing + worker subgraph 연동** | `current_task?`, `chat_history`, `transcript?`, `meeting_title?` | worker 출력 + `agent_output`, `next_agent`, routing metadata                            |
+| `blocker_triage`   | **로컬 구현 (mock/LLM v0)**             | `current_task`, `chat_history?`, `team_context?`                 | `detected_blockers[]`, `summary`, `agent_mode`, `error?`                                |
+| `retro_insights`   | **로컬 구현 (mock/LLM v0)**             | `current_task`, `chat_history?`, `team_context?`                 | `detected_insights[]`, `team_pulse_score`, `summary`, `agent_mode`, `error?`            |
+| `file_analysis`    | **로컬 구현 (mock/LLM v0)**             | `file_info_list?`, `user_question?`, `file_task?`                | `file_process_results[]`, `structured_response`                                         |
+| `search`           | **라우팅만 구현**                       | 검색/조회 의도                                                   | 현재 supervisor placeholder worker가 `search complete` 반환                             |
 
 ## `meeting_summary` 파이프라인
 
@@ -36,7 +39,10 @@ prepare_user_query → [user_query subgraph] → route
         └ analyze_user_query ─┘
         → prepare_meeting_summary → [meeting_summary subgraph] → finalize_meeting_summary
                                               └ validate_input → summarize ─┘
-        → prepare_user_query → … → FINISH
+        → commit_meeting_summary(HITL interrupt) → FINISH/RETRY
+
+        → [blocker_triage / retro_insights / file_analysis worker graph] → END
+        → search placeholder → prepare_user_query → FINISH
 ```
 
 Studio 타임라인에서 subgraph 안쪽이 보이려면 `langgraph dev` 재시작 후 **새 thread**로 `supervisor_graph` 실행.
@@ -45,6 +51,9 @@ Studio 타임라인에서 subgraph 안쪽이 보이려면 `langgraph dev` 재시
 - **summarize**:
   - `CONFLOW_AGENT_MODE=mock` (기본): API 키 없이 로컬 스모크·Studio 테스트.
   - `CONFLOW_AGENT_MODE=llm`: `OPENAI_API_KEY`로 구조화 요약 (와이어 스키마 고정).
+- **worker graph 공통**:
+  - `CONFLOW_AGENT_MODE=mock`은 데모/테스트용 결정적 휴리스틱을 사용합니다.
+  - `CONFLOW_AGENT_MODE=llm`은 `OPENAI_API_KEY`가 있을 때 구조화 출력을 시도하고, 키가 없으면 error 또는 rule fallback을 반환합니다.
 
 향후: STT 어댑터 노드 추가, `backlog_items` MCP 툴로 액션 자동 등록.
 
@@ -66,6 +75,11 @@ uv run langgraph dev
 
 # 4) 그래프만 빠르게 확인 (서버 없이)
 uv run python scripts/smoke_meeting_summary.py
+uv run python scripts/smoke_supervisor_graph.py
+uv run python scripts/smoke_user_query.py
+
+# 5) 회귀 테스트
+uv run pytest -q -p no:cacheprovider
 ```
 
 Studio: 터미널에 출력되는 `https://smith.langchain.com/studio/?baseUrl=...` 링크.
@@ -76,16 +90,17 @@ Studio: 터미널에 출력되는 `https://smith.langchain.com/studio/?baseUrl=.
 
 ```json
 {
-  "chat_history": [
-    { "type": "human", "content": "지난 허들 회의록 정리해줘" }
-  ]
+  "chat_history": [{ "type": "human", "content": "지난 허들 회의록 정리해줘" }]
 }
 ```
 
 ```json
 {
   "chat_history": [
-    { "type": "human", "content": "Please prepare meeting minutes from the last standup." }
+    {
+      "type": "human",
+      "content": "Please prepare meeting minutes from the last standup."
+    }
   ]
 }
 ```
@@ -99,7 +114,9 @@ Studio: 터미널에 출력되는 `https://smith.langchain.com/studio/?baseUrl=.
   "current_task": "Generate a meeting summary for the last standup.",
   "transcript": "오늘은 이번 주 범위를 쪼개고 ...",
   "meeting_title": "FE 스터디 — 스프린트 계획",
-  "chat_history": [{ "type": "human", "content": "Please summarize the standup meeting." }]
+  "chat_history": [
+    { "type": "human", "content": "Please summarize the standup meeting." }
+  ]
 }
 ```
 
@@ -110,6 +127,26 @@ Studio: 터미널에 출력되는 `https://smith.langchain.com/studio/?baseUrl=.
   "meeting_title": "FE 스터디 — 스프린트 계획",
   "transcript": "이번 주는 보드 WIP 3으로 제한하기로 했고, 금요일 데모는 스테이징 배포와 스크린샷 1장을 완료 기준으로 한다. 김○○가 백로그 상위 3건 메타데이터를 보강한다.",
   "team_context": "대학 스터디 팀, 1주 스프린트"
+}
+```
+
+**supervisor_graph — blocker triage**
+
+```json
+{
+  "current_task": "백엔드 API가 아직 안 열려서 FE 작업이 막혔어",
+  "chat_history": [
+    { "type": "human", "content": "백엔드 API 때문에 프론트 작업이 막힘" }
+  ]
+}
+```
+
+**supervisor_graph — file analysis**
+
+```json
+{
+  "current_task": "Analyze https://cdn.example.com/spec.pdf",
+  "chat_history": [{ "type": "human", "content": "이 PDF 요구사항 분석해줘" }]
 }
 ```
 
