@@ -3,6 +3,9 @@
   "dependencies": ["."],
   "graphs": {
     "meeting_summary": "src.app.agent.graphs.meeting_summary:graph",
+    "blocker_triage": "src.app.agent.graphs.blocker_triage:graph",
+    "file_analysis": "src.app.agent.graphs.file_analysis:graph",
+    "retro_insights": "src.app.agent.graphs.retro_insights:graph",
     "user_query": "src.app.agent.graphs.user_query:graph",
     "supervisor_graph": "src.app.agent.graphs.supervisor_graph:supervisor_agent_graph"
   },
