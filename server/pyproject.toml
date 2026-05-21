@@ -31,6 +31,7 @@ dependencies = [
     "pytesseract>=0.3.13",
     "langchain-ollama>=1.1.0",
     "redis>=5.0.0",
+    "pybreaker>=1.4.1",
 ]
 
 [dependency-groups]
