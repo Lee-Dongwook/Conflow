@@ -483,3 +483,7 @@ enabled = true
 # Native Windows sandbox mode (Windows only): unelevated | elevated
 
 sandbox = "unelevated"
+
+[mcp_servers.pencil]
+
+startup_timeout_sec = 1
