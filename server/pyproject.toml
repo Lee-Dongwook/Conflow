@@ -30,6 +30,7 @@ dependencies = [
     "python-magic>=0.4.27",
     "pytesseract>=0.3.13",
     "langchain-ollama>=1.1.0",
+    "redis>=5.0.0",
 ]
 
 [dependency-groups]

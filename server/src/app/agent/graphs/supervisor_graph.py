@@ -70,18 +70,19 @@ class AgentState(TypedDict, total=False):
     user_feedback: Literal["approve", "reject"] | None
     review_comment: str | None
 
-async def compress_context_node(state: AgentState) -> dict[str, Any]:
+
+def compress_context_node(state: AgentState) -> dict[str, Any]:
     """Compress the context window to the last MAX_WINDOW_SIZE messages."""
     messages = state.get("chat_history") or []
     current_summary = state.get("summary") or ""
 
     if len(messages) <= MAX_WINDOW_SIZE:
         return {}
-    
+
     messages_to_summarize = messages[:-4]
 
     summary_prompt = (
-    "You are an expert context compressor for Conflow Project Management System.\n"
+        "You are an expert context compressor for Conflow Project Management System.\n"
         "Analyze the following conversation segment and update the existing summary.\n"
         "Focus on core task updates, project blockers, and engineering decisions.\n\n"
         f"■ Current Summary Base:\n{current_summary}\n\n"
@@ -92,22 +93,20 @@ async def compress_context_node(state: AgentState) -> dict[str, Any]:
     for msg in messages_to_summarize:
         role = "User" if msg.type == "human" else "Agent"
         formatted_chat += f"{role}: {msg.content}\n"
-    
+
     summary_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.0)
-    response = await summary_llm.ainvoke([
-        SystemMessage(content=summary_prompt),
-        HumanMessage(content=formatted_chat),
-    ])
+    response = summary_llm.invoke(
+        [
+            SystemMessage(content=summary_prompt),
+            HumanMessage(content=formatted_chat),
+        ]
+    )
 
     updated_summary = str(response.content).strip()
 
     purge_signals = [RemoveMessage(id=msg.id) for msg in messages_to_summarize]
 
-    return {
-        "summary": updated_summary,
-        "chat_history": purge_signals
-    }
-
+    return {"summary": updated_summary, "chat_history": purge_signals}
 
 
 def _chat_text(chat_history: list[BaseMessage | dict[str, Any]]) -> str:
@@ -257,6 +256,7 @@ def call_placeholder_worker(state: AgentState) -> dict[str, Any]:
         "chat_history": [*prior, AIMessage(content=worker_text)],
     }
 
+
 def build_graph() -> StateGraph:
     """Build the supervisor graph with routing and worker subgraphs."""
     workflow = StateGraph(AgentState)
@@ -313,7 +313,7 @@ if __name__ == "__main__":
         "current_task": "Generate a meeting summary for the last standup.",
         "agent_output": "",
         "chat_history": [HumanMessage(content="Please summarize the standup meeting.")],
-        "summary": ""
+        "summary": "",
     }
     for chunk in supervisor_agent_graph.stream(initial):
         print(chunk)

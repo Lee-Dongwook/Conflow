@@ -16,6 +16,13 @@ class AppSettings(BaseSettings):
     # Set to False to force JWT signing even if CONTEXT_COOKIE_KEY is present.
     ENCRYPT_CONTEXT_COOKIE: bool = True
 
+    # Redis-backed idempotency/distributed lock for Huddle agent execution.
+    # Disabled when REDIS_URL is unset so local tests/dev do not require Redis.
+    REDIS_URL: str | None = None
+    HUDDLE_IDEMPOTENCY_TTL_SECONDS: int = 86400
+    HUDDLE_PROCESSING_TTL_SECONDS: int = 300
+    HUDDLE_LOCK_TTL_SECONDS: int = 300
+
     model_config = SettingsConfigDict(
         env_file=None, # Disable direct file reading to avoid conflict with shared_init.load_dotenv
         env_file_encoding="utf-8",

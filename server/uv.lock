@@ -482,6 +482,7 @@ dependencies = [
     { name = "pytesseract" },
     { name = "python-dotenv" },
     { name = "python-magic" },
+    { name = "redis" },
     { name = "scalar-fastapi" },
     { name = "sqlalchemy" },
     { name = "starlette" },
@@ -537,6 +538,7 @@ requires-dist = [
     { name = "pytesseract", specifier = ">=0.3.13" },
     { name = "python-dotenv", specifier = ">=1.0.1,<2.0.0" },
     { name = "python-magic", specifier = ">=0.4.27" },
+    { name = "redis", specifier = ">=5.0.0" },
     { name = "scalar-fastapi", specifier = ">=1.2.3" },
     { name = "sqlalchemy", specifier = ">=2.0,<3.0" },
     { name = "starlette", specifier = ">=0.40.1" },
@@ -3418,6 +3420,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b2/a2/0328d49d3b5fb427068e9200e7de5b0d708d021a1ad98d004bc685d2529e/realtime-2.30.0.tar.gz", hash = "sha256:7aa593da52ed5f92c34ec4e50e32043afa62f219c94f717ad64a66ab0ef9f1ba", size = 18718, upload-time = "2026-05-06T17:35:23.925Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b4/75/1b2cfc949595e22d8c05a2aa2cfc222921f7f94177d7e8a90542f3f73b33/realtime-2.30.0-py3-none-any.whl", hash = "sha256:7c93b63d2cf99aa1da4fa8826b03b00cd32f7b38abb27ff47b19eb5dcb5707c6", size = 22376, upload-time = "2026-05-06T17:35:22.568Z" },
+]
+
+[[package]]
+name = "redis"
+version = "7.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/7b/7f/3759b1d0d72b7c92f0d70ffd9dc962b7b7b5ee74e135f9d7d8ab06b8a318/redis-7.4.0.tar.gz", hash = "sha256:64a6ea7bf567ad43c964d2c30d82853f8df927c5c9017766c55a1d1ed95d18ad", size = 4943913, upload-time = "2026-03-24T09:14:37.53Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/74/3a/95deec7db1eb53979973ebd156f3369a72732208d1391cd2e5d127062a32/redis-7.4.0-py3-none-any.whl", hash = "sha256:a9c74a5c893a5ef8455a5adb793a31bb70feb821c86eccb62eebef5a19c429ec", size = 409772, upload-time = "2026-03-24T09:14:35.968Z" },
 ]
 
 [[package]]
