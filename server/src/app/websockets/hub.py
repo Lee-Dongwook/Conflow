@@ -5,7 +5,6 @@ from collections.abc import Awaitable, Callable
 from typing import TypeVar
 
 from starlette.websockets import WebSocket
-
 from websockets.asyncio.server import ServerConnection
 
 TConnection = TypeVar("TConnection", WebSocket, ServerConnection)

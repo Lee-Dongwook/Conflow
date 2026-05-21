@@ -1,7 +1,8 @@
 """FastAPI WebSocket routes for WebRTC signaling."""
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from .hub import signaling_hub, send_starlette
+
+from .hub import send_starlette, signaling_hub
 
 router = APIRouter(prefix="/ws", tags=["signaling"])
 
