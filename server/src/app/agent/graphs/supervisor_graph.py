@@ -8,12 +8,14 @@ is a second subgraph for the minutes worker.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
+from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, StateGraph
 from src.app.agent.graphs.meeting_summary import graph as meeting_summary_graph
-from src.app.agent.graphs.user_query import RouteKey, graph as user_query_graph, task_from_chat
+from src.app.agent.graphs.user_query import RouteKey, task_from_chat
+from src.app.agent.graphs.user_query import graph as user_query_graph
 from src.app.agent.graphs.workers import (
     default_transcript_when_missing,
     format_meeting_summary_for_supervisor,
@@ -42,6 +44,8 @@ class AgentState(TypedDict, total=False):
     intent_text: str
     detected_urls: list[str]
     route_reason: str
+    user_feedback: Literal["approve", "reject"] | None
+    review_comment: str | None
 
 
 def _chat_text(chat_history: list[BaseMessage | dict[str, Any]]) -> str:
@@ -129,8 +133,38 @@ def finalize_meeting_summary(state: AgentState) -> dict[str, Any]:
         "current_task": current_task,
         "agent_output": agent_output,
         "chat_history": [*prior, AIMessage(content=agent_output)],
+        "user_feedback": None,
     }
 
+def commit_meeting_summary(state: AgentState) -> dict[str, Any]:
+    """
+    HITL Gate Node
+    """
+    logger.info("User feedback received: %s", state.get("user_feedback"))
+    user_feedback = state.get("user_feedback")
+
+    if user_feedback == "approve":
+        logger.info("User feedback approved, committing meeting summary")
+        return {
+            "user_feedback": "approve",
+            "error": None,
+        }
+    elif user_feedback == "reject": 
+        logger.info("User feedback rejected, retrying")
+        return {
+            "user_feedback": "reject",
+            "current_task": state.get("current_task") or "",
+        }
+    
+    return {"user_feedback": "reject", "error": "Invalid user feedback"}
+    
+    
+
+def route_after_review(state: AgentState) -> Literal["FINISH", "RETRY"]:
+    feedback = state.get("user_feedback")
+    if feedback == "approve":
+        return "FINISH"
+    return "RETRY"
 
 def _invoke_placeholder_worker(next_agent: RouteKey, current_task: str) -> str:
     """Stub workers not yet implemented as graphs."""
@@ -167,10 +201,12 @@ workflow.add_node("user_query", user_query_graph)
 workflow.add_node("prepare_meeting_summary", prepare_meeting_summary_input)
 workflow.add_node("meeting_summary", meeting_summary_graph)
 workflow.add_node("finalize_meeting_summary", finalize_meeting_summary)
+workflow.add_node("commit_meeting_summary", commit_meeting_summary)
 workflow.add_node("call_placeholder_worker", call_placeholder_worker)
 
 workflow.set_entry_point("prepare_user_query")
 workflow.add_edge("prepare_user_query", "user_query")
+
 workflow.add_conditional_edges(
     "user_query",
     route_after_user_query,
@@ -185,10 +221,23 @@ workflow.add_conditional_edges(
 )
 workflow.add_edge("prepare_meeting_summary", "meeting_summary")
 workflow.add_edge("meeting_summary", "finalize_meeting_summary")
-workflow.add_edge("finalize_meeting_summary", "prepare_user_query")
+
+workflow.add_edge("finalize_meeting_summary", "commit_meeting_summary")
+
+workflow.add_conditional_edges(
+    "commit_meeting_summary",
+    route_after_review,
+    {
+        "FINISH": END,
+        "RETRY": "prepare_user_query",
+    },
+)
+
 workflow.add_edge("call_placeholder_worker", "prepare_user_query")
 
-supervisor_agent_graph = workflow.compile()
+supervisor_agent_graph = workflow.compile(
+    interrupt_before=["commit_meeting_summary"],
+)
 
 
 if __name__ == "__main__":
