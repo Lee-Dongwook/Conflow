@@ -23,6 +23,7 @@ from src.app.agent.graphs.blocker_triage import graph as blocker_triage_graph
 from src.app.agent.graphs.file_analysis import graph as file_analysis_graph
 from src.app.agent.graphs.meeting_summary import graph as meeting_summary_graph
 from src.app.agent.graphs.retro_insights import graph as retro_insights_graph
+from src.app.agent.graphs.slack_notifier import slack_mcp_notifier
 from src.app.agent.graphs.user_query import RouteKey, task_from_chat
 from src.app.agent.graphs.user_query import graph as user_query_graph
 from src.app.agent.graphs.workers import (
@@ -271,6 +272,7 @@ def build_graph() -> StateGraph:
     workflow.add_node("blocker_triage_graph", blocker_triage_graph)
     workflow.add_node("retro_insights_graph", retro_insights_graph)
     workflow.add_node("file_analysis_graph", file_analysis_graph)
+    workflow.add_node("slack_notifier", slack_mcp_notifier)
 
     workflow.set_entry_point("compress_context")
     workflow.add_edge("compress_context", "prepare_user_query")
@@ -284,7 +286,7 @@ def build_graph() -> StateGraph:
             "retro_insights": "retro_insights_graph",
             "file_analysis": "file_analysis_graph",
             "search": "call_placeholder_worker",
-            FINISH: END,
+            FINISH: "slack_notifier",
         },
     )
     workflow.add_edge("prepare_meeting_summary", "meeting_summary")
@@ -295,10 +297,11 @@ def build_graph() -> StateGraph:
         "commit_meeting_summary",
         route_after_review,
         {
-            FINISH: END,
+            FINISH: "slack_notifier",
             RETRY: "compress_context",
         },
     )
+    workflow.add_edge("slack_notifier", END)
     workflow.add_edge("call_placeholder_worker", "compress_context")
     return workflow
 
