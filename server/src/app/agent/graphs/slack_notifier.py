@@ -6,8 +6,8 @@ import logging
 import os
 from typing import Any
 
-from langchain_mcp_adapters import MCPClientAdapter
-from src.app.agent.graphs.supervisor_graph import AgentState
+from langchain_mcp_adapters.client import MultiServerMCPClient
+from src.app.agent.graphs.base_agent_state import AgentState
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ async def slack_mcp_notifier(state: AgentState) -> dict[str, Any]:
     
     logger.info("Sending Slack notification to %s", target_channel)
 
-    async with MCPClientAdapter.from_command(
+    async with MultiServerMCPClient.from_command(
         ["npx", "-y", "@modelcontextprotocol/server-slack"],
         env={**os.environ, "SLACK_BOT_TOKEN": slack_token}
     ) as mcp_adapter:

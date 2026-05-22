@@ -19,6 +19,7 @@ from langchain_core.messages import (
 )
 from langchain_openai import ChatOpenAI
 from langgraph.graph import END, StateGraph
+from src.app.agent.graphs.base_agent_state import AgentState
 from src.app.agent.graphs.blocker_triage import graph as blocker_triage_graph
 from src.app.agent.graphs.file_analysis import graph as file_analysis_graph
 from src.app.agent.graphs.meeting_summary import graph as meeting_summary_graph
@@ -31,7 +32,6 @@ from src.app.agent.graphs.workers import (
     format_meeting_summary_for_supervisor,
 )
 from src.app.core.shared import logger
-from typing_extensions import TypedDict
 
 FINISH: Literal["FINISH"] = "FINISH"
 RETRY: Literal["RETRY"] = "RETRY"
@@ -45,32 +45,6 @@ PLACEHOLDER_COMPLETION_TAGS: dict[RouteKey, str] = {
     "file_analysis": "file analysis complete",
     "search": "search complete",
 }
-
-
-class AgentState(TypedDict, total=False):
-    """Supervisor state; shared with user_query and meeting_summary subgraphs."""
-
-    current_task: str
-    agent_output: str
-    chat_history: list[BaseMessage]
-    summary: str
-    next_agent: RouteKey
-    meeting_title: str
-    transcript: str
-    team_context: str | None
-    overview: str
-    bullets: list[str]
-    decisions: list[str]
-    actions: list[dict[str, str]]
-    next_steps: list[str]
-    agent_mode: str | None
-    error: str | None
-    intent_text: str
-    detected_urls: list[str]
-    route_reason: str
-    user_feedback: Literal["approve", "reject"] | None
-    review_comment: str | None
-
 
 def compress_context_node(state: AgentState) -> dict[str, Any]:
     """Compress the context window to the last MAX_WINDOW_SIZE messages."""
