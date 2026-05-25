@@ -1,6 +1,12 @@
 """HTTP routes for user CRUD operations."""
+import base64
 import logging
+import json
+import os
 import time
+from functools import lru_cache
+from typing import Any
+from urllib.parse import unquote
 
 import jwt
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -8,6 +14,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.database import get_async_db
+from ..core.utils import is_allowed_redirect_uri
 from ..core.verfiy_token import get_access_token
 from .lib import get_cookie_samesite, is_local
 from .schemas import UserCreate, UserRead, UserUpdate
@@ -15,6 +22,38 @@ from .service import create_user, delete_user, get_user_or_404, list_users, upda
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
+ClientCredentialConifg = dict[str, Any]
+
+def _load_client_credentials() -> dict[str, ClientCredentialConifg]:
+    raw_credentials = os.environ.get("AUTH_CLIENT_CREDENTIALS") or os.environ.get("MCP_CLIENT_CREDENTIALS")  # noqa: E501
+    if not raw_credentials:
+        return {}
+    
+    try:
+        credentials = json.loads(raw_credentials)
+    except Exception as e:
+        logger.error(f"Error loading client credentials: {e}")
+        return {}
+    if not isinstance(credentials, dict):
+        logger.error("Client credentials must be a dictionary")
+        return {}
+    return {str(key): value for key, value in credentials.items() if isinstance(value, dict)}
+
+def _get_basic_client_credentials(request: Request) -> tuple[str, str] | None:
+    authorization = request.headers.get("Authorization")
+    if not authorization or not authorization.lower().startswith("basic "):
+        return None
+    
+    try:
+        encoded_credentials = authorization.split(" ",1)[1]
+        decoded_credentials = base64.b64decode(encoded_credentials, validate=True).decode()
+    except Exception:
+        return None
+    
+    client_id, separator, client_secret = decoded_credentials.partition(":")
+    if not separator:
+        return None
+    return unquote(client_id), unquote(client_secret)
 
 @router.get("/token")
 async def get_token(
