@@ -8,6 +8,8 @@ from .model import User
 from .schemas import UserCreate, UserUpdate
 from .utils import (
     delete_user as delete_user_by_uuid,
+)
+from .utils import (
     get_user_by_supabase_uuid,
     get_user_by_uuid,
     insert_user,

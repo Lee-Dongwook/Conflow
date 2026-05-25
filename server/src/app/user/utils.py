@@ -8,6 +8,7 @@ from ..common.models import resource_registry
 from .model import User, UserRole
 from .schemas import UserCreate
 
+
 async def insert_user(user_in: UserCreate, db: AsyncSession) -> User:
     user = User(
         uuid=resource_registry.generate(),

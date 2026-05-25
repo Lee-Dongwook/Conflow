@@ -20,7 +20,7 @@ from ..core.utils import is_allowed_redirect_uri
 from ..core.verfiy_token import get_access_token
 from ..user.utils import get_user_by_uuid
 from .lib import get_cookie_samesite, is_local
-from .schemas import UserCreate, UserRead, UserUpdate
+from .schemas import TokenRefresh, UserCreate, UserRead, UserUpdate
 from .service import create_user, delete_user, get_user_or_404, list_users, update_user
 
 logger = logging.getLogger(__name__)
@@ -206,8 +206,60 @@ async def get_token(
         except Exception as refresh_error:
             logger.error("Error refreshing token", exc_info=refresh_error)
     
-    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized", headers={"WWW-Authenticate": "Bearer"})
+    raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorized", headers={"WWW-Authenticate": "Bearer"})  # noqa: E501
 
+@router.post("/refresh_token", summary="Refresh a token")
+async def refresh_token(
+    request: Request,
+    payload: TokenRefresh | None = None,
+) -> JSONResponse:
+    try:
+        from ..core.database import supabase_client
+
+        refresh_token = payload.refresh_token if payload else None
+        if not refresh_token:
+            refresh_token = request.cookies.get("refresh_token")
+        if not refresh_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Refresh token is required",
+            )
+        
+        response = await supabase_client.auth.refresh_session(refresh_token)
+        session = response.session
+
+        if not session or not session.access_token:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid refresh token",
+            )
+        is_local_request = is_local(request)
+        token_response = {
+            "access_token": session.access_token,
+            "token_type": "bearer",
+            "expires_in": session.expires_in,
+        }
+        if is_local_request:
+            token_response["refresh_token"] = session.refresh_token
+        
+        json_response = JSONResponse(content=token_response)
+        samesite = get_cookie_samesite(request, is_local_request)
+        json_response.set_cookie(
+            key="refresh_token",
+            value=session.refresh_token,
+            httponly=True,
+            max_age=30 * 24 * 3600,
+            samesite=samesite,
+            secure=(samesite == "none") or (not is_local_request),
+        )
+        json_response.headers["X-skip-camelize"] = "1"
+        return json_response
+    except Exception as refresh_error:
+        logger.error("Error refreshing token", exc_info=refresh_error)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error refreshing token",
+        )
 
 
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)

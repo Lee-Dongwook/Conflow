@@ -1,8 +1,9 @@
 import ipaddress
 import os
-
 from urllib.parse import urlparse
+
 from fastapi import Request
+
 
 def is_trust(s: str | None) -> bool:
     if not s:
