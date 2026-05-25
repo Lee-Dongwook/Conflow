@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import time
-from functools import lru_cache
 from typing import Any
 from urllib.parse import unquote
 
@@ -16,7 +15,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.database import get_async_db
 from ..core.security import generate_service_access_token
-from ..core.utils import is_allowed_redirect_uri
 from ..core.verfiy_token import get_access_token
 from ..user.utils import get_user_by_uuid
 from .lib import get_cookie_samesite, is_local
