@@ -1,7 +1,8 @@
 """HTTP routes for user CRUD operations."""
 import base64
-import logging
+import hmac
 import json
+import logging
 import os
 import time
 from functools import lru_cache
@@ -14,8 +15,10 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.database import get_async_db
+from ..core.security import generate_service_access_token
 from ..core.utils import is_allowed_redirect_uri
 from ..core.verfiy_token import get_access_token
+from ..user.utils import get_user_by_uuid
 from .lib import get_cookie_samesite, is_local
 from .schemas import UserCreate, UserRead, UserUpdate
 from .service import create_user, delete_user, get_user_or_404, list_users, update_user
@@ -23,6 +26,7 @@ from .service import create_user, delete_user, get_user_or_404, list_users, upda
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
 ClientCredentialConifg = dict[str, Any]
+_DUMMY_CLIENT_SECRET = 'conflow-client-secret-sample'
 
 def _load_client_credentials() -> dict[str, ClientCredentialConifg]:
     raw_credentials = os.environ.get("AUTH_CLIENT_CREDENTIALS") or os.environ.get("MCP_CLIENT_CREDENTIALS")  # noqa: E501
@@ -54,6 +58,83 @@ def _get_basic_client_credentials(request: Request) -> tuple[str, str] | None:
     if not separator:
         return None
     return unquote(client_id), unquote(client_secret)
+
+async def _issue_client_credentials_token(
+    request: Request,
+    client_id: str | None,
+    client_secret: str | None,
+    scope: str | None,
+    db: AsyncSession,
+) -> JSONResponse:
+    basic_credentials = _get_basic_client_credentials(request)
+    if basic_credentials:
+        if client_id and not hmac.compare_digest(client_id, basic_credentials[0]):
+            logger.warning("Client ID mismatch", extra={"client_id": client_id, "basic_credentials": basic_credentials[0]})  # noqa: E501
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid client credentials",
+                headers={"WWW-Autenticate": 'Basic realm="token"'},
+            )
+        client_id, client_secret = basic_credentials
+
+        if not client_id or not client_secret:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="client_id and client_secret are required."
+            )
+        credentials = _load_client_credentials()
+        credential = credentials.get(client_id)
+        expected_secret = credential.get("client_secret") if credential else None
+        secret_matches = hmac.compare_digest(str(expected_secret or _DUMMY_CLIENT_SECRET), client_secret)  # noqa: E501
+        if credential is None or not expected_secret or not secret_matches:
+            logger.warning("Invalid client credentials", extra={"client_id": client_id, "expected_secret": expected_secret})  # noqa: E501
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid client credentials",
+                headers={"WWW-Autenticate": 'Basic realm="token"'},
+            )
+        user_uuid = credential.get("user_uuid")
+        if not user_uuid:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Client credential is missing user_uuid.",
+            )
+        user = await get_user_by_uuid(str(user_uuid), db)
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found for client credential.",
+            )
+        
+        allowed_scopes = credential.get("scopes") or []
+        if isinstance(allowed_scopes, str):
+            allowed_scopes = allowed_scopes.split()
+        requested_scopes = scope.split() if scope else list(allowed_scopes)
+        if any(requested_scopes not in allowed_scopes for requested_scopes in requested_scopes):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Invalid scope requested.",
+            )
+
+        access_token, expires_in = generate_service_access_token(
+            user_uuid = str(user.uuid),
+            client_id = client_id,
+            scopes = requested_scopes,
+            credential_id = credential.get("credential_id"),
+            user_metadata = credential.get("user_metadata") if isinstance(credential.get("user_metadata"), dict) else None,  # noqa: E501
+        )
+
+        response = JSONResponse(
+            content={
+                "access_token": access_token,
+                "token_type": "Bearer",
+                "expires_in": expires_in,
+                "scope": " ".join(requested_scopes),
+            }
+        )
+        response.headers["X-skip-camelize"] = "1"
+        return response
+
 
 @router.get("/token")
 async def get_token(
