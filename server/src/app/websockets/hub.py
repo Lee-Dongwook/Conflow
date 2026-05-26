@@ -1,13 +1,14 @@
 """In-memory room registry for WebRTC signaling relay."""
 
+import asyncio
+import logging
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
-from typing import TypeVar
 
 from starlette.websockets import WebSocket
 from websockets.asyncio.server import ServerConnection
 
-TConnection = TypeVar("TConnection", WebSocket, ServerConnection)
+logger = logging.getLogger(__name__)
 
 
 class SignalingHub:
@@ -41,31 +42,28 @@ class SignalingHub:
         targets = [peer for peer in peers if peer is not sender]
         if not targets:
             return
-        await _broadcast(send, targets, message)
 
-
-async def _broadcast(
-    send: Callable[[object, str], Awaitable[None]],
-    targets: list[object],
-    message: str,
-) -> None:
-    import asyncio
-
-    await asyncio.gather(
-        *[send(peer, message) for peer in targets],
-        return_exceptions=True,
-    )
+        results = await asyncio.gather(
+            *[send(peer, message) for peer in targets],
+            return_exceptions=True,
+        )
+        for peer, result in zip(targets, results):
+            if isinstance(result, Exception):
+                logger.warning("Failed to send to peer, removing: %s", result)
+                self.leave(room_id, peer)
 
 
 async def send_starlette(peer: object, message: str) -> None:
     """Send text to a FastAPI/Starlette WebSocket peer."""
-    assert isinstance(peer, WebSocket)
+    if not isinstance(peer, WebSocket):
+        raise TypeError(f"Expected WebSocket, got {type(peer)}")
     await peer.send_text(message)
 
 
 async def send_websockets(peer: object, message: str) -> None:
     """Send text to a ``websockets`` server connection peer."""
-    assert isinstance(peer, ServerConnection)
+    if not isinstance(peer, ServerConnection):
+        raise TypeError(f"Expected ServerConnection, got {type(peer)}")
     await peer.send(message)
 
 

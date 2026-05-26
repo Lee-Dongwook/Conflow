@@ -25,6 +25,7 @@ class HuddleMediaProcessor(MediaStreamTrack):
         self.is_running = True
         self.processing_task = asyncio.create_task(self._stt_pipeline_loop())
         self.orchestrator = HuddleAgentOrchestrator(room_id=self.room_id)
+        self._stt_tasks: set[asyncio.Task] = set()
 
     async def recv(self) -> AudioFrame:
         try:
@@ -39,7 +40,7 @@ class HuddleMediaProcessor(MediaStreamTrack):
         except Exception as e:
             logger.error(f"Error processing audio frame: {e}")
             self.stop()
-            raise e
+            raise
 
     async def _stt_pipeline_loop(self):
         buffer = bytearray()
@@ -58,7 +59,9 @@ class HuddleMediaProcessor(MediaStreamTrack):
                     audio_payload = bytes(buffer[:flush_size])
                     del buffer[:flush_size]
 
-                    asyncio.create_task(self._execute_stt(audio_payload))
+                    task = asyncio.create_task(self._execute_stt(audio_payload))
+                    self._stt_tasks.add(task)
+                    task.add_done_callback(self._stt_tasks.discard)
             except asyncio.CancelledError:
                 break
             except Exception as e:
@@ -66,7 +69,7 @@ class HuddleMediaProcessor(MediaStreamTrack):
                 await asyncio.sleep(0.1)
     
     async def _execute_stt(self, audio_data: bytes):
-        logger.info("Captured %d bytes of audio chunk. Triggering STT inference...", len(audio_data))
+        logger.info("Captured %d bytes of audio chunk. Triggering STT inference...", len(audio_data))  # noqa: E501
 
         mocked_text = "스프린트 백엔드 API 명세서 작업이 계속 지연되고 있어서 프론트 개발이 막혔습니다."  # noqa: E501
 

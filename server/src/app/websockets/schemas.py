@@ -58,9 +58,11 @@ SignalingPayload = Annotated[
     Field(discriminator="type"),
 ]
 
+SignalingMessage = SignalingPayload
+
 _SIGNALING_ADAPTER: TypeAdapter[SignalingPayload] = TypeAdapter(SignalingPayload)
 
 
-def parse_signaling_message(raw: str) -> OfferMessage | AnswerMessage | IceMessage:
+def parse_signaling_message(raw: str) -> SignalingPayload:
     """Parse a JSON signaling frame from the wire."""
     return _SIGNALING_ADAPTER.validate_json(raw)
