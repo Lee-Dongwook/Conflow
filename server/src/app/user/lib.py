@@ -29,7 +29,7 @@ def is_trust(s: str | None) -> bool:
         return False
 
 def is_local(request: Request) -> bool:
-    if request.headers.get("x-Forwarded-For") or request.headers.get("X-Real-IP"):
+    if request.headers.get("x-forwarded-for") or request.headers.get("x-real-ip"):
         return False
     
     h = request.url.hostname

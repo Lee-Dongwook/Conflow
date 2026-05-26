@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
+from ..team.model import TeamMemberRole
 from .model import UserRole
 
 
@@ -40,10 +41,10 @@ class TeamMembershipRead(BaseModel):
     uuid: str
     user_uuid: str
     team_uuid: str
-    role: UserRole
+    role: TeamMemberRole
     joined_at: datetime
-    class Config:
-        orm_mode = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 class UserWithTeamsRead(UserRead):
     team_memberships: list[TeamMembershipRead] | None = None

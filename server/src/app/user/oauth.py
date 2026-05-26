@@ -2,12 +2,15 @@
 This module provides Google OAuth authentication API endpoints.
 """
 
+import logging
 from typing import Any
 
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from starlette.config import Config
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -21,37 +24,37 @@ GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default=None)
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET", default=None)
 GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI", default="http://localhost:8000/api/v1/auth/google/callback")
 
-if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
-    raise ValueError("Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in environment variables.")
+_oauth_registered = False
 
-oauth.register(
-    name='google',
-    client_id=GOOGLE_CLIENT_ID,
-    client_secret=GOOGLE_CLIENT_SECRET,
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={'scope': 'openid email profile'},
-)
+
+def _ensure_oauth_registered() -> None:
+    global _oauth_registered
+    if _oauth_registered:
+        return
+    if GOOGLE_CLIENT_ID is None or GOOGLE_CLIENT_SECRET is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Google OAuth is not configured.",
+        )
+    oauth.register(
+        name='google',
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'},
+    )
+    _oauth_registered = True
+
 
 @router.get("/google/login")
 async def google_login(request: Request) -> RedirectResponse:
-    """
-    Redirects the user to Google's OAuth login page.
-
-    :param request: The incoming request.
-    :return: A RedirectResponse to Google's authorization URL.
-    """
+    _ensure_oauth_registered()
     redirect_uri = GOOGLE_REDIRECT_URI
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @router.get("/google/callback")
 async def google_callback(request: Request) -> dict[str, Any]:
-    """
-    Handles the callback from Google OAuth, exchanges the authorization code for tokens,
-    and retrieves user information.
-
-    :param request: The incoming request with authorization code.
-    :return: A dictionary containing user information or an error.
-    """
+    _ensure_oauth_registered()
     try:
         token = await oauth.google.authorize_access_token(request)
     except Exception as e:
@@ -62,7 +65,9 @@ async def google_callback(request: Request) -> dict[str, Any]:
 
     user_info = await oauth.google.parse_id_token(token)
 
-    # Here you would typically save the user info to your database
-    # and create a session for the user.
-    # For now, we just return the user info.
-    return {"user_info": user_info, "token": token}
+    return {
+        "email": user_info.get("email"),
+        "name": user_info.get("name"),
+        "picture": user_info.get("picture"),
+        "sub": user_info.get("sub"),
+    }

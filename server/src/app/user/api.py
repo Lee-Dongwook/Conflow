@@ -16,12 +16,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..core.database import get_async_db
 from ..core.security import generate_service_access_token
 from ..core.verfiy_token import get_access_token
-from ..user.utils import get_user_by_uuid
 from .lib import get_cookie_samesite, is_local
 from .schemas import TokenRefresh, UserCreate, UserRead, UserUpdate, UserWithTeamsRead
 from .service import (
     create_user,
     delete_user,
+    get_user_by_uuid,
     get_user_or_404,
     get_user_with_memberships,
     list_users,
@@ -78,7 +78,7 @@ async def _issue_client_credentials_token(
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid client credentials",
-                headers={"WWW-Autenticate": 'Basic realm="token"'},
+                headers={"WWW-Authenticate": 'Basic realm="token"'},
             )
         client_id, client_secret = basic_credentials
 
@@ -92,11 +92,11 @@ async def _issue_client_credentials_token(
         expected_secret = credential.get("client_secret") if credential else None
         secret_matches = hmac.compare_digest(str(expected_secret or _DUMMY_CLIENT_SECRET), client_secret)  # noqa: E501
         if credential is None or not expected_secret or not secret_matches:
-            logger.warning("Invalid client credentials", extra={"client_id": client_id, "expected_secret": expected_secret})  # noqa: E501
+            logger.warning("Invalid client credentials", extra={"client_id": client_id})
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid client credentials",
-                headers={"WWW-Autenticate": 'Basic realm="token"'},
+                headers={"WWW-Authenticate": 'Basic realm="token"'},
             )
         user_uuid = credential.get("user_uuid")
         if not user_uuid:
@@ -115,7 +115,7 @@ async def _issue_client_credentials_token(
         if isinstance(allowed_scopes, str):
             allowed_scopes = allowed_scopes.split()
         requested_scopes = scope.split() if scope else list(allowed_scopes)
-        if any(requested_scopes not in allowed_scopes for requested_scopes in requested_scopes):
+        if any(s not in allowed_scopes for s in requested_scopes):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Invalid scope requested.",
