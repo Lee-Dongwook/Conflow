@@ -6,7 +6,6 @@ import time
 from typing import Any
 from urllib.parse import parse_qs
 
-import structlog
 from starlette.datastructures import Headers
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
@@ -59,13 +58,6 @@ def parse_body_content(body_bytes: bytes, content_type: str) -> Any:
     
     else:
         return f"<{content_type or 'unknown'} data: {len(body_bytes)} bytes>"
-
-def setup_logging() -> None:
-    timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S", utc=False)
-    """
-    TODO: Next Step
-    """
-
 
 class LoggingMiddleware:
     def __init__(self, app: ASGIApp):

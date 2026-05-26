@@ -2,7 +2,7 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 
-from src.app.core.logger import logger
+from app.core.logger import logger  # noqa: E402
 
 
 def normalize_model_name(model_name: str) -> tuple[str, str]:

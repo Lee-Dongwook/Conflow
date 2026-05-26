@@ -59,7 +59,7 @@ class User(Base, AutoUUIDMixin):
     name: Mapped[str] = mapped_column(String(32), nullable=False)
     email: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="userrole"),
+        Enum(UserRole, name="userrole", values_callable=lambda e: [m.value for m in e]),
         default=UserRole.USER,
     )
     profile_image_url: Mapped[str | None] = mapped_column(String(255), nullable=True)

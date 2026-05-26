@@ -4,11 +4,11 @@ from sqlalchemy import DateTime, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ..common.models import RegistryMixin
+from ..common.models import AutoUUIDMixin
 from ..core.database import Base
 
 
-class Agent(Base, RegistryMixin):
+class Agent(Base, AutoUUIDMixin):
     __tablename__ = "agent"
     __registry_type__ = "agent"
 
