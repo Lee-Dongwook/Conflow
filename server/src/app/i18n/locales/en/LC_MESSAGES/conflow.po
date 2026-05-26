@@ -1,0 +1,51 @@
+# English translations for conflow
+# Copyright (C) 2026 Conflow
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: conflow 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-26 00:00+0900\n"
+"PO-Revision-Date: 2026-05-26 00:00+0900\n"
+"Last-Translator: \n"
+"Language-Team: English\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "Not found."
+msgstr "Not found."
+
+msgid "Permission denied."
+msgstr "Permission denied."
+
+msgid "Invalid request."
+msgstr "Invalid request."
+
+msgid "Internal server error."
+msgstr "Internal server error."
+
+msgid "Unauthorized."
+msgstr "Unauthorized."
+
+msgid "Successfully created."
+msgstr "Successfully created."
+
+msgid "Successfully updated."
+msgstr "Successfully updated."
+
+msgid "Successfully deleted."
+msgstr "Successfully deleted."
+
+msgid "This field is required."
+msgstr "This field is required."
+
+msgid "Invalid email address."
+msgstr "Invalid email address."
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d item"
+msgstr[1] "%d items"
