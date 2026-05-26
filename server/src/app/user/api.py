@@ -18,8 +18,15 @@ from ..core.security import generate_service_access_token
 from ..core.verfiy_token import get_access_token
 from ..user.utils import get_user_by_uuid
 from .lib import get_cookie_samesite, is_local
-from .schemas import TokenRefresh, UserCreate, UserRead, UserUpdate
-from .service import create_user, delete_user, get_user_or_404, list_users, update_user
+from .schemas import TokenRefresh, UserCreate, UserRead, UserUpdate, UserWithTeamsRead
+from .service import (
+    create_user,
+    delete_user,
+    get_user_or_404,
+    get_user_with_memberships,
+    list_users,
+    update_user,
+)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/users", tags=["users"])
@@ -282,15 +289,14 @@ async def list_users_route(
     return [UserRead.model_validate(user) for user in users]
 
 
-@router.get("/{user_uuid}", response_model=UserRead, status_code=status.HTTP_200_OK)
+@router.get("/{user_uuid}", response_model=UserWithTeamsRead, status_code=status.HTTP_200_OK)
 async def get_user_route(
     user_uuid: str,
     db: AsyncSession = Depends(get_async_db),
-) -> UserRead:
-    """Read a single active user by UUID."""
-
-    user = await get_user_or_404(db, user_uuid)
-    return UserRead.model_validate(user)
+) -> UserWithTeamsRead:
+    """Read a single user by UUID, including their teams."""
+    user = await get_user_with_memberships(db, user_uuid)
+    return UserWithTeamsRead.model_validate(user)
 
 
 @router.patch("/{user_uuid}", response_model=UserRead, status_code=status.HTTP_200_OK)
