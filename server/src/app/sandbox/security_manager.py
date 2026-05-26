@@ -147,20 +147,17 @@ class SecurityManager:
             subprocess_module.Popen = self._secure_subprocess_popen
 
     def _patch_socket(self, socket_module: ModuleType) -> None:
-        """[버그수정] 무한 루프 진입 차단 및 정상 소켓 통신 바이패스 보장"""
+        """Patch socket to enforce network access policy."""
         if hasattr(socket_module, "socket") and not self._original_socket_class:
             self._original_socket_class = socket_module.socket
             origin_class = self._original_socket_class
+            policy = self._policy
 
             class SecureSocket(origin_class):  # type: ignore
                 def connect(self, address: Any) -> Any:
-                    # 1. 단순 스트링 변환 우회 가드 및 감사 기록
-                    # 락(Lock) 컨텍스트 전이 방지를 위해 내부 검증만 수행
-                    # (여기서 return해버리면 아래 super().connect가 실행 안 되던 심각한 버그 핫픽스)
                     if len(address) >= 2:
-                        host = str(address[0])  # noqa: F841
-                        # 엄격 모드 시 외부 통신 필터링 설계 확장 레이어 진입점
-                        # self._policy.check_path_access(host, "socket connect") 
+                        host = str(address[0])
+                        policy.check_path_access(host, "socket connect")
 
                     return super().connect(address)
 

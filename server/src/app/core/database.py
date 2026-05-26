@@ -8,6 +8,15 @@ from sqlalchemy.orm import DeclarativeBase
 
 from . import logger
 
+
+def _env_int(key: str, default: str) -> int:
+    raw = os.environ.get(key, default)
+    try:
+        return int(raw)
+    except (ValueError, TypeError):
+        logger.warning(f"Invalid integer for {key}={raw!r}, using default {default}")
+        return int(default)
+
 if TYPE_CHECKING:
     from psycopg import AsyncConnection
     from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
@@ -60,10 +69,10 @@ async def initialize_postgres_db() -> None:
     engine_kwargs = {
         "pool_pre_ping": True,
         "connect_args": {
-            "keepalives": int(os.environ.get("DB_KEEPALIVES", "1")),
-            "keepalives_idle": int(os.environ.get("DB_KEEPALIVES_IDLE", "30")),
-            "keepalives_interval": int(os.environ.get("DB_KEEPALIVES_INTERVAL", "10")),
-            "keepalives_count": int(os.environ.get("DB_KEEPALIVES_COUNT", "3")),
+            "keepalives": _env_int("DB_KEEPALIVES", "1"),
+            "keepalives_idle": _env_int("DB_KEEPALIVES_IDLE", "30"),
+            "keepalives_interval": _env_int("DB_KEEPALIVES_INTERVAL", "10"),
+            "keepalives_count": _env_int("DB_KEEPALIVES_COUNT", "3"),
         }
     }
 
@@ -72,10 +81,10 @@ async def initialize_postgres_db() -> None:
     else:
         engine_kwargs.update({
             "pool_use_lifo": os.environ.get("DB_POOL_USE_LIFO", "true").lower() in ["1", "true"],
-            "pool_size": int(os.environ.get("DB_POOL_SIZE", "5")),
-            "max_overflow": int(os.environ.get("DB_MAX_OVERFLOW", "10")),
-            "pool_timeout": int(os.environ.get("DB_POOL_TIMEOUT", "30")),
-            "pool_recycle": int(os.environ.get("DB_POOL_RECYCLE", "600")),
+            "pool_size": _env_int("DB_POOL_SIZE", "5"),
+            "max_overflow": _env_int("DB_MAX_OVERFLOW", "10"),
+            "pool_timeout": _env_int("DB_POOL_TIMEOUT", "30"),
+            "pool_recycle": _env_int("DB_POOL_RECYCLE", "600"),
         })
 
     async_engine = create_async_engine(

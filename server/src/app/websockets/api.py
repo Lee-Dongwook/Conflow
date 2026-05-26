@@ -1,5 +1,6 @@
 """FastAPI WebSocket routes for WebRTC signaling."""
 
+import json
 import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
@@ -12,21 +13,28 @@ router = APIRouter(prefix="/ws", tags=["signaling"])
 
 
 async def _authenticate_ws(websocket: WebSocket) -> bool:
-    """Validate the access token passed as a query parameter."""
-    token = websocket.query_params.get("token")
+    """Authenticate via the first message after accept (avoids token in URL logs)."""
+    try:
+        raw = await websocket.receive_text()
+        data = json.loads(raw)
+        token = data.get("token") if isinstance(data, dict) else None
+    except Exception:
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return False
+
     if not token:
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return False
 
     try:
         from src.app.core.database import get_async_db
-        from src.app.core.verfiy_token import verify_token_from_db
+        from src.app.core.verify_token import verify_token_from_db
 
         async for db in get_async_db():
             await verify_token_from_db(token, db)
             return True
     except Exception:
-        logger.warning("WebSocket auth failed for token")
+        logger.warning("WebSocket auth failed")
         await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
         return False
 
@@ -36,10 +44,11 @@ async def _authenticate_ws(websocket: WebSocket) -> bool:
 @router.websocket("/signal/{room_id}")
 async def signal_room(websocket: WebSocket, room_id: str) -> None:
     """Relay JSON signaling frames between peers in the same room."""
+    await websocket.accept()
+
     if not await _authenticate_ws(websocket):
         return
 
-    await websocket.accept()
     signaling_hub.join(room_id, websocket)
     try:
         while True:

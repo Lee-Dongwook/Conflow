@@ -60,7 +60,7 @@ def _get_context_fernet() -> Fernet | None:
             try:
                 _context_fernet = Fernet(key.encode())
             except (ValueError, TypeError) as e:
-                raise ValueError("Invalid SECRET_ENCRYPTION_KEY") from e
+                raise ValueError("Invalid CONTEXT_COOKIE_KEY") from e
         _context_fernet_initialized = True
     return _context_fernet
 
@@ -136,7 +136,7 @@ def generate_execution_token(user_uuid: str, execution_uuid: str) -> str:
     return f"conf.{b64}.{sig}"
 
 def parse_execution_token(token: str) -> tuple[str, str] | None:
-    if not token.startswith("lbe."):
+    if not token.startswith("conf."):
         return None
     try:
         parts = token.split(".")

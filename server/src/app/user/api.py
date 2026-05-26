@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.database import get_async_db
 from ..core.security import generate_service_access_token
-from ..core.verfiy_token import get_access_token
+from ..core.verify_token import get_access_token, verify_token
 from .lib import get_cookie_samesite, is_local
 from .schemas import TokenRefresh, UserCreate, UserRead, UserUpdate, UserWithTeamsRead
 from .service import (
@@ -74,7 +74,7 @@ async def _issue_client_credentials_token(
     basic_credentials = _get_basic_client_credentials(request)
     if basic_credentials:
         if client_id and not hmac.compare_digest(client_id, basic_credentials[0]):
-            logger.warning("Client ID mismatch", extra={"client_id": client_id, "basic_credentials": basic_credentials[0]})  # noqa: E501
+            logger.warning("Client ID mismatch")
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid client credentials",
@@ -114,6 +114,8 @@ async def _issue_client_credentials_token(
         allowed_scopes = credential.get("scopes") or []
         if isinstance(allowed_scopes, str):
             allowed_scopes = allowed_scopes.split()
+        elif not isinstance(allowed_scopes, list):
+            allowed_scopes = []
         requested_scopes = scope.split() if scope else list(allowed_scopes)
         if any(s not in allowed_scopes for s in requested_scopes):
             raise HTTPException(
@@ -149,7 +151,7 @@ async def get_token(
     db: AsyncSession = Depends(get_async_db),
 ) -> JSONResponse:
     from ..core.database import supabase_client
-    from ..core.verfiy_token import verify_token_from_db
+    from ..core.verify_token import verify_token_from_db
 
     if not refresh_token:
         refresh_token = request.cookies.get("refresh_token")
@@ -177,8 +179,8 @@ async def get_token(
             response = JSONResponse(content=token_response)
             response.headers["X-skip-camelize"] = "1"
             return response        
-        except Exception:
-            logger.info("Invalid token")
+        except Exception as e:
+            logger.debug("Token validation failed, falling back to refresh_token", exc_info=e)
     
     if refresh_token:
         try:
@@ -281,6 +283,7 @@ async def create_user_route(
 @router.get("", response_model=list[UserRead], status_code=status.HTTP_200_OK)
 async def list_users_route(
     include_deleted: bool = Query(default=False),
+    current_user: UserRead = Depends(verify_token),
     db: AsyncSession = Depends(get_async_db),
 ) -> list[UserRead]:
     """List users with optional deleted rows."""
@@ -292,6 +295,7 @@ async def list_users_route(
 @router.get("/{user_uuid}", response_model=UserWithTeamsRead, status_code=status.HTTP_200_OK)
 async def get_user_route(
     user_uuid: str,
+    current_user: UserRead = Depends(verify_token),
     db: AsyncSession = Depends(get_async_db),
 ) -> UserWithTeamsRead:
     """Read a single user by UUID, including their teams."""
@@ -303,6 +307,7 @@ async def get_user_route(
 async def update_user_route(
     user_uuid: str,
     payload: UserUpdate,
+    current_user: UserRead = Depends(verify_token),
     db: AsyncSession = Depends(get_async_db),
 ) -> UserRead:
     """Partially update an active user."""
@@ -314,6 +319,7 @@ async def update_user_route(
 @router.delete("/{user_uuid}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user_route(
     user_uuid: str,
+    current_user: UserRead = Depends(verify_token),
     db: AsyncSession = Depends(get_async_db),
 ) -> None:
     """Soft-delete a user by UUID."""

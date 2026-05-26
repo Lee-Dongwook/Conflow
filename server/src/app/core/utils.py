@@ -20,9 +20,10 @@ def is_allowed_origin(origin: str) -> bool:
         try:
             if re.fullmatch(cors_origins_regex, origin):
                 return True
-        except Exception as e:
+        except re.error as e:
             logger.error(f"Invalid CORS allowed origins regex: {e}")
-    
+            return False
+
     return False
 
 def is_allowed_redirect_uri(uri: str) -> bool:

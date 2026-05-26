@@ -41,6 +41,13 @@ class HuddleSessionManager:
                     logger.info(f"Received audio track from peer {peer_id} in room {room_id}")
                     participant.audio_processor = HuddleMediaProcessor(track, room_id)
 
+            @participant.pc.on("connectionstatechange")
+            async def on_connection_state_change():
+                state = participant.pc.connectionState
+                if state in ("failed", "closed", "disconnected"):
+                    logger.warning(f"Peer {peer_id} connection state: {state}, cleaning up")
+                    await self.remove_peer(room_id, peer_id)
+
             logger.info(f"Registered new peer {peer_id} in room {room_id}")
             return participant
 
@@ -50,19 +57,21 @@ class HuddleSessionManager:
             room_peers = self.rooms.get(room_id, {})
             sender = room_peers.get(payload.sender_id)
 
-        if not sender:
-            logger.error(f"Sender {payload.sender_id} not found in room {room_id}")
-            return
+            if not sender:
+                logger.error(f"Sender {payload.sender_id} not found in room {room_id}")
+                return
 
-        if payload.target_id:
-            target = room_peers.get(payload.target_id)
-            if target:
-                await target.websocket.send_text(payload.model_dump_json(by_alias=True))
-            return
+            message = payload.model_dump_json(by_alias=True)
 
-        for peer_id, participant in room_peers.items():
-            if peer_id != payload.sender_id:
-                await participant.websocket.send_text(payload.model_dump_json(by_alias=True))
+            if payload.target_id:
+                target = room_peers.get(payload.target_id)
+                if target:
+                    await target.websocket.send_text(message)
+                return
+
+            for peer_id, participant in room_peers.items():
+                if peer_id != payload.sender_id:
+                    await participant.websocket.send_text(message)
 
     async def remove_peer(self, room_id: str, peer_id: str):
         """Remove a peer from the session."""

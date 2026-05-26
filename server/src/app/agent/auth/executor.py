@@ -8,7 +8,9 @@ from ..model import Agent
 
 logger = logging.getLogger(__name__)
 
-async def discover_mcp_oauth_config(endpoint_url: str) -> dict | None:
+async def discover_mcp_oauth_config(endpoint_url: str | None) -> dict | None:
+    if not endpoint_url:
+        return None
     try:
         base_url = endpoint_url.split("/mcp")[0] if "/mcp" in endpoint_url else endpoint_url
         discovery_url = f"{base_url.rstrip('/')}/.well-known/oauth-protected-resource/mcp"

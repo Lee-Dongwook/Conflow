@@ -26,7 +26,7 @@ _READ_CACHE_METHODS = frozenset(["GET", "HEAD", "OPTIONS"])
 _VERIFY_TOKEN_READ_CACHE_TTL = max(0, int(os.environ.get("VERIFY_TOKEN_READ_CACHE_TTL", "180")))
 _VERIFY_TOKEN_CACHE_MAXSIZE = max(0, int(os.environ.get("VERIFY_TOKEN_CACHE_MAXSIZE", "1024")))
 
-_verfiy_token_cache: TTLCache[str, UserRead] | None = (
+_verify_token_cache: TTLCache[str, UserRead] | None = (
     TTLCache(maxsize=_VERIFY_TOKEN_CACHE_MAXSIZE, ttl=_VERIFY_TOKEN_READ_CACHE_TTL)
     if _VERIFY_TOKEN_READ_CACHE_TTL > 0
     else None
@@ -48,7 +48,7 @@ async def get_access_token(
     )
 
 async def verify_token_from_db(token: str, db: AsyncSession) -> UserRead:
-    if token.startswith("lbe."):
+    if token.startswith("conf."):
         parsed = parse_execution_token(token)
         if parsed is None:
             raise HTTPException(
@@ -133,8 +133,8 @@ async def verify_token(
     token: str = Depends(get_access_token),
     db: AsyncSession = Depends(get_async_db),
 ) -> UserRead:
-    cache = _verfiy_token_cache
-    use_read_cache = cache is not None and request.method in _READ_CACHE_METHODS and not token.startswith("lbe.")  # noqa: E501
+    cache = _verify_token_cache
+    use_read_cache = cache is not None and request.method in _READ_CACHE_METHODS and not token.startswith("conf.")  # noqa: E501
 
     user: UserRead | None = cache.get(token) if use_read_cache else None
 

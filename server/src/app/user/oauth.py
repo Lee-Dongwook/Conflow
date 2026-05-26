@@ -3,6 +3,7 @@ This module provides Google OAuth authentication API endpoints.
 """
 
 import logging
+import os
 from typing import Any
 
 from authlib.integrations.starlette_client import OAuth
@@ -14,15 +15,15 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Load configuration from .env file
-config = Config(".env")
+# Use environ mapping so values loaded by shared_init/dotenv are picked up
+config = Config(environ=os.environ)
 
 # Initialize OAuth
 oauth = OAuth(config)
 
-GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default=None)
-GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET", default=None)
-GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI", default="http://localhost:8000/api/v1/auth/google/callback")
+GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.environ.get("GOOGLE_REDIRECT_URI", "http://localhost:8000/api/v1/auth/google/callback")
 
 _oauth_registered = False
 

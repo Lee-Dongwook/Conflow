@@ -101,8 +101,8 @@ async def stream_upload_to_signed_url(
                     logger.warning(f"{type(e).__name__} - retrying in {2 ** attempt} seconds")
                 
                 if attempt == max_retries:
-                    logger.error(f"Max retries reached. Failed to upload file. Status: {response.status_code}")  # noqa: E501
-                    raise httpx.HTTPError(f"Max retries reached. Failed to upload file. Status: {response.status_code}")  # noqa: E501
+                    logger.error(f"Max retries reached. Failed to upload file after {max_retries} attempts.")
+                    raise httpx.HTTPError(f"Max retries reached. Failed to upload file after {max_retries} attempts.")
                 
                 delay = min((2 ** (attempt -1)) + random.uniform(0, 1), 10)
                 logger.warning(f"Retrying in {delay} seconds...")

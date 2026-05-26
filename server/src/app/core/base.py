@@ -100,9 +100,9 @@ def get_model(config: RunnableConfig, default: str, key: str) -> BaseChatModel:
         logger.info(f"Setting max tokens for {key} to {max_tokens}")
 
     model_map = {
-        "openai": "gpt-5-mini",
+        "openai": "gpt-4o-mini",
         "gemini": "gemini-2.5-flash",
-        "anthropic": "claude-4-sonnet-20250514",
+        "anthropic": "claude-sonnet-4-6-20250514",
     }
     model_name = model_map.get(model_name, model_name)
 
