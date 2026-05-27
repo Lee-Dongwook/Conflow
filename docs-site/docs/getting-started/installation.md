@@ -10,14 +10,14 @@ Conflow는 pnpm + Turborepo 모노레포와 Python(uv) 백엔드로 구성됩니
 
 ## 사전 요구사항
 
-| 도구 | 최소 버전 | 설치 확인 |
-|------|----------|----------|
-| **Node.js** | 20.11.0+ | `node --version` |
-| **pnpm** | 9.0+ | `pnpm --version` |
-| **Python** | 3.13+ | `python --version` |
-| **uv** | latest | `uv --version` |
-| **Docker** | 24+ | `docker --version` |
-| **Docker Compose** | v2+ | `docker compose version` |
+| 도구               | 최소 버전 | 설치 확인                |
+| ------------------ | --------- | ------------------------ |
+| **Node.js**        | 20.11.0+  | `node --version`         |
+| **pnpm**           | 9.0+      | `pnpm --version`         |
+| **Python**         | 3.13+     | `python --version`       |
+| **uv**             | latest    | `uv --version`           |
+| **Docker**         | 24+       | `docker --version`       |
+| **Docker Compose** | v2+       | `docker compose version` |
 
 ### 도구 설치
 
@@ -46,6 +46,7 @@ pnpm install
 ```
 
 이 명령은 다음 workspace의 의존성을 모두 설치합니다:
+
 - `apps/web` -- Vite + React 프론트엔드
 - `packages/core` -- 공유 인프라 (Axios, Zod, utils)
 - `packages/ui` -- Atomic React 컴포넌트
@@ -71,6 +72,7 @@ docker compose up db
 pgvector가 포함된 PostgreSQL 16이 포트 5432에서 실행됩니다.
 
 기본 접속 정보:
+
 - **Host**: localhost
 - **Port**: 5432
 - **Database**: conflow_db

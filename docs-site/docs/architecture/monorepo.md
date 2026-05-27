@@ -84,6 +84,7 @@ graph LR
 ```
 
 ### 규칙
+
 - `packages/core`는 다른 workspace 패키지에 의존하지 않음
 - `packages/ui`는 `packages/core`에만 의존
 - `apps/web`은 `packages/ui`와 `packages/core`에 의존
@@ -125,6 +126,7 @@ uv sync --group agent --group dev
 ```
 
 의존성 그룹:
+
 - **기본**: FastAPI, SQLAlchemy, Pydantic 등 핵심 의존성
 - **agent**: LangGraph, LangChain, OpenAI 등 에이전트 의존성
 - **dev**: pytest, ruff, mypy 등 개발 도구

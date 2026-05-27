@@ -54,6 +54,7 @@ graph TB
 ### 2. Schema-First
 
 모든 외부 데이터(API 응답, AI 출력)는 반드시 Zod로 검증합니다. 이를 통해:
+
 - AI 에이전트의 구조화된 출력을 보장
 - API 계약의 타입 안전성 확보
 - 런타임 데이터 검증 자동화
@@ -75,16 +76,19 @@ apps/web → packages/ui → packages/core
 ## 통신 패턴
 
 ### REST API
+
 - Frontend와 Backend 간 주요 통신 방식
 - FastAPI의 자동 OpenAPI 문서 생성 (`/docs`)
 - JWT 기반 인증 (Supabase Auth)
 
 ### WebSocket
+
 - 실시간 Huddle 시그널링
 - DM (Direct Message) 기능
 - `server/src/app/websockets/`에서 관리
 
 ### Agent Integration
+
 - 현재: LangGraph CLI가 별도 포트(2024)에서 Agent Server 실행
 - 향후: FastAPI에서 `langgraph_sdk`를 통해 에이전트 호출 후 결과를 REST API로 반환 및 DB 저장
 

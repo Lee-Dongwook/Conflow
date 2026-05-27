@@ -18,12 +18,12 @@ docker compose up
 
 실행되는 서비스:
 
-| 서비스 | 포트 | 설명 |
-|--------|------|------|
-| **db** | 5432 | PostgreSQL 16 + pgvector |
-| **backend** | 8000 | FastAPI 백엔드 |
-| **rag** | 8001 | RAG 서비스 (pgvector) |
-| **frontend** | 3000 | Vite + React 앱 |
+| 서비스       | 포트 | 설명                     |
+| ------------ | ---- | ------------------------ |
+| **db**       | 5432 | PostgreSQL 16 + pgvector |
+| **backend**  | 8000 | FastAPI 백엔드           |
+| **rag**      | 8001 | RAG 서비스 (pgvector)    |
+| **frontend** | 3000 | Vite + React 앱          |
 
 ## 방법 2: 개별 서비스 실행
 
@@ -92,27 +92,27 @@ uv run python scripts/smoke_user_query.py
 
 ### 모노레포 (루트)
 
-| 명령어 | 설명 |
-|--------|------|
-| `pnpm dev` | 모든 서비스 실행 (Turborepo) |
-| `pnpm build` | 전체 빌드 |
-| `pnpm test` | 전체 테스트 |
-| `pnpm typecheck` | TypeScript 타입 체크 |
-| `pnpm lint` | 전체 린트 |
+| 명령어           | 설명                         |
+| ---------------- | ---------------------------- |
+| `pnpm dev`       | 모든 서비스 실행 (Turborepo) |
+| `pnpm build`     | 전체 빌드                    |
+| `pnpm test`      | 전체 테스트                  |
+| `pnpm typecheck` | TypeScript 타입 체크         |
+| `pnpm lint`      | 전체 린트                    |
 
 ### Backend (server/)
 
-| 명령어 | 설명 |
-|--------|------|
-| `uv run uvicorn main:app --reload` | FastAPI 개발 서버 |
-| `uv run pytest` | Python 테스트 |
-| `uv run ruff check .` | Python 린트 |
-| `uv run ruff format .` | Python 포맷 |
-| `uv run alembic upgrade head` | DB 마이그레이션 적용 |
+| 명령어                             | 설명                 |
+| ---------------------------------- | -------------------- |
+| `uv run uvicorn main:app --reload` | FastAPI 개발 서버    |
+| `uv run pytest`                    | Python 테스트        |
+| `uv run ruff check .`              | Python 린트          |
+| `uv run ruff format .`             | Python 포맷          |
+| `uv run alembic upgrade head`      | DB 마이그레이션 적용 |
 
 ### Database
 
-| 명령어 | 설명 |
-|--------|------|
-| `docker compose up db` | PostgreSQL 실행 |
+| 명령어                                             | 설명              |
+| -------------------------------------------------- | ----------------- |
+| `docker compose up db`                             | PostgreSQL 실행   |
 | `uv run alembic revision --autogenerate -m "desc"` | 마이그레이션 생성 |

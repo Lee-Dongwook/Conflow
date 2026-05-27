@@ -75,6 +75,7 @@ server/src/app/{domain}/
 ```
 
 ### api.py
+
 ```python
 from fastapi import APIRouter, Depends
 from .schemas import CreateTeamRequest, TeamResponse
@@ -91,6 +92,7 @@ async def create_team(
 ```
 
 ### model.py
+
 ```python
 from sqlalchemy import Column, String
 from sqlalchemy.dialects.postgresql import UUID
@@ -105,6 +107,7 @@ class Team(Base):
 ```
 
 ### schemas.py
+
 ```python
 from pydantic import BaseModel
 
@@ -120,6 +123,7 @@ class TeamResponse(BaseModel):
 ```
 
 ### service.py
+
 ```python
 from sqlalchemy.ext.asyncio import AsyncSession
 from .model import Team
@@ -139,15 +143,19 @@ class TeamService:
 ## 핵심 인프라
 
 ### 데이터베이스 (core/database.py)
+
 비동기 SQLAlchemy 세션을 관리합니다. `asyncpg`를 PostgreSQL 드라이버로 사용합니다.
 
 ### 인증 (core/security.py, core/verify_token.py)
+
 Supabase Auth와 연동된 JWT 기반 인증입니다. 요청 헤더의 Bearer 토큰을 검증합니다.
 
 ### LLM Factory (core/llm_factory.py)
+
 `CONFLOW_AGENT_MODE`에 따라 적절한 LLM 인스턴스를 생성합니다. 모델 교체가 용이한 팩토리 패턴을 사용합니다.
 
 ### 횡단 관심사 (common/)
+
 - **멱등성**: Redis 기반으로 동일 요청의 중복 처리를 방지
 - **서킷 브레이커**: 외부 서비스 장애 시 빠른 실패 반환
 - **캐싱**: 자주 조회되는 데이터의 응답 속도 향상
@@ -155,6 +163,7 @@ Supabase Auth와 연동된 JWT 기반 인증입니다. 요청 헤더의 Bearer �
 ## 코딩 표준
 
 ### Python 스타일
+
 - **ruff** 린터/포매터 사용
 - 줄 길이: 100자
 - 타겟: Python 3.13+
@@ -169,6 +178,7 @@ uv run ruff format .
 ```
 
 ### 테스트
+
 ```bash
 # 전체 테스트
 uv run pytest
