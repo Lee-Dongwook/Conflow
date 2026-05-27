@@ -42,6 +42,12 @@ app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
 
+
+@app.get("/", include_in_schema=False)
+async def health_check():
+    return {"status": "ok"}
+
+
 @app.get("/scalar", include_in_schema=False)
 async def scalar_html() -> HTMLResponse:
     return get_scalar_api_reference(
