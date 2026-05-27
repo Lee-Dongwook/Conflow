@@ -31,6 +31,8 @@ todos.json
 .gemini/skills/**
 .codex/**/SKILL.md
 .codex/**/openai.yaml
+.claude/**/SKILL.md
+**/settings.local.json
 
 # ADMIN
 server/scripts/seed_admin.py
