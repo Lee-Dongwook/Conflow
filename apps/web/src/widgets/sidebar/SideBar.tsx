@@ -11,6 +11,7 @@ import { SidebarIcon } from "./icons";
 export type SideBarProps = {
   readonly activeNavId?: string;
   readonly onNavChange?: (id: string) => void;
+  readonly onLoginRequest?: () => void;
   readonly className?: string;
 };
 
@@ -87,6 +88,7 @@ const NavButton = ({
 export const SideBar = ({
   activeNavId = "dashboard",
   onNavChange,
+  onLoginRequest,
   className,
 }: SideBarProps) => {
   const [theme, setTheme] = useState<ThemeChoice>("system");
@@ -281,38 +283,51 @@ export const SideBar = ({
       </div>
 
       <div className="border-t border-slate-100 p-3">
-        <button
-          type="button"
-          onClick={() => {
-            select("profile");
-          }}
-          className={cn(
-            "w-full rounded-lg border bg-slate-50 p-2.5 text-left transition-shadow",
-            activeNavId === "profile"
-              ? "border-teal-400 ring-2 ring-teal-400/40"
-              : "border-slate-200 hover:border-slate-300",
-          )}
-          aria-label="내 계정 페이지로 이동"
-        >
-          <div className="flex gap-2.5">
-            <Avatar label={displayName} size="md" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-slate-900">
-                {displayName}
-              </p>
-              <p className="truncate text-xs text-slate-500">
-                {displayEmail}
-              </p>
-            </div>
-          </div>
-        </button>
-        <button
-          type="button"
-          onClick={handleLogout}
-          className="mt-2 w-full rounded-md px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-        >
-          로그아웃
-        </button>
+        {session.status === "authenticated" ? (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                select("profile");
+              }}
+              className={cn(
+                "w-full rounded-lg border bg-slate-50 p-2.5 text-left transition-shadow",
+                activeNavId === "profile"
+                  ? "border-teal-400 ring-2 ring-teal-400/40"
+                  : "border-slate-200 hover:border-slate-300",
+              )}
+              aria-label="내 계정 페이지로 이동"
+            >
+              <div className="flex gap-2.5">
+                <Avatar label={displayName} size="md" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-900">
+                    {displayName}
+                  </p>
+                  <p className="truncate text-xs text-slate-500">
+                    {displayEmail}
+                  </p>
+                </div>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="mt-2 w-full rounded-md px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+            >
+              로그아웃
+            </button>
+          </>
+        ) : (
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full text-sm"
+            onClick={onLoginRequest}
+          >
+            로그인
+          </Button>
+        )}
       </div>
     </aside>
   );

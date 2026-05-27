@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AuthProvider, useSession } from 'app/entities/session'
+import { AuthProvider } from 'app/entities/session'
 import { ConsentForm } from 'app/features/consent'
 import { BacklogPage } from 'app/pages/BacklogPage'
 import { BoardPage } from 'app/pages/BoardPage'
@@ -9,7 +9,7 @@ import { DmPage } from 'app/pages/DmPage'
 import { HuddlePage } from 'app/pages/HuddlePage'
 import { InboxPage } from 'app/pages/InboxPage'
 import { LegalPage } from 'app/pages/legal'
-import { LoginPage } from 'app/pages/LoginPage'
+import { LoginModal } from 'app/pages/LoginPage'
 import { MeetingSummaryPage } from 'app/pages/MeetingSummaryPage'
 import { MetricsPage } from 'app/pages/MetricsPage'
 import { PlaceholderPage } from 'app/pages/PlaceholderPage'
@@ -51,8 +51,10 @@ const NAV_SUBTITLE: Record<string, string> = {
     '허들 기반 전사·AI 요약·액션 추출 목표 (A2UI). STT·모델·저장은 연동 전 — 와이어만.',
 }
 
-const AuthenticatedApp = () => {
+const AppContent = () => {
   const [activeNavId, setActiveNavId] = useState('dashboard')
+  const [loginOpen, setLoginOpen] = useState(false)
+
   const navTitle = NAV_TITLE[activeNavId] ?? activeNavId
   const navSubtitle =
     NAV_SUBTITLE[activeNavId] ?? '와이어 단계입니다. 팀플 ICP에 맞춰 메뉴마다 채워 넣을 예정.'
@@ -76,36 +78,25 @@ const AuthenticatedApp = () => {
   const main = PAGE_MAP[activeNavId] ?? <PlaceholderPage navId={activeNavId} />
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <SideBar activeNavId={activeNavId} onNavChange={setActiveNavId} />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b border-slate-200 bg-white px-8 py-6">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-400">현재 화면</p>
-          <h1 className="mt-1 text-2xl font-semibold text-slate-900">{navTitle}</h1>
-          <p className="mt-1 text-sm text-slate-600">{navSubtitle}</p>
-        </header>
-        <main className="flex-1 p-8">{main}</main>
+    <>
+      <div className="flex min-h-screen bg-slate-50">
+        <SideBar
+          activeNavId={activeNavId}
+          onNavChange={setActiveNavId}
+          onLoginRequest={() => setLoginOpen(true)}
+        />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="border-b border-slate-200 bg-white px-8 py-6">
+            <p className="text-xs font-medium uppercase tracking-wide text-slate-400">현재 화면</p>
+            <h1 className="mt-1 text-2xl font-semibold text-slate-900">{navTitle}</h1>
+            <p className="mt-1 text-sm text-slate-600">{navSubtitle}</p>
+          </header>
+          <main className="flex-1 p-8">{main}</main>
+        </div>
       </div>
-    </div>
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+    </>
   )
-}
-
-const AppContent = () => {
-  const session = useSession()
-
-  if (session.status === 'loading') {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <p className="text-sm text-slate-500">로딩 중...</p>
-      </div>
-    )
-  }
-
-  if (session.status === 'unauthenticated') {
-    return <LoginPage />
-  }
-
-  return <AuthenticatedApp />
 }
 
 export const App = () => (
