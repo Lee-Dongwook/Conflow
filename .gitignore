@@ -32,6 +32,7 @@ todos.json
 .codex/**/SKILL.md
 .codex/**/openai.yaml
 .claude/**/SKILL.md
+.claude/agents/**
 **/settings.local.json
 
 # ADMIN
