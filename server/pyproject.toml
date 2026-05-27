@@ -33,14 +33,12 @@ dependencies = [
     "redis>=5.0.0",
     "pybreaker>=1.4.1",
     "langchain-mcp-adapters>=0.2.2",
-]
-
-[dependency-groups]
-agent = [
     "langgraph>=0.4.0",
     "langchain-core>=0.3.0",
     "langchain-openai>=0.3.0",
 ]
+
+[dependency-groups]
 dev = [
     "httpx>=0.28.0",
     "pytest>=8.0.0",
