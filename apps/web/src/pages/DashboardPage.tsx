@@ -11,8 +11,8 @@ import {
   Separator,
 } from "@conflow/ui";
 
-import { CURRENT_USER } from "../data/current-session";
-import { MOCK_TEAM_DASHBOARD } from "../data/mock-team-dashboard";
+import { CURRENT_USER } from "app/entities/session";
+import { MOCK_TEAM_DASHBOARD } from "app/entities/dashboard";
 
 const statusBadge = (status: "todo" | "doing" | "done") => {
   if (status === "done") {

@@ -12,7 +12,7 @@ import {
   Separator,
 } from "@conflow/ui";
 
-import { MOCK_USER } from "../data/mock-user";
+import { MOCK_USER } from "app/entities/user";
 
 const boolBadge = (on: boolean) =>
   on ? (

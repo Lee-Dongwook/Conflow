@@ -1,7 +1,7 @@
 /** 칸반 보드 목 데이터 — 드래그 없음, 정적 와이어 */
 
-import { CURRENT_USER } from "./current-session";
-import { MOCK_TEAM_DASHBOARD } from "./mock-team-dashboard";
+import { CURRENT_USER } from "app/entities/session";
+import { MOCK_TEAM_DASHBOARD } from "app/entities/dashboard";
 
 export type BoardColumnId = "todo" | "doing" | "done";
 

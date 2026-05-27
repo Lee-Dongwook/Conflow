@@ -11,6 +11,11 @@
     "verbatimModuleSyntax": true,
     "noEmit": true,
 
+    "baseUrl": ".",
+    "paths": {
+      "app/*": ["src/*"]
+    },
+
     "skipLibCheck": true,
     "strict": true,
     "noUncheckedIndexedAccess": true,

@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { Avatar, Badge, Button, Separator, cn } from "@conflow/ui";
 
-import { MOCK_USER } from "../../data/mock-user";
+import { MOCK_USER } from "app/entities/user";
 import type { SidebarGlyph } from "./icons";
 import { SidebarIcon } from "./icons";
 

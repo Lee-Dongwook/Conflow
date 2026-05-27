@@ -1,18 +1,18 @@
 import { useState } from "react";
 
-import { BacklogPage } from "./pages/BacklogPage";
-import { BoardPage } from "./pages/BoardPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { DmPage } from "./pages/DmPage";
-import { HuddlePage } from "./pages/HuddlePage";
-import { MeetingSummaryPage } from "./pages/MeetingSummaryPage";
-import { InboxPage } from "./pages/InboxPage";
-import { MetricsPage } from "./pages/MetricsPage";
-import { PlaceholderPage } from "./pages/PlaceholderPage";
-import { RetroPage } from "./pages/RetroPage";
-import { ThisWeekPage } from "./pages/ThisWeekPage";
-import { UserPage } from "./pages/UserPage";
-import { SideBar } from "./widgets/sidebar";
+import { BacklogPage } from "app/pages/BacklogPage";
+import { BoardPage } from "app/pages/BoardPage";
+import { DashboardPage } from "app/pages/DashboardPage";
+import { DmPage } from "app/pages/DmPage";
+import { HuddlePage } from "app/pages/HuddlePage";
+import { MeetingSummaryPage } from "app/pages/MeetingSummaryPage";
+import { InboxPage } from "app/pages/InboxPage";
+import { MetricsPage } from "app/pages/MetricsPage";
+import { PlaceholderPage } from "app/pages/PlaceholderPage";
+import { RetroPage } from "app/pages/RetroPage";
+import { ThisWeekPage } from "app/pages/ThisWeekPage";
+import { UserPage } from "app/pages/UserPage";
+import { SideBar } from "app/widgets/sidebar";
 
 const NAV_TITLE: Record<string, string> = {
   dashboard: "대시보드",

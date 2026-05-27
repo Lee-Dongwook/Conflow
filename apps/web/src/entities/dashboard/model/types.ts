@@ -1,6 +1,6 @@
 /** 팀플·스터디 팀 기준 대시보드 더미 — 담당자에 {@link CURRENT_USER} 포함 */
 
-import { CURRENT_USER } from "./current-session";
+import { CURRENT_USER } from "app/entities/session";
 
 export type MockTaskStatus = "todo" | "doing" | "done";
 

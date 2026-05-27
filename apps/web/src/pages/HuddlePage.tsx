@@ -1,6 +1,6 @@
 import { Avatar, Button, cn } from "@conflow/ui";
 
-import { MOCK_USER } from "../data/mock-user";
+import { MOCK_USER } from "app/entities/user";
 
 const PARTICIPANTS: readonly { readonly id: string; readonly label: string }[] =
   [

@@ -9,8 +9,8 @@ import {
   CardTitle,
 } from "@conflow/ui";
 
-import { CURRENT_USER } from "../data/current-session";
-import { MOCK_BOARD, type BoardTaskCard } from "../data/mock-board";
+import { CURRENT_USER } from "app/entities/session";
+import { MOCK_BOARD, type BoardTaskCard } from "app/entities/board";
 
 export const BoardPage = () => {
   const b = MOCK_BOARD;

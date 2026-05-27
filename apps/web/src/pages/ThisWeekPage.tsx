@@ -9,8 +9,8 @@ import {
   Separator,
 } from "@conflow/ui";
 
-import { CURRENT_USER } from "../data/current-session";
-import { MOCK_THIS_WEEK, type WeekMilestone } from "../data/mock-this-week";
+import { CURRENT_USER } from "app/entities/session";
+import { MOCK_THIS_WEEK, type WeekMilestone } from "app/entities/week";
 
 /** 월~일 한 줄 스캔 + 임박 강조 (간트 대신 가벼운 주간 뷰) */
 export const ThisWeekPage = () => {

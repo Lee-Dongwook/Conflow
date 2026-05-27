@@ -9,9 +9,9 @@ import {
   CardTitle,
 } from "@conflow/ui";
 
-import { CURRENT_USER } from "../data/current-session";
-import type { InboxEntryType } from "../data/mock-inbox";
-import { MOCK_INBOX } from "../data/mock-inbox";
+import { CURRENT_USER } from "app/entities/session";
+import type { InboxEntryType } from "app/entities/inbox";
+import { MOCK_INBOX } from "app/entities/inbox";
 
 const typeLabel = (t: InboxEntryType): string => {
   if (t === "mention") {

@@ -2,8 +2,8 @@
  * "이번 주" 화면용 더미 — 대시보드 기간(3/10~)과 맞춤. 간트 대신 주간 스캔.
  */
 
-import { CURRENT_USER } from "./current-session";
-import { MOCK_TEAM_DASHBOARD } from "./mock-team-dashboard";
+import { CURRENT_USER } from "app/entities/session";
+import { MOCK_TEAM_DASHBOARD } from "app/entities/dashboard";
 
 export type WeekMilestone = {
   readonly title: string;

@@ -8,8 +8,8 @@ import {
   Progress,
 } from "@conflow/ui";
 
-import { CURRENT_USER } from "../data/current-session";
-import { MOCK_METRICS } from "../data/mock-metrics";
+import { CURRENT_USER } from "app/entities/session";
+import { MOCK_METRICS } from "app/entities/metrics";
 
 export const MetricsPage = () => {
   const m = MOCK_METRICS;

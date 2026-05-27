@@ -9,9 +9,9 @@ import {
   CardTitle,
 } from "@conflow/ui";
 
-import type { BacklogItem, BacklogPriority } from "../data/mock-backlog";
-import { CURRENT_USER } from "../data/current-session";
-import { MOCK_BACKLOG } from "../data/mock-backlog";
+import type { BacklogItem, BacklogPriority } from "app/entities/backlog";
+import { CURRENT_USER } from "app/entities/session";
+import { MOCK_BACKLOG } from "app/entities/backlog";
 
 const priorityLabel = (p: BacklogPriority): string => {
   if (p === "p0") {

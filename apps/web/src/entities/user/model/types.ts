@@ -1,6 +1,6 @@
 /** 로그인 없이 레이아웃만 볼 때 쓰는 더미 프로필 — {@link CURRENT_USER}와 동일 인물 */
 
-import { CURRENT_USER } from "./current-session";
+import { CURRENT_USER } from "app/entities/session";
 
 export type MockTeamMembership = {
   readonly id: string;

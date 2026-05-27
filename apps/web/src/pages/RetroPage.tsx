@@ -1,6 +1,6 @@
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@conflow/ui";
 
-import { MOCK_RETRO } from "../data/mock-retro";
+import { MOCK_RETRO } from "app/entities/retro";
 
 const columnAccent = (
   accent: (typeof MOCK_RETRO)["columns"][number]["accent"],
