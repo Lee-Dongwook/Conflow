@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { AuthProvider, useSession } from 'app/entities/session'
 import { ConsentForm } from 'app/features/consent'
 import { BacklogPage } from 'app/pages/BacklogPage'
 import { BoardPage } from 'app/pages/BoardPage'
@@ -8,6 +9,7 @@ import { DmPage } from 'app/pages/DmPage'
 import { HuddlePage } from 'app/pages/HuddlePage'
 import { InboxPage } from 'app/pages/InboxPage'
 import { LegalPage } from 'app/pages/legal'
+import { LoginPage } from 'app/pages/LoginPage'
 import { MeetingSummaryPage } from 'app/pages/MeetingSummaryPage'
 import { MetricsPage } from 'app/pages/MetricsPage'
 import { PlaceholderPage } from 'app/pages/PlaceholderPage'
@@ -42,14 +44,14 @@ const NAV_SUBTITLE: Record<string, string> = {
   metrics: '숫자·막대만 — 실제 차트·집계는 코어 연동 후. 포폴용 스냅샷 레이아웃.',
   retro: 'KPT 블록 목 — 익명·투표·타임라인은 회고 기능 설계 후 연결 예정.',
   inbox: '멘션·마감·파일 알림 목록. 푸시·실시간은 인프라 붙인 뒤 교체.',
-  profile: '목 프로필입니다. 로그인 붙이면 교체됩니다.',
+  profile: '내 프로필입니다.',
   dm: '1:1·그룹 DM 레이아웃 와이어만 — 송수신·저장 없음.',
   huddle: '음성·영상 연동 전 축소 바·참가자·컨트롤 자리만 — WebRTC·시그널링 없음.',
   meetingSummary:
     '허들 기반 전사·AI 요약·액션 추출 목표 (A2UI). STT·모델·저장은 연동 전 — 와이어만.',
 }
 
-export const App = () => {
+const AuthenticatedApp = () => {
   const [activeNavId, setActiveNavId] = useState('dashboard')
   const navTitle = NAV_TITLE[activeNavId] ?? activeNavId
   const navSubtitle =
@@ -87,3 +89,27 @@ export const App = () => {
     </div>
   )
 }
+
+const AppContent = () => {
+  const session = useSession()
+
+  if (session.status === 'loading') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <p className="text-sm text-slate-500">로딩 중...</p>
+      </div>
+    )
+  }
+
+  if (session.status === 'unauthenticated') {
+    return <LoginPage />
+  }
+
+  return <AuthenticatedApp />
+}
+
+export const App = () => (
+  <AuthProvider>
+    <AppContent />
+  </AuthProvider>
+)

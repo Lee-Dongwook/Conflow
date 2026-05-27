@@ -3,7 +3,8 @@ import { useState } from "react";
 
 import { Avatar, Badge, Button, Separator, cn } from "@conflow/ui";
 
-import { MOCK_USER } from "app/entities/user";
+import { useSession } from "app/entities/session";
+import { supabase } from "app/shared";
 import type { SidebarGlyph } from "./icons";
 import { SidebarIcon } from "./icons";
 
@@ -89,9 +90,21 @@ export const SideBar = ({
   className,
 }: SideBarProps) => {
   const [theme, setTheme] = useState<ThemeChoice>("system");
+  const session = useSession();
+
+  const displayName =
+    session.status === "authenticated"
+      ? (session.user.user_metadata?.name as string) ?? session.user.email ?? "사용자"
+      : "사용자";
+  const displayEmail =
+    session.status === "authenticated" ? (session.user.email ?? "") : "";
 
   const select = (id: string) => {
     onNavChange?.(id);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
@@ -282,16 +295,23 @@ export const SideBar = ({
           aria-label="내 계정 페이지로 이동"
         >
           <div className="flex gap-2.5">
-            <Avatar label={MOCK_USER.displayName} size="md" />
+            <Avatar label={displayName} size="md" />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-slate-900">
-                {MOCK_USER.displayName}
+                {displayName}
               </p>
               <p className="truncate text-xs text-slate-500">
-                {MOCK_USER.email}
+                {displayEmail}
               </p>
             </div>
           </div>
+        </button>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="mt-2 w-full rounded-md px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        >
+          로그아웃
         </button>
       </div>
     </aside>
