@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { AuthProvider } from 'app/entities/session'
+import { AuthProvider, useSession } from 'app/entities/session'
 import { ConsentForm } from 'app/features/consent'
 import { BacklogPage } from 'app/pages/BacklogPage'
 import { BoardPage } from 'app/pages/BoardPage'
@@ -77,9 +77,19 @@ const AppContent = () => {
 
   const main = PAGE_MAP[activeNavId] ?? <PlaceholderPage navId={activeNavId} />
 
+  const session = useSession()
+  const isGuest = session.status === 'unauthenticated'
+
   return (
     <>
-      <div className="flex min-h-screen bg-slate-50">
+      <div className="relative flex min-h-screen bg-slate-50">
+        {isGuest && (
+          <div
+            className="absolute inset-0 z-40 cursor-pointer"
+            onClick={() => setLoginOpen(true)}
+            aria-hidden="true"
+          />
+        )}
         <SideBar
           activeNavId={activeNavId}
           onNavChange={setActiveNavId}
