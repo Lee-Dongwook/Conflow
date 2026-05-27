@@ -20,6 +20,7 @@ from ..core.database import Base
 if TYPE_CHECKING:
     from ..backlog.model import BacklogItem
     from ..board.model import BoardCard
+    from ..consent.model import UserConsent
     from ..inbox.model import InboxEntry
     from ..retro.model import RetroItem
     from ..team.model import TeamMembership
@@ -118,6 +119,12 @@ class User(Base, AutoUUIDMixin):
         "WeekMilestone",
         back_populates="owner",
         foreign_keys="WeekMilestone.owner_user_uuid",
+    )
+
+    consents: Mapped[list[UserConsent]] = relationship(
+        "UserConsent",
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     __table_args__ = (UniqueConstraint("auth_id", name="uq_user_auth_id"),)

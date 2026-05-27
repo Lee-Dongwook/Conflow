@@ -8,6 +8,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from scalar_fastapi import get_scalar_api_reference
+from src.app.consent.api import router as consent_router
 from src.app.core import shared_init
 from src.app.core.exceptions import global_exception_handler
 from src.app.core.middlewares import setup_middleware
@@ -38,6 +39,8 @@ setup_middleware(app)
 app.include_router(home_router)
 app.include_router(user_router)
 app.include_router(user_router, prefix="/api")
+app.include_router(consent_router)
+app.include_router(consent_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)

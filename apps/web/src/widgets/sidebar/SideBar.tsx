@@ -250,6 +250,23 @@ export const SideBar = ({
         </div>
       </div>
 
+      <div className="border-t border-slate-100 px-2 py-1">
+        <button
+          type="button"
+          onClick={() => {
+            select("legal");
+          }}
+          className={cn(
+            "flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-[11px] transition-colors",
+            activeNavId === "legal"
+              ? "text-teal-700"
+              : "text-slate-400 hover:text-slate-600",
+          )}
+        >
+          이용약관 · 개인정보처리방침
+        </button>
+      </div>
+
       <div className="border-t border-slate-100 p-3">
         <button
           type="button"
