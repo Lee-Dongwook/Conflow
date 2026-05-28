@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AuthProvider, useSession } from 'app/entities/session'
-import { ConsentForm } from 'app/features/consent'
+import { consentApi, ConsentForm, type ConsentAccept } from 'app/features/consent'
 import { BacklogPage } from 'app/pages/BacklogPage'
 import { BoardPage } from 'app/pages/BoardPage'
 import { DashboardPage } from 'app/pages/DashboardPage'
@@ -54,6 +54,40 @@ const NAV_SUBTITLE: Record<string, string> = {
 const AppContent = () => {
   const [activeNavId, setActiveNavId] = useState('dashboard')
   const [loginOpen, setLoginOpen] = useState(false)
+  const [consentPending, setConsentPending] = useState(false)
+  const [consentChecked, setConsentChecked] = useState(false)
+
+  const session = useSession()
+
+  useEffect(() => {
+    if (session.status !== 'authenticated') {
+      setConsentChecked(false)
+      setConsentPending(false)
+      return
+    }
+
+    const checkConsent = async () => {
+      try {
+        const status = await consentApi.getStatus()
+        setConsentPending(!status.allRequiredAccepted)
+      } catch {
+        setConsentPending(false)
+      }
+      setConsentChecked(true)
+    }
+    checkConsent()
+  }, [session.status])
+
+  const handleExistingUserConsent = async (consents: Record<string, boolean>) => {
+    const payload: readonly ConsentAccept[] = Object.entries(consents)
+      .filter(([, accepted]) => accepted)
+      .map(([type]) => ({ consentType: type as ConsentAccept['consentType'], version: '1.0' }))
+
+    if (payload.length > 0) {
+      await consentApi.accept(payload)
+    }
+    setConsentPending(false)
+  }
 
   const navTitle = NAV_TITLE[activeNavId] ?? activeNavId
   const navSubtitle =
@@ -77,8 +111,15 @@ const AppContent = () => {
 
   const main = PAGE_MAP[activeNavId] ?? <PlaceholderPage navId={activeNavId} />
 
-  const session = useSession()
   const isGuest = session.status === 'unauthenticated'
+
+  if (session.status === 'authenticated' && consentChecked && consentPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 p-8">
+        <ConsentForm onComplete={handleExistingUserConsent} />
+      </div>
+    )
+  }
 
   return (
     <>
