@@ -43,7 +43,8 @@
       "XULbmSRhJEEL44i4buV9g",
       "uUt2yUcFrmOrGyRnn2ndV",
       "eqmkbO8JO3OhlpFBRUTFm",
-      "ZbP7tfERMVgK_kVlg5egC"
+      "ZbP7tfERMVgK_kVlg5egC",
+      "Qx7DcfgTbl_dashboard01"
     ],
     "relationshipIds": [
       "nPbBH75WAgHd09-LFFS3R",
@@ -63,7 +64,9 @@
       "wAsQF6nI1_0SHJV-qMm4m",
       "Gc1Db3D41C79Rr24JQveP",
       "9MmKiWKXa2wZVAmib5G2U",
-      "NQpSIGzhYDmWL-JY1-f3F"
+      "NQpSIGzhYDmWL-JY1-f3F",
+      "Qx7Drel_dcfg_team_001",
+      "Qx7Drel_dcfg_sprint01"
     ],
     "indexIds": [],
     "memoIds": [
@@ -560,6 +563,45 @@
           "zIndex": 14,
           "widthName": 99,
           "widthComment": 173,
+          "color": ""
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7DcfgTbl_dashboard01": {
+        "id": "Qx7DcfgTbl_dashboard01",
+        "name": "dashboard_configs",
+        "comment": "Sprint 1:1 대시보드 설정",
+        "columnIds": [
+          "Qx7Dcol_dcfg_uuid_001",
+          "Qx7Dcol_dcfg_creat_01",
+          "Qx7Dcol_dcfg_updat_01",
+          "Qx7Dcol_dcfg_delet_01",
+          "Qx7Dcol_dcfg_teamU_01",
+          "Qx7Dcol_dcfg_sprntU01",
+          "Qx7Dcol_dcfg_course01",
+          "Qx7Dcol_dcfg_blockr01",
+          "Qx7Dcol_dcfg_nextDl01"
+        ],
+        "seqColumnIds": [
+          "Qx7Dcol_dcfg_uuid_001",
+          "Qx7Dcol_dcfg_creat_01",
+          "Qx7Dcol_dcfg_updat_01",
+          "Qx7Dcol_dcfg_delet_01",
+          "Qx7Dcol_dcfg_teamU_01",
+          "Qx7Dcol_dcfg_sprntU01",
+          "Qx7Dcol_dcfg_course01",
+          "Qx7Dcol_dcfg_blockr01",
+          "Qx7Dcol_dcfg_nextDl01"
+        ],
+        "ui": {
+          "x": 1100,
+          "y": 1520,
+          "zIndex": 15,
+          "widthName": 113,
+          "widthComment": 137,
           "color": ""
         },
         "meta": {
@@ -2788,6 +2830,186 @@
           "updateAt": 1778320983748,
           "createAt": 1778320983748
         }
+      },
+      "Qx7Dcol_dcfg_uuid_001": {
+        "id": "Qx7Dcol_dcfg_uuid_001",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "uuid",
+        "comment": "PK",
+        "dataType": "UUID",
+        "default": "",
+        "options": 10,
+        "ui": {
+          "keys": 2,
+          "widthName": 60,
+          "widthComment": 60,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_creat_01": {
+        "id": "Qx7Dcol_dcfg_creat_01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "created_at",
+        "comment": "",
+        "dataType": "TIMESTAMPTZ",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 63,
+          "widthComment": 60,
+          "widthDataType": 86,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_updat_01": {
+        "id": "Qx7Dcol_dcfg_updat_01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "updated_at",
+        "comment": "",
+        "dataType": "TIMESTAMPTZ",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 0,
+          "widthName": 67,
+          "widthComment": 60,
+          "widthDataType": 86,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_delet_01": {
+        "id": "Qx7Dcol_dcfg_delet_01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "deleted_at",
+        "comment": "",
+        "dataType": "TIMESTAMPTZ",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 62,
+          "widthComment": 60,
+          "widthDataType": 86,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_teamU_01": {
+        "id": "Qx7Dcol_dcfg_teamU_01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "team_uuid",
+        "comment": "FK → teams",
+        "dataType": "UUID",
+        "default": "",
+        "options": 8,
+        "ui": {
+          "keys": 1,
+          "widthName": 61,
+          "widthComment": 66,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_sprntU01": {
+        "id": "Qx7Dcol_dcfg_sprntU01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "sprint_uuid",
+        "comment": "FK → sprints (UNIQUE)",
+        "dataType": "UUID",
+        "default": "",
+        "options": 12,
+        "ui": {
+          "keys": 1,
+          "widthName": 72,
+          "widthComment": 118,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_course01": {
+        "id": "Qx7Dcol_dcfg_course01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "course_label",
+        "comment": "소프트웨어공학 팀플 등",
+        "dataType": "VARCHAR(128)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 79,
+          "widthComment": 117,
+          "widthDataType": 89,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_blockr01": {
+        "id": "Qx7Dcol_dcfg_blockr01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "blocker_note",
+        "comment": "막힌 것 메모",
+        "dataType": "TEXT",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 77,
+          "widthComment": 78,
+          "widthDataType": 60,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Dcol_dcfg_nextDl01": {
+        "id": "Qx7Dcol_dcfg_nextDl01",
+        "tableId": "Qx7DcfgTbl_dashboard01",
+        "name": "next_deadline_label",
+        "comment": "마감 커스텀 라벨",
+        "dataType": "VARCHAR(256)",
+        "default": "",
+        "options": 0,
+        "ui": {
+          "keys": 0,
+          "widthName": 119,
+          "widthComment": 101,
+          "widthDataType": 89,
+          "widthDefault": 60
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
       }
     },
     "relationshipEntities": {
@@ -3289,6 +3511,62 @@
           "x": 366.25,
           "y": 336,
           "direction": 8
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Drel_dcfg_team_001": {
+        "id": "Qx7Drel_dcfg_team_001",
+        "identification": false,
+        "relationshipType": 16,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "Qx7DcfgTbl_dashboard01",
+          "columnIds": [
+            "Qx7Dcol_dcfg_teamU_01"
+          ],
+          "x": 1100,
+          "y": 1660,
+          "direction": 1
+        },
+        "end": {
+          "tableId": "bLfbsBEId3ctG7RRizFDu",
+          "columnIds": [
+            "jBHLrIWPQjhcENC6i5-Ef"
+          ],
+          "x": 440,
+          "y": 586.6666666666667,
+          "direction": 2
+        },
+        "meta": {
+          "updateAt": 1778320983748,
+          "createAt": 1778320983748
+        }
+      },
+      "Qx7Drel_dcfg_sprint01": {
+        "id": "Qx7Drel_dcfg_sprint01",
+        "identification": false,
+        "relationshipType": 16,
+        "startRelationshipType": 2,
+        "start": {
+          "tableId": "Qx7DcfgTbl_dashboard01",
+          "columnIds": [
+            "Qx7Dcol_dcfg_sprntU01"
+          ],
+          "x": 1100,
+          "y": 1730,
+          "direction": 1
+        },
+        "end": {
+          "tableId": "UHjz4R1uQc99Mph5D15F3",
+          "columnIds": [
+            "SoQV9X9DpM8FmD-X_1ZYd"
+          ],
+          "x": 423.75,
+          "y": 1080,
+          "direction": 2
         },
         "meta": {
           "updateAt": 1778320983748,

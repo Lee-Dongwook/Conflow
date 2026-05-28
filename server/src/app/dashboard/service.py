@@ -6,6 +6,7 @@ from ..board.model import BoardCard
 from ..sprint.model import Sprint
 from ..team.model import Team, TeamMembership
 from ..user.model import User
+from .model import DashboardConfig
 from .schemas import (
     DashboardMemberRead,
     DashboardSprintRead,
@@ -53,6 +54,7 @@ async def get_team_dashboard(
     total_tasks = 0
     done_tasks = 0
     progress_percent = 0
+    dashboard_cfg = None
 
     if sprint:
         sprint_read = DashboardSprintRead(
@@ -63,6 +65,15 @@ async def get_team_dashboard(
             starts_on=sprint.starts_on,
             ends_on=sprint.ends_on,
         )
+
+        # Dashboard config (1:1 with sprint)
+        cfg_result = await db.execute(
+            select(DashboardConfig).where(
+                DashboardConfig.sprint_uuid == sprint.uuid,
+                DashboardConfig.deleted_at.is_(None),
+            )
+        )
+        dashboard_cfg = cfg_result.scalar_one_or_none()
 
         # Board cards for this sprint
         cards_result = await db.execute(
@@ -122,4 +133,7 @@ async def get_team_dashboard(
         progress_percent=progress_percent,
         total_tasks=total_tasks,
         done_tasks=done_tasks,
+        course_label=dashboard_cfg.course_label if dashboard_cfg else None,
+        blocker_note=dashboard_cfg.blocker_note if dashboard_cfg else None,
+        next_deadline_label=dashboard_cfg.next_deadline_label if dashboard_cfg else None,
     )

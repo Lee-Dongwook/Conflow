@@ -13,6 +13,7 @@ from ..core.database import Base
 if TYPE_CHECKING:
     from ..backlog.model import BacklogItem
     from ..board.model import BoardCard
+    from ..dashboard.model import DashboardConfig
     from ..retro.model import RetroBoard
     from ..team.model import Team
     from ..week.model import WeekMilestone
@@ -92,6 +93,13 @@ class Sprint(Base, AutoUUIDMixin):
     week_milestones: Mapped[list[WeekMilestone]] = relationship(
         "WeekMilestone",
         back_populates="sprint",
+        passive_deletes=True,
+    )
+
+    dashboard_config: Mapped[DashboardConfig | None] = relationship(
+        "DashboardConfig",
+        back_populates="sprint",
+        uselist=False,
         passive_deletes=True,
     )
 

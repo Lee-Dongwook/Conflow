@@ -21,6 +21,7 @@ from ..core.database import Base
 if TYPE_CHECKING:
     from ..backlog.model import BacklogItem
     from ..board.model import BoardCard
+    from ..dashboard.model import DashboardConfig
     from ..sprint.model import Sprint
     from ..user.model import User
 
@@ -81,6 +82,12 @@ class Team(Base, AutoUUIDMixin):
 
     board_cards: Mapped[list[BoardCard]] = relationship(
         "BoardCard",
+        back_populates="team",
+        passive_deletes=True,
+    )
+
+    dashboard_configs: Mapped[list[DashboardConfig]] = relationship(
+        "DashboardConfig",
         back_populates="team",
         passive_deletes=True,
     )

@@ -52,4 +52,6 @@ class TeamDashboardRead(BaseModel):
     progress_percent: int = 0
     total_tasks: int = 0
     done_tasks: int = 0
+    course_label: str | None = None
     blocker_note: str | None = None
+    next_deadline_label: str | None = None
