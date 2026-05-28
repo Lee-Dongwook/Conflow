@@ -2,8 +2,8 @@ import type { ReactNode } from 'react'
 
 import { Avatar, Badge, Button, Separator, cn } from '@conflow/ui'
 
-import { useSession } from 'app/entities/session'
-import { supabase, useTheme } from 'app/shared'
+import { useLogout, useSession } from 'app/entities/session'
+import { useTheme } from 'app/shared'
 import type { SidebarGlyph } from './icons'
 import { SidebarIcon } from './icons'
 
@@ -85,6 +85,7 @@ export const SideBar = ({
 }: SideBarProps) => {
   const { theme, setTheme } = useTheme()
   const session = useSession()
+  const logout = useLogout()
 
   const displayName =
     session.status === 'authenticated'
@@ -97,7 +98,7 @@ export const SideBar = ({
   }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
+    await logout()
   }
 
   return (

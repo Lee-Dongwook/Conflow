@@ -1,4 +1,4 @@
-import { createBaseAPIClient } from '@conflow/core'
+import { createBaseAPIClient, isAPIError } from '@conflow/core'
 
 import { supabase } from 'app/shared/lib'
 
@@ -13,4 +13,11 @@ apiClient.interceptors.request.use(async (config) => {
     config.headers.Authorization = `Bearer ${token}`
   }
   return config
+})
+
+apiClient.interceptors.response.use(undefined, async (error: unknown) => {
+  if (isAPIError(error) && error.code === 'HTTP_401') {
+    await supabase.auth.signOut()
+  }
+  return Promise.reject(error)
 })

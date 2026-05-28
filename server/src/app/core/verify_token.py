@@ -128,6 +128,11 @@ async def set_cached_verified_user(cache: TTLCache[str, UserRead], token: str, u
     cache[token] = user
 
 
+def invalidate_token_cache(token: str) -> None:
+    if _verify_token_cache is not None and token in _verify_token_cache:
+        del _verify_token_cache[token]
+
+
 async def verify_token(
     request: Request,
     token: str = Depends(get_access_token),

@@ -15,7 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..core.database import get_async_db
 from ..core.security import generate_service_access_token
-from ..core.verify_token import get_access_token, verify_token
+from ..core.verify_token import get_access_token, invalidate_token_cache, verify_token
 from .lib import get_cookie_samesite, is_local
 from .schemas import TokenRefresh, UserCreate, UserRead, UserUpdate, UserWithTeamsRead
 from .service import (
@@ -267,6 +267,27 @@ async def refresh_token(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Error refreshing token",
         )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(
+    request: Request,
+    token: str = Depends(get_access_token),
+) -> JSONResponse:
+    """Sign out: invalidate server token cache and clear refresh_token cookie."""
+    invalidate_token_cache(token)
+
+    is_local_request = is_local(request)
+    samesite = get_cookie_samesite(request, is_local_request)
+
+    response = JSONResponse(content=None, status_code=status.HTTP_204_NO_CONTENT)
+    response.delete_cookie(
+        "refresh_token",
+        path="/",
+        samesite=samesite,
+        secure=(samesite == "none") or (not is_local_request),
+    )
+    return response
 
 
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
