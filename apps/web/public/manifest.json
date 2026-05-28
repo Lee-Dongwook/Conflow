@@ -1,0 +1,22 @@
+{
+  "name": "Conflow - 대학생 팀플/스터디 협업 플랫폼",
+  "short_name": "Conflow",
+  "description": "회의 자동 요약, 블로커 감지, 스프린트 관리까지. AI 기반 IT 협업 플랫폼.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e293b",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
