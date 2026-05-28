@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "Conflow",
+    "slug": "conflow",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "scheme": "conflow",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.conflow.mobile"
+    },
+    "android": {
+      "package": "app.conflow.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#1e293b",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router"
+    ]
+  }
+}

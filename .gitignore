@@ -37,3 +37,6 @@ todos.json
 
 # ADMIN
 server/scripts/seed_admin.py
+
+# Planning
+docs/monthly/**
