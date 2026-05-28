@@ -1,126 +1,115 @@
-import type { ReactNode } from "react";
-import { useState } from "react";
+import type { ReactNode } from 'react'
 
-import { Avatar, Badge, Button, Separator, cn } from "@conflow/ui";
+import { Avatar, Badge, Button, Separator, cn } from '@conflow/ui'
 
-import { useSession } from "app/entities/session";
-import { supabase } from "app/shared";
-import type { SidebarGlyph } from "./icons";
-import { SidebarIcon } from "./icons";
+import { useSession } from 'app/entities/session'
+import { supabase, useTheme } from 'app/shared'
+import type { SidebarGlyph } from './icons'
+import { SidebarIcon } from './icons'
 
 export type SideBarProps = {
-  readonly activeNavId?: string;
-  readonly onNavChange?: (id: string) => void;
-  readonly onLoginRequest?: () => void;
-  readonly className?: string;
-};
+  readonly activeNavId?: string
+  readonly onNavChange?: (id: string) => void
+  readonly onLoginRequest?: () => void
+  readonly className?: string
+}
 
 type NavDef = {
-  readonly id: string;
-  readonly label: string;
-  readonly icon: SidebarGlyph;
-  readonly badge?: number;
-};
+  readonly id: string
+  readonly label: string
+  readonly icon: SidebarGlyph
+  readonly badge?: number
+}
 
 const WORK: readonly NavDef[] = [
-  { id: "dashboard", label: "대시보드", icon: "dashboard" },
-  { id: "sprint", label: "이번 주", icon: "calendar" },
-  { id: "board", label: "보드", icon: "board" },
-  { id: "backlog", label: "백로그", icon: "list" },
-];
+  { id: 'dashboard', label: '대시보드', icon: 'dashboard' },
+  { id: 'sprint', label: '이번 주', icon: 'calendar' },
+  { id: 'board', label: '보드', icon: 'board' },
+  { id: 'backlog', label: '백로그', icon: 'list' },
+]
 
 const INSIGHT: readonly NavDef[] = [
-  { id: "metrics", label: "한눈에", icon: "chart" },
-  { id: "retro", label: "회고", icon: "clock" },
-];
+  { id: 'metrics', label: '한눈에', icon: 'chart' },
+  { id: 'retro', label: '회고', icon: 'clock' },
+]
 
 const MESSAGES: readonly NavDef[] = [
-  { id: "dm", label: "다이렉트 메시지", icon: "chat" },
-  { id: "huddle", label: "허들", icon: "huddle" },
-  { id: "meetingSummary", label: "AI 회의록", icon: "clipboard" },
-];
-
-type ThemeChoice = "light" | "system" | "dark";
+  { id: 'dm', label: '다이렉트 메시지', icon: 'chat' },
+  { id: 'huddle', label: '허들', icon: 'huddle' },
+  { id: 'meetingSummary', label: 'AI 회의록', icon: 'clipboard' },
+]
 
 const SectionLabel = ({ children }: { readonly children: ReactNode }) => (
   <p className="px-3 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-wider text-slate-400 first:pt-1">
     {children}
   </p>
-);
+)
 
 const NavButton = ({
   item,
   active,
   onSelect,
 }: {
-  readonly item: NavDef;
-  readonly active: boolean;
-  readonly onSelect: () => void;
+  readonly item: NavDef
+  readonly active: boolean
+  readonly onSelect: () => void
 }) => (
   <button
     type="button"
     onClick={onSelect}
     className={cn(
-      "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
-      active
-        ? "bg-teal-600 text-white shadow-sm"
-        : "text-slate-600 hover:bg-slate-50",
+      'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
+      active ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50',
     )}
   >
-    <SidebarIcon
-      name={item.icon}
-      className={active ? "text-white" : "text-slate-500"}
-    />
+    <SidebarIcon name={item.icon} className={active ? 'text-white' : 'text-slate-500'} />
     <span className="min-w-0 flex-1 truncate">{item.label}</span>
     {item.badge !== undefined && item.badge > 0 ? (
       <span
         className={cn(
-          "flex min-h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums",
-          active ? "bg-white/25 text-white" : "bg-rose-500 text-white",
+          'flex min-h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums',
+          active ? 'bg-white/25 text-white' : 'bg-rose-500 text-white',
         )}
       >
-        {item.badge > 99 ? "99+" : String(item.badge)}
+        {item.badge > 99 ? '99+' : String(item.badge)}
       </span>
     ) : null}
   </button>
-);
+)
 
 export const SideBar = ({
-  activeNavId = "dashboard",
+  activeNavId = 'dashboard',
   onNavChange,
   onLoginRequest,
   className,
 }: SideBarProps) => {
-  const [theme, setTheme] = useState<ThemeChoice>("system");
-  const session = useSession();
+  const { theme, setTheme } = useTheme()
+  const session = useSession()
 
   const displayName =
-    session.status === "authenticated"
-      ? (session.user.user_metadata?.name as string) ?? session.user.email ?? "사용자"
-      : "사용자";
-  const displayEmail =
-    session.status === "authenticated" ? (session.user.email ?? "") : "";
+    session.status === 'authenticated'
+      ? ((session.user.user_metadata?.name as string) ?? session.user.email ?? '사용자')
+      : '사용자'
+  const displayEmail = session.status === 'authenticated' ? (session.user.email ?? '') : ''
 
   const select = (id: string) => {
-    onNavChange?.(id);
-  };
+    onNavChange?.(id)
+  }
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-  };
+    await supabase.auth.signOut()
+  }
 
   return (
     <aside
       className={cn(
-        "flex h-screen w-[240px] shrink-0 flex-col border-r border-slate-200 bg-white",
+        'flex h-screen w-[240px] shrink-0 flex-col border-r border-slate-200 bg-white',
         className,
       )}
     >
       <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-3">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate font-semibold tracking-tight text-slate-900">
-            Conflow
-          </span>
+          <span className="truncate font-semibold tracking-tight text-slate-900">Conflow</span>
           <Badge variant="outline" className="shrink-0 text-[10px]">
             로컬
           </Badge>
@@ -145,7 +134,7 @@ export const SideBar = ({
               item={item}
               active={activeNavId === item.id}
               onSelect={() => {
-                select(item.id);
+                select(item.id)
               }}
             />
           ))}
@@ -159,7 +148,7 @@ export const SideBar = ({
               item={item}
               active={activeNavId === item.id}
               onSelect={() => {
-                select(item.id);
+                select(item.id)
               }}
             />
           ))}
@@ -170,28 +159,24 @@ export const SideBar = ({
         <button
           type="button"
           onClick={() => {
-            select("inbox");
+            select('inbox')
           }}
           className={cn(
-            "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors",
-            activeNavId === "inbox"
-              ? "bg-teal-600 text-white shadow-sm"
-              : "text-slate-600 hover:bg-slate-50",
+            'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
+            activeNavId === 'inbox'
+              ? 'bg-teal-600 text-white shadow-sm'
+              : 'text-slate-600 hover:bg-slate-50',
           )}
         >
           <SidebarIcon
             name="bell"
-            className={
-              activeNavId === "inbox" ? "text-white" : "text-slate-500"
-            }
+            className={activeNavId === 'inbox' ? 'text-white' : 'text-slate-500'}
           />
           <span className="min-w-0 flex-1 truncate">수신함</span>
           <span
             className={cn(
-              "flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums",
-              activeNavId === "inbox"
-                ? "bg-white/25 text-white"
-                : "bg-rose-500 text-white",
+              'flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums',
+              activeNavId === 'inbox' ? 'bg-white/25 text-white' : 'bg-rose-500 text-white',
             )}
           >
             3
@@ -201,21 +186,18 @@ export const SideBar = ({
         <button
           type="button"
           onClick={() => {
-            select("workspace");
+            select('workspace')
           }}
           className={cn(
-            "mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors",
-            activeNavId === "workspace"
-              ? "bg-teal-600 font-medium text-white shadow-sm"
-              : "text-slate-500 hover:bg-slate-50",
+            'mt-1 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm transition-colors',
+            activeNavId === 'workspace'
+              ? 'bg-teal-600 font-medium text-white shadow-sm'
+              : 'text-slate-500 hover:bg-slate-50',
           )}
         >
           <SidebarIcon
             name="settings"
-            className={cn(
-              "size-4",
-              activeNavId === "workspace" ? "text-white" : "text-slate-400",
-            )}
+            className={cn('size-4', activeNavId === 'workspace' ? 'text-white' : 'text-slate-400')}
           />
           <span>워크스페이스</span>
         </button>
@@ -228,7 +210,7 @@ export const SideBar = ({
             item={item}
             active={activeNavId === item.id}
             onSelect={() => {
-              select(item.id);
+              select(item.id)
             }}
           />
         ))}
@@ -241,22 +223,22 @@ export const SideBar = ({
         <div className="flex rounded-lg bg-slate-100 p-0.5 text-[11px] font-medium">
           {(
             [
-              { id: "light" as const, label: "라이트" },
-              { id: "system" as const, label: "자동" },
-              { id: "dark" as const, label: "다크" },
+              { id: 'light' as const, label: '라이트' },
+              { id: 'system' as const, label: '자동' },
+              { id: 'dark' as const, label: '다크' },
             ] as const
           ).map((seg) => (
             <button
               key={seg.id}
               type="button"
               onClick={() => {
-                setTheme(seg.id);
+                setTheme(seg.id)
               }}
               className={cn(
-                "flex-1 rounded-md px-1.5 py-1.5 transition-colors",
+                'flex-1 rounded-md px-1.5 py-1.5 transition-colors',
                 theme === seg.id
-                  ? "bg-white text-teal-800 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800",
+                  ? 'bg-white text-teal-800 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-800',
               )}
             >
               {seg.label}
@@ -269,13 +251,11 @@ export const SideBar = ({
         <button
           type="button"
           onClick={() => {
-            select("legal");
+            select('legal')
           }}
           className={cn(
-            "flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-[11px] transition-colors",
-            activeNavId === "legal"
-              ? "text-teal-700"
-              : "text-slate-400 hover:text-slate-600",
+            'flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-[11px] transition-colors',
+            activeNavId === 'legal' ? 'text-teal-700' : 'text-slate-400 hover:text-slate-600',
           )}
         >
           이용약관 · 개인정보처리방침
@@ -283,30 +263,26 @@ export const SideBar = ({
       </div>
 
       <div className="border-t border-slate-100 p-3">
-        {session.status === "authenticated" ? (
+        {session.status === 'authenticated' ? (
           <>
             <button
               type="button"
               onClick={() => {
-                select("profile");
+                select('profile')
               }}
               className={cn(
-                "w-full rounded-lg border bg-slate-50 p-2.5 text-left transition-shadow",
-                activeNavId === "profile"
-                  ? "border-teal-400 ring-2 ring-teal-400/40"
-                  : "border-slate-200 hover:border-slate-300",
+                'w-full rounded-lg border bg-slate-50 p-2.5 text-left transition-shadow',
+                activeNavId === 'profile'
+                  ? 'border-teal-400 ring-2 ring-teal-400/40'
+                  : 'border-slate-200 hover:border-slate-300',
               )}
               aria-label="내 계정 페이지로 이동"
             >
               <div className="flex gap-2.5">
                 <Avatar label={displayName} size="md" />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-900">
-                    {displayName}
-                  </p>
-                  <p className="truncate text-xs text-slate-500">
-                    {displayEmail}
-                  </p>
+                  <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
+                  <p className="truncate text-xs text-slate-500">{displayEmail}</p>
                 </div>
               </div>
             </button>
@@ -330,5 +306,5 @@ export const SideBar = ({
         )}
       </div>
     </aside>
-  );
-};
+  )
+}
