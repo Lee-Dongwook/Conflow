@@ -44,6 +44,23 @@ export const userApi = {
     return UserWithTeamsReadSchema.parse(data)
   },
 
+  async me(): Promise<UserWithTeamsRead> {
+    const { data } = await apiClient.get(`${BASE}/me`)
+    return UserWithTeamsReadSchema.parse(data)
+  },
+
+  async updateMe(payload: UserUpdate): Promise<UserRead> {
+    const { data } = await apiClient.patch(`${BASE}/me`, payload)
+    return UserReadSchema.parse(data)
+  },
+
+  async uploadAvatar(file: File): Promise<UserRead> {
+    const { data } = await apiClient.post(`${BASE}/me/avatar`, file, {
+      headers: { 'Content-Type': file.type },
+    })
+    return UserReadSchema.parse(data)
+  },
+
   async update(userUuid: string, payload: UserUpdate): Promise<UserRead> {
     const { data } = await apiClient.patch(`${BASE}/${userUuid}`, payload)
     return UserReadSchema.parse(data)

@@ -290,6 +290,72 @@ async def logout(
     return response
 
 
+@router.get("/me", response_model=UserWithTeamsRead, status_code=status.HTTP_200_OK)
+async def get_me(
+    current_user: UserRead = Depends(verify_token),
+    db: AsyncSession = Depends(get_async_db),
+) -> UserWithTeamsRead:
+    """Return the currently authenticated user with team memberships."""
+    user = await get_user_with_memberships(db, str(current_user.uuid))
+    return UserWithTeamsRead.model_validate(user)
+
+
+@router.patch("/me", response_model=UserRead, status_code=status.HTTP_200_OK)
+async def update_me(
+    payload: UserUpdate,
+    current_user: UserRead = Depends(verify_token),
+    db: AsyncSession = Depends(get_async_db),
+) -> UserRead:
+    """Update the currently authenticated user's profile."""
+    user = await update_user(db, str(current_user.uuid), payload)
+    return UserRead.model_validate(user)
+
+
+@router.post("/me/avatar", response_model=UserRead, status_code=status.HTTP_200_OK)
+async def upload_avatar(
+    request: Request,
+    current_user: UserRead = Depends(verify_token),
+    db: AsyncSession = Depends(get_async_db),
+) -> UserRead:
+    """Upload avatar image to Supabase storage and update profile_image_url."""
+    from ..common.storage import get_secure_signed_upload_url, stream_upload_to_signed_url
+    from ..core.database import supabase_client
+
+    content_type = request.headers.get("content-type", "application/octet-stream")
+    if not content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only image files are allowed",
+        )
+
+    ext = content_type.split("/")[-1].split(";")[0].strip()
+    allowed = ("png", "jpeg", "jpg", "gif", "webp", "svg+xml")
+    if ext not in allowed:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported image type: {ext}",
+        )
+
+    file_path = f"avatars/{current_user.uuid}.{ext.replace('+xml', '')}"
+    body = await request.body()
+    if len(body) > 5 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File too large (max 5MB)",
+        )
+
+    signed_url = await get_secure_signed_upload_url(
+        supabase_client, "avatars", file_path,
+    )
+    await stream_upload_to_signed_url(signed_url, body, content_type)
+
+    supabase_url = os.environ.get("SUPABASE_URL", "")
+    public_url = f"{supabase_url}/storage/v1/object/public/avatars/{file_path}"
+    payload = UserUpdate(profile_image_url=public_url)
+    user = await update_user(db, str(current_user.uuid), payload)
+    return UserRead.model_validate(user)
+
+
 @router.post("", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 async def create_user_route(
     payload: UserCreate,
