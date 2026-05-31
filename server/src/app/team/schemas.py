@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from .model import TeamMemberRole
 
@@ -14,6 +14,8 @@ class TeamCreate(BaseModel):
 
 
 class SprintSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     uuid: str
     label: str
     starts_on: datetime
@@ -23,6 +25,8 @@ class SprintSummary(BaseModel):
 
 
 class TeamRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     uuid: str
     name: str
     description: str | None

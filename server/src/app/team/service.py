@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 
 from .model import Team, TeamMemberRole, TeamMembership
 
@@ -25,12 +26,17 @@ async def create_team(db: AsyncSession, payload, creator_uuid: str) -> Team:
     )
     db.add(membership)
     await db.commit()
-    await db.refresh(team)
-    return team
+
+    # re-fetch with sprints eager-loaded (async session cannot lazy-load)
+    return await get_team_or_404(db, team.uuid)
 
 
 async def get_team_or_404(db: AsyncSession, team_uuid: str) -> Team:
-    res = await db.execute(select(Team).where(Team.uuid == team_uuid, Team.deleted_at.is_(None)))
+    res = await db.execute(
+        select(Team)
+        .where(Team.uuid == team_uuid, Team.deleted_at.is_(None))
+        .options(selectinload(Team.sprints))
+    )
     team = res.scalar_one_or_none()
     if not team:
         raise not_found_exc("Team not found")
