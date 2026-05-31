@@ -21,7 +21,6 @@ if TYPE_CHECKING:
     from ..backlog.model import BacklogItem
     from ..board.model import BoardCard
     from ..consent.model import UserConsent
-    from ..inbox.model import InboxEntry
     from ..retro.model import RetroItem
     from ..team.model import TeamMembership
     from ..week.model import WeekMilestone
@@ -95,18 +94,6 @@ class User(Base, AutoUUIDMixin):
         "BoardCard",
         back_populates="reporter",
         foreign_keys="BoardCard.reporter_user_uuid",
-    )
-
-    received_inbox_entries: Mapped[list[InboxEntry]] = relationship(
-        "InboxEntry",
-        back_populates="recipient",
-        foreign_keys="InboxEntry.recipient_user_uuid",
-    )
-
-    sent_inbox_entries: Mapped[list[InboxEntry]] = relationship(
-        "InboxEntry",
-        back_populates="sender",
-        foreign_keys="InboxEntry.sender_user_uuid",
     )
 
     authored_retro_items: Mapped[list[RetroItem]] = relationship(
