@@ -61,6 +61,7 @@ class Team(Base, AutoUUIDMixin):
 
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     description: Mapped[str | None] = mapped_column(Text(), nullable=True)
+    leader_name: Mapped[str | None] = mapped_column(String(32), nullable=True)
 
     memberships: Mapped[list[TeamMembership]] = relationship(
         "TeamMembership",

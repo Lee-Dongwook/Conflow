@@ -10,12 +10,24 @@ from .model import TeamMemberRole
 class TeamCreate(BaseModel):
     name: str
     description: str | None = None
+    leader_name: str | None = None
+
+
+class SprintSummary(BaseModel):
+    uuid: str
+    label: str
+    starts_on: datetime
+    ends_on: datetime
+    shared_goal: str | None
+    period_label: str | None
 
 
 class TeamRead(BaseModel):
     uuid: str
     name: str
     description: str | None
+    leader_name: str | None
+    sprints: list[SprintSummary] = []
     created_at: datetime
     updated_at: datetime
 
@@ -23,6 +35,7 @@ class TeamRead(BaseModel):
 class TeamUpdate(BaseModel):
     name: str | None = None
     description: str | None = None
+    leader_name: str | None = None
 
 
 # -- TeamMembership --
