@@ -22,6 +22,10 @@ from src.app.team.api import router as team_router
 from src.app.user.api import router as user_router
 from src.app.websockets.api import router as signaling_router
 
+# Models without active routers — imported so SQLAlchemy resolves all relationships
+import src.app.retro.model  # noqa: F401
+import src.app.week.model  # noqa: F401
+
 env_type = os.environ.get("ENV", "development")
 shared_init.load_dotenv(env_type)
 
