@@ -11,6 +11,7 @@ import {
   CardTitle,
   Progress,
   Separator,
+  Skeleton,
 } from '@conflow/ui'
 
 import type { DashboardTaskRead, TeamDashboardRead } from 'app/entities/dashboard'
@@ -130,7 +131,7 @@ export const DashboardPage = ({
     d.nextDeadlineLabel ?? (d.sprint ? d.sprint.endsOn.slice(0, 10) : null)
 
   if (!isDemo && status === 'loading') {
-    return <p className="text-center text-sm text-slate-400">대시보드를 불러오는 중...</p>
+    return <DashboardSkeleton />
   }
 
   if (!isDemo && status === 'error' && 'error' in rest) {
@@ -283,5 +284,82 @@ const TaskRow = ({
       <p className="text-xs text-slate-500">{task.assigneeName ?? '미배정'}</p>
     </div>
     {statusBadge(task.columnKey)}
+  </div>
+)
+
+const TaskRowSkeleton = () => (
+  <div className="flex items-center gap-3">
+    <Skeleton className="h-8 w-8 rounded-full" />
+    <div className="min-w-0 flex-1 space-y-1.5">
+      <Skeleton className="h-4 w-40" />
+      <Skeleton className="h-3 w-20" />
+    </div>
+    <Skeleton className="h-5 w-12 rounded-full" />
+  </div>
+)
+
+const DashboardSkeleton = () => (
+  <div className="mx-auto flex max-w-4xl flex-col gap-6">
+    {/* Header card */}
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Skeleton className="h-5 w-20 rounded-full" />
+          <Skeleton className="h-5 w-16 rounded-full" />
+          <Skeleton className="h-5 w-28 rounded-full" />
+        </div>
+        <Skeleton className="mt-2 h-6 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-5 w-72" />
+      </CardContent>
+    </Card>
+
+    {/* Deadline + Progress */}
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card>
+        <CardHeader className="pb-2">
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="h-3.5 w-32" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-4 w-24" />
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="pb-2">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-3.5 w-28" />
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Skeleton className="h-2 w-full rounded-full" />
+          <Skeleton className="h-3 w-36" />
+        </CardContent>
+      </Card>
+    </div>
+
+    {/* Tasks */}
+    <Card>
+      <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 pb-2">
+        <div className="space-y-1.5">
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="h-3.5 w-48" />
+        </div>
+        <div className="flex gap-2">
+          <Skeleton className="h-9 w-24 rounded-md" />
+          <Skeleton className="h-9 w-16 rounded-md" />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-0">
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i}>
+            {i > 0 ? <Separator className="my-3" /> : null}
+            <TaskRowSkeleton />
+          </div>
+        ))}
+      </CardContent>
+    </Card>
   </div>
 )
