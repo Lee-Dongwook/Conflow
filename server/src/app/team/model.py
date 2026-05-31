@@ -130,7 +130,7 @@ class TeamMembership(Base, AutoUUIDMixin):
     )
 
     role: Mapped[TeamMemberRole] = mapped_column(
-        Enum(TeamMemberRole, name="teammemberrole"),
+        Enum(TeamMemberRole, name="teammemberrole", values_callable=lambda e: [m.value for m in e]),
         default=TeamMemberRole.MEMBER,
         nullable=False,
     )
