@@ -73,7 +73,11 @@ class BacklogItem(Base, AutoUUIDMixin):
     )
 
     priority: Mapped[BacklogPriority] = mapped_column(
-        Enum(BacklogPriority, name="backlog_priority"),
+        Enum(
+            BacklogPriority,
+            name="backlog_priority",
+            values_callable=lambda e: [m.value for m in e],
+        ),
         nullable=False,
     )
     note: Mapped[str | None] = mapped_column(Text(), nullable=True)
