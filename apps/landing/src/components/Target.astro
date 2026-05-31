@@ -1,0 +1,113 @@
+---
+
+---
+
+<section id="target" class="section target">
+  <div class="container">
+    <p class="section-label">누구를 위한 도구인가</p>
+    <h2 class="section-title">이런 팀을 위해 만들었습니다</h2>
+    <div class="target-grid">
+      <div class="target-card">
+        <div class="target-emoji">🎓</div>
+        <h3 class="target-title">대학 프로젝트팀 & 스터디</h3>
+        <p class="target-desc">
+          카톡에서 회의하고 노션에 정리하다 지친 팀.<br />
+          무임승차 걱정 없이, 누가 뭘 하는지 투명하게.
+        </p>
+        <ul class="target-list">
+          <li>회의록 자동 정리</li>
+          <li>팀원별 진행상황 한눈에</li>
+          <li>무료 사용</li>
+        </ul>
+      </div>
+      <div class="target-card">
+        <div class="target-emoji">🚀</div>
+        <h3 class="target-title">Pre-seed ~ Series A 스타트업</h3>
+        <p class="target-desc">
+          Jira는 과하고, Notion은 부족한 5~15명 팀.<br />
+          적은 인원으로 빠르게 실행해야 할 때.
+        </p>
+        <ul class="target-list">
+          <li>블로커 자동 감지로 병목 제거</li>
+          <li>스프린트 + 칸반 통합 관리</li>
+          <li>회고 기반 팀 개선 루프</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .target {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .target-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .target-card {
+    padding: 40px 36px;
+    border-radius: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+
+  .target-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+
+  .target-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .target-desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .target-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .target-list li {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .target-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-accent);
+    font-weight: 700;
+  }
+
+  @media (max-width: 768px) {
+    .target-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

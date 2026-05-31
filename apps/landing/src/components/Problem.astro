@@ -1,0 +1,105 @@
+---
+const problems = [
+  {
+    icon: '🔇',
+    title: '회의록 실종',
+    desc: '30분 회의 끝나면 아무도 뭘 정했는지 모른다',
+  },
+  {
+    icon: '🚧',
+    title: '블로커 방치',
+    desc: '"어디서 막혔어?" 물어보기 전까진 아무도 모른다',
+  },
+  {
+    icon: '📅',
+    title: '마감 깜빡',
+    desc: '디데이 3일 전에야 "아 그거 해야 했는데"',
+  },
+  {
+    icon: '🧩',
+    title: '툴 파편화',
+    desc: '카톡 + 노션 + 구글닥... 어디에 뭐가 있는지 모른다',
+  },
+]
+---
+
+<section class="section problem">
+  <div class="container">
+    <p class="section-label">익숙한 풍경</p>
+    <h2 class="section-title">매주 반복되는 문제들</h2>
+    <div class="problem-grid">
+      {
+        problems.map((p) => (
+          <div class="problem-card">
+            <span class="problem-icon">{p.icon}</span>
+            <h3 class="problem-title">{p.title}</h3>
+            <p class="problem-desc">{p.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .problem {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .section-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .problem-card {
+    padding: 32px 24px;
+    border-radius: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: border-color 0.2s;
+  }
+
+  .problem-card:hover {
+    border-color: var(--color-text-muted);
+  }
+
+  .problem-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .problem-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .problem-desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .problem-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .problem-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,82 @@
+---
+
+---
+
+<header class="header">
+  <div class="container header-inner">
+    <a href="/" class="logo">
+      <span class="logo-text">Conflow</span>
+    </a>
+    <nav class="nav">
+      <a href="#features">기능</a>
+      <a href="#target">대상</a>
+      <a href="#cta" class="btn btn-primary btn-sm">시작하기</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(9, 9, 11, 0.8);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo-text {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .nav a {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: color 0.2s;
+  }
+
+  .nav a:hover {
+    color: var(--color-text);
+  }
+
+  .btn-sm {
+    padding: 8px 20px;
+    font-size: 0.875rem;
+    border-radius: 8px;
+  }
+
+  .nav .btn-primary {
+    color: white;
+  }
+
+  .nav .btn-primary:hover {
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .nav {
+      gap: 20px;
+    }
+  }
+</style>

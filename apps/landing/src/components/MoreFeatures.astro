@@ -1,0 +1,101 @@
+---
+const extras = [
+  {
+    icon: '🔄',
+    title: '회고 (KPT)',
+    desc: 'Keep, Problem, Try로 스프린트 돌아보기. 투표와 팀 펄스 점수로 팀 건강 체크.',
+  },
+  {
+    icon: '🎙️',
+    title: '허들',
+    desc: '바로 연결하는 음성 회의. 마이크, 카메라, 화면공유 지원.',
+  },
+  {
+    icon: '📬',
+    title: '인박스',
+    desc: '멘션, 마감, 파일, 시스템 알림을 한 곳에서 관리.',
+  },
+  {
+    icon: '📄',
+    title: '파일 분석',
+    desc: 'PDF나 문서를 올리면 AI가 요구사항, 일정, 스펙을 추출.',
+  },
+]
+---
+
+<section class="section more">
+  <div class="container">
+    <p class="section-label">더 많은 기능</p>
+    <h2 class="section-title">그 외에도</h2>
+    <div class="more-grid">
+      {
+        extras.map((e) => (
+          <div class="more-card">
+            <span class="more-icon">{e.icon}</span>
+            <h3 class="more-title">{e.title}</h3>
+            <p class="more-desc">{e.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .more {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .more-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .more-card {
+    padding: 28px 24px;
+    border-radius: 12px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    text-align: center;
+  }
+
+  .more-icon {
+    font-size: 1.75rem;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .more-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .more-desc {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 768px) {
+    .more-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .more-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

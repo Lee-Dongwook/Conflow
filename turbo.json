@@ -4,7 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".output/**", ".vinxi/**", "dist/**", ".tanstack/**"]
+      "outputs": [".output/**", ".vinxi/**", "dist/**", ".tanstack/**", ".astro/**"]
     },
     "dev": {
       "cache": false,

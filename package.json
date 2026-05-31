@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "turbo run dev --filter=@conflow/web",
+    "dev:landing": "turbo run dev --filter=@conflow/landing",
     "dev:mobile": "turbo run dev --filter=@conflow/mobile",
     "dev:docs": "turbo run dev --filter=@conflow/docs",
     "dev:all": "turbo run dev",

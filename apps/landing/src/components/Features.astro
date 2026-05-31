@@ -1,0 +1,120 @@
+---
+const features = [
+  {
+    label: 'AI 회의 요약',
+    title: '회의 끝나면 5초면 정리 끝',
+    desc: '회의 내용을 넣으면 핵심 요약, 결정사항, 액션아이템, 다음 단계로 자동 정리. 팀원 확인 후 저장 — 더 이상 회의록 당번 없음.',
+    color: 'var(--color-primary)',
+  },
+  {
+    label: '블로커 자동 감지',
+    title: '막힌 곳을 AI가 먼저 찾아냅니다',
+    desc: '대화 속 막힌 지점을 기술적, 리소스, 커뮤니케이션, 외부 의존 유형으로 분류하고 심각도까지 표시. 대시보드 상단에 항상 보여서 모른 척 할 수 없습니다.',
+    color: '#ef4444',
+  },
+  {
+    label: '이번 주 한눈에',
+    title: '누가 뭘 하는지 1초만에',
+    desc: '월~일 타임라인에 팀원별 할 일 배치. 크리티컬 패스 뱃지로 이번 주 핵심 마일스톤을 놓치지 않습니다.',
+    color: '#22c55e',
+  },
+  {
+    label: '칸반 보드 + 백로그',
+    title: '할 일 → 하는 중 → 완료',
+    desc: '심플한 3단 보드로 스프린트 관리. 백로그에서 우선순위별로 정리하고 스프린트에 바로 연결.',
+    color: '#f59e0b',
+  },
+]
+---
+
+<section id="features" class="section features">
+  <div class="container">
+    <p class="section-label">핵심 기능</p>
+    <h2 class="section-title">Conflow는 이렇게 해결합니다</h2>
+    <p class="section-subtitle">
+      복잡한 설정 없이, 팀에 필요한 것만 담았습니다.
+    </p>
+    <div class="features-grid">
+      {
+        features.map((f) => (
+          <div class="feature-card">
+            <div class="feature-dot" style={`background: ${f.color}`} />
+            <span class="feature-label" style={`color: ${f.color}`}>
+              {f.label}
+            </span>
+            <h3 class="feature-title">{f.title}</h3>
+            <p class="feature-desc">{f.desc}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .section-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+
+  .features {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .feature-card {
+    padding: 36px 32px;
+    border-radius: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: border-color 0.2s;
+  }
+
+  .feature-card:hover {
+    border-color: var(--color-text-muted);
+  }
+
+  .feature-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-bottom: 16px;
+  }
+
+  .feature-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .feature-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .feature-desc {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+  }
+
+  @media (max-width: 768px) {
+    .features-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
