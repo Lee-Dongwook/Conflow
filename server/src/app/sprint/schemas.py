@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 # -- Sprint --
 
@@ -15,6 +15,8 @@ class SprintCreate(BaseModel):
 
 
 class SprintRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     uuid: str
     team_uuid: str
     label: str
