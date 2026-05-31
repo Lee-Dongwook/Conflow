@@ -1,0 +1,21 @@
+{
+  "common": {
+    "currentScreen": "Current Screen"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "sprint": "This Week",
+    "board": "Board",
+    "backlog": "Backlog",
+    "metrics": "Metrics",
+    "retro": "Retro",
+    "profile": "My Account",
+    "inbox": "Inbox",
+    "workspace": "Workspace",
+    "dm": "Direct Messages",
+    "huddle": "Huddle",
+    "meetingSummary": "AI Meeting Notes",
+    "legal": "Legal",
+    "consent": "Terms of Service"
+  }
+}

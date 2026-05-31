@@ -1,0 +1,21 @@
+{
+  "common": {
+    "currentScreen": "현재 화면"
+  },
+  "nav": {
+    "dashboard": "대시보드",
+    "sprint": "이번 주",
+    "board": "보드",
+    "backlog": "백로그",
+    "metrics": "한눈에",
+    "retro": "회고",
+    "profile": "내 계정",
+    "inbox": "수신함",
+    "workspace": "워크스페이스",
+    "dm": "다이렉트 메시지",
+    "huddle": "허들",
+    "meetingSummary": "AI 회의록",
+    "legal": "법적 고지",
+    "consent": "서비스 이용 동의"
+  }
+}
