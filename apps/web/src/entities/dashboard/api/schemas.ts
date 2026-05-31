@@ -39,5 +39,7 @@ export const TeamDashboardReadSchema = z.object({
   totalTasks: z.number(),
   doneTasks: z.number(),
   blockerNote: z.string().nullable(),
+  courseLabel: z.string().nullable(),
+  nextDeadlineLabel: z.string().nullable(),
 })
 export type TeamDashboardRead = z.infer<typeof TeamDashboardReadSchema>

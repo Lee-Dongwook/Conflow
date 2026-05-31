@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 import {
   Avatar,
   Badge,
@@ -14,6 +16,7 @@ import {
 import type { DashboardTaskRead, TeamDashboardRead } from 'app/entities/dashboard'
 import { MOCK_TEAM_DASHBOARD } from 'app/entities/dashboard'
 import { CURRENT_USER, useSession } from 'app/entities/session'
+import { userApi } from 'app/entities/user'
 import { useDashboard } from 'app/features/dashboard'
 
 const statusBadge = (status: string) => {
@@ -38,14 +41,14 @@ const statusBadge = (status: string) => {
   )
 }
 
-const buildMockDashboard = (): TeamDashboardRead => {
+const DEMO_DASHBOARD: TeamDashboardRead = (() => {
   const d = MOCK_TEAM_DASHBOARD
   return {
-    teamUuid: 'mock-team-001',
+    teamUuid: 'demo-team-001',
     teamName: d.teamName,
     teamDescription: d.courseLabel,
     sprint: {
-      uuid: 'mock-sprint-001',
+      uuid: 'demo-sprint-001',
       label: d.weekLabel,
       sharedGoal: d.oneLineGoal,
       periodLabel: d.periodLabel,
@@ -64,40 +67,94 @@ const buildMockDashboard = (): TeamDashboardRead => {
     totalTasks: d.tasks.length,
     doneTasks: d.tasks.filter((t) => t.status === 'done').length,
     blockerNote: d.blockerNote,
+    courseLabel: d.courseLabel,
+    nextDeadlineLabel: d.nextDeadlineLabel,
   }
-}
+})()
 
-/** 팀플·스터디 ICP — 세션 사용자 기준 대시보드 */
-export const DashboardPage = () => {
+export const DashboardPage = ({
+  onNavigate,
+}: {
+  readonly onNavigate?: (navId: string) => void
+}) => {
   const session = useSession()
   const isAuthenticated = session.status === 'authenticated'
 
-  // TODO: teamUuid should come from route params or user's selected team
-  const teamUuid = isAuthenticated ? null : null
+  const [teamUuid, setTeamUuid] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    const init = async () => {
+      try {
+        const user = await userApi.me()
+        const firstTeamUuid = user.teamMemberships?.[0]?.teamUuid ?? null
+        setTeamUuid(firstTeamUuid)
+      } catch {
+        // silently fail — will show empty state
+      }
+    }
+    init()
+  }, [isAuthenticated])
+
   const { status, ...rest } = useDashboard(teamUuid)
 
-  // Use real data if available, otherwise mock
+  const isDemo = !isAuthenticated
   const d: TeamDashboardRead =
-    status === 'success' && 'data' in rest ? rest.data : buildMockDashboard()
+    isDemo
+      ? DEMO_DASHBOARD
+      : status === 'success' && 'data' in rest
+        ? rest.data
+        : {
+            teamUuid: '',
+            teamName: '',
+            teamDescription: null,
+            sprint: null,
+            tasks: [],
+            members: [],
+            progressPercent: 0,
+            totalTasks: 0,
+            doneTasks: 0,
+            blockerNote: null,
+            courseLabel: null,
+            nextDeadlineLabel: null,
+          }
 
-  const currentUserName = isAuthenticated ? session.user.user_metadata?.name ?? '나' : CURRENT_USER.displayName
-  const currentUserEmail = isAuthenticated ? session.user.email ?? '' : CURRENT_USER.email
+  const currentUserName = isAuthenticated
+    ? (session.user.user_metadata?.name ?? '나')
+    : CURRENT_USER.displayName
+  const currentUserEmail = isAuthenticated ? (session.user.email ?? '') : CURRENT_USER.email
 
   const myTasks = d.tasks.filter((t) => t.assigneeName === currentUserName)
 
   const nextDeadlineLabel =
-    d.sprint
-      ? `${d.sprint.endsOn.slice(0, 10)}`
-      : MOCK_TEAM_DASHBOARD.nextDeadlineLabel
+    d.nextDeadlineLabel ?? (d.sprint ? d.sprint.endsOn.slice(0, 10) : null)
+
+  if (!isDemo && status === 'loading') {
+    return <p className="text-center text-sm text-slate-400">대시보드를 불러오는 중...</p>
+  }
+
+  if (!isDemo && status === 'error' && 'error' in rest) {
+    return <p className="text-center text-sm text-red-500">{rest.error}</p>
+  }
+
+  if (!isDemo && status !== 'success' && teamUuid) {
+    return null
+  }
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
+      {isDemo ? (
+        <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-4 py-3 text-sm text-blue-800">
+          데모 데이터를 보고 있습니다. 로그인하면 실제 팀 대시보드를 확인할 수 있어요.
+        </div>
+      ) : null}
+
       {/* Header card */}
       <Card>
         <CardHeader className="pb-2">
           <div className="flex flex-wrap items-center gap-2">
-            {d.teamDescription ? (
-              <Badge variant="outline">{d.teamDescription}</Badge>
+            {(d.courseLabel ?? d.teamDescription) ? (
+              <Badge variant="outline">{d.courseLabel ?? d.teamDescription}</Badge>
             ) : null}
             {d.sprint ? <Badge variant="secondary">{d.sprint.label}</Badge> : null}
             <Badge variant="default" className="text-[10px]">
@@ -126,7 +183,9 @@ export const DashboardPage = () => {
             <CardDescription>스프린트 종료일 기준</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm font-semibold text-rose-700">{nextDeadlineLabel}</p>
+            <p className="text-sm font-semibold text-rose-700">
+              {nextDeadlineLabel ?? '마감일 없음'}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -156,10 +215,18 @@ export const DashboardPage = () => {
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="secondary" disabled title="보드 화면 연결 후">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onNavigate?.('board')}
+            >
               보드로 이동
             </Button>
-            <Button type="button" variant="ghost" disabled title="백로그 연결 후">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onNavigate?.('backlog')}
+            >
               백로그
             </Button>
           </div>
@@ -190,14 +257,6 @@ export const DashboardPage = () => {
             <p className="text-sm text-amber-950">{d.blockerNote}</p>
           </CardContent>
         </Card>
-      ) : null}
-
-      {/* Loading / Error states */}
-      {status === 'loading' ? (
-        <p className="text-center text-sm text-slate-400">대시보드를 불러오는 중...</p>
-      ) : null}
-      {status === 'error' && 'error' in rest ? (
-        <p className="text-center text-sm text-red-500">{rest.error}</p>
       ) : null}
     </div>
   )

@@ -9,13 +9,14 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from scalar_fastapi import get_scalar_api_reference
 from src.app.agent.api import router as agent_router
+from src.app.backlog.api import router as backlog_router
+from src.app.board.api import router as board_router
 from src.app.consent.api import router as consent_router
 from src.app.core import shared_init
 from src.app.core.exceptions import global_exception_handler
 from src.app.core.middlewares import setup_middleware
 from src.app.dashboard.api import router as dashboard_router
 from src.app.home.api import router as home_router
-from src.app.backlog.api import router as backlog_router
 from src.app.sprint.api import router as sprint_router
 from src.app.team.api import router as team_router
 from src.app.user.api import router as user_router
@@ -56,6 +57,8 @@ app.include_router(sprint_router)
 app.include_router(sprint_router, prefix="/api")
 app.include_router(backlog_router)
 app.include_router(backlog_router, prefix="/api")
+app.include_router(board_router)
+app.include_router(board_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
@@ -74,8 +77,8 @@ async def health():
 @app.get("/scalar", include_in_schema=False)
 async def scalar_html() -> HTMLResponse:
     return get_scalar_api_reference(
-        openapi_url = app.openapi_url,
-        title = app.title,
+        openapi_url=app.openapi_url,
+        title=app.title,
     )
 
 

@@ -95,7 +95,7 @@ const AppContent = () => {
 
   const PAGE_MAP: Record<string, React.ReactNode> = {
     profile: <UserPage />,
-    dashboard: <DashboardPage />,
+    dashboard: <DashboardPage onNavigate={setActiveNavId} />,
     sprint: <ThisWeekPage />,
     board: <BoardPage />,
     backlog: <BacklogPage />,
