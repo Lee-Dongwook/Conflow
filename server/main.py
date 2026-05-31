@@ -15,6 +15,7 @@ from src.app.core.exceptions import global_exception_handler
 from src.app.core.middlewares import setup_middleware
 from src.app.dashboard.api import router as dashboard_router
 from src.app.home.api import router as home_router
+from src.app.backlog.api import router as backlog_router
 from src.app.sprint.api import router as sprint_router
 from src.app.team.api import router as team_router
 from src.app.user.api import router as user_router
@@ -53,6 +54,8 @@ app.include_router(dashboard_router)
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(sprint_router)
 app.include_router(sprint_router, prefix="/api")
+app.include_router(backlog_router)
+app.include_router(backlog_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
