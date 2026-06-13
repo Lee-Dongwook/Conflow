@@ -15,6 +15,7 @@ import { MetricsPage } from 'app/pages/MetricsPage'
 import { PlaceholderPage } from 'app/pages/PlaceholderPage'
 import { RetroPage } from 'app/pages/RetroPage'
 
+import { SurveyPage } from 'app/pages/SurveyPage'
 import { ThisWeekPage } from 'app/pages/ThisWeekPage'
 import { UserPage } from 'app/pages/UserPage'
 import { SideBar } from 'app/widgets/sidebar'
@@ -150,8 +151,16 @@ const AppContent = () => {
   )
 }
 
-export const App = () => (
-  <AuthProvider>
-    <AppContent />
-  </AuthProvider>
-)
+const isSurveyRoute = () =>
+  typeof window !== 'undefined' && window.location.pathname.startsWith('/survey')
+
+export const App = () => {
+  if (isSurveyRoute()) {
+    return <SurveyPage />
+  }
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  )
+}

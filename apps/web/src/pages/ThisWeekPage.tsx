@@ -11,9 +11,20 @@ import {
 
 import { CURRENT_USER } from "app/entities/session";
 import { MOCK_THIS_WEEK, type WeekMilestone } from "app/entities/week";
+import { RealThisWeekView } from "app/features/this-week";
+
+const useSprintUuidFromQuery = (): string | null => {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("sprint");
+};
 
 /** 월~일 한 줄 스캔 + 임박 강조 (간트 대신 가벼운 주간 뷰) */
 export const ThisWeekPage = () => {
+  const sprintUuid = useSprintUuidFromQuery();
+  if (sprintUuid) {
+    return <RealThisWeekView sprintUuid={sprintUuid} />;
+  }
+
   const w = MOCK_THIS_WEEK;
 
   return (

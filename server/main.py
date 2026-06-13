@@ -4,6 +4,8 @@ import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
+# Models without active routers — imported so SQLAlchemy resolves all relationships
+import src.app.retro.model  # noqa: F401
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -18,13 +20,11 @@ from src.app.core.middlewares import setup_middleware
 from src.app.dashboard.api import router as dashboard_router
 from src.app.home.api import router as home_router
 from src.app.sprint.api import router as sprint_router
+from src.app.survey.api import router as survey_router
 from src.app.team.api import router as team_router
 from src.app.user.api import router as user_router
 from src.app.websockets.api import router as signaling_router
-
-# Models without active routers — imported so SQLAlchemy resolves all relationships
-import src.app.retro.model  # noqa: F401
-import src.app.week.model  # noqa: F401
+from src.app.week.api import router as week_router
 
 env_type = os.environ.get("ENV", "development")
 shared_init.load_dotenv(env_type)
@@ -63,6 +63,10 @@ app.include_router(backlog_router)
 app.include_router(backlog_router, prefix="/api")
 app.include_router(board_router)
 app.include_router(board_router, prefix="/api")
+app.include_router(survey_router)
+app.include_router(survey_router, prefix="/api")
+app.include_router(week_router)
+app.include_router(week_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
