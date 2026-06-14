@@ -1,1 +1,5 @@
-export { default as i18n } from './i18n'
+import './types'
+
+export { default as i18n, SUPPORTED_LANGUAGES, type SupportedLanguage } from './i18n'
+export { useLanguage } from './use-language'
+export { useTranslation } from 'react-i18next'
