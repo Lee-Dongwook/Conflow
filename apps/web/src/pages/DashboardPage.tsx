@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { TFunction } from 'i18next'
 
 import {
   Avatar,
@@ -19,25 +20,27 @@ import { MOCK_TEAM_DASHBOARD } from 'app/entities/dashboard'
 import { CURRENT_USER, useSession } from 'app/entities/session'
 import { userApi } from 'app/entities/user'
 import { useDashboard } from 'app/features/dashboard'
+import { useTranslation } from 'app/shared/i18n'
 
-const statusBadge = (status: string) => {
+const StatusBadge = ({ status }: { readonly status: string }) => {
+  const { t } = useTranslation()
   if (status === 'done') {
     return (
       <Badge variant="success" className="text-[10px]">
-        완료
+        {t('dashboard.status.done')}
       </Badge>
     )
   }
   if (status === 'doing') {
     return (
       <Badge variant="warning" className="text-[10px]">
-        하는 중
+        {t('dashboard.status.doing')}
       </Badge>
     )
   }
   return (
     <Badge variant="secondary" className="text-[10px]">
-      대기
+      {t('dashboard.status.waiting')}
     </Badge>
   )
 }
@@ -78,6 +81,7 @@ export const DashboardPage = ({
 }: {
   readonly onNavigate?: (navId: string) => void
 }) => {
+  const { t } = useTranslation()
   const session = useSession()
   const isAuthenticated = session.status === 'authenticated'
 
@@ -100,35 +104,33 @@ export const DashboardPage = ({
   const { status, ...rest } = useDashboard(teamUuid)
 
   const isDemo = !isAuthenticated
-  const d: TeamDashboardRead =
-    isDemo
-      ? DEMO_DASHBOARD
-      : status === 'success' && 'data' in rest
-        ? rest.data
-        : {
-            teamUuid: '',
-            teamName: '',
-            teamDescription: null,
-            sprint: null,
-            tasks: [],
-            members: [],
-            progressPercent: 0,
-            totalTasks: 0,
-            doneTasks: 0,
-            blockerNote: null,
-            courseLabel: null,
-            nextDeadlineLabel: null,
-          }
+  const d: TeamDashboardRead = isDemo
+    ? DEMO_DASHBOARD
+    : status === 'success' && 'data' in rest
+      ? rest.data
+      : {
+          teamUuid: '',
+          teamName: '',
+          teamDescription: null,
+          sprint: null,
+          tasks: [],
+          members: [],
+          progressPercent: 0,
+          totalTasks: 0,
+          doneTasks: 0,
+          blockerNote: null,
+          courseLabel: null,
+          nextDeadlineLabel: null,
+        }
 
   const currentUserName = isAuthenticated
-    ? (session.user.user_metadata?.name ?? '나')
+    ? (session.user.user_metadata?.name ?? t('common.me'))
     : CURRENT_USER.displayName
   const currentUserEmail = isAuthenticated ? (session.user.email ?? '') : CURRENT_USER.email
 
   const myTasks = d.tasks.filter((t) => t.assigneeName === currentUserName)
 
-  const nextDeadlineLabel =
-    d.nextDeadlineLabel ?? (d.sprint ? d.sprint.endsOn.slice(0, 10) : null)
+  const nextDeadlineLabel = d.nextDeadlineLabel ?? (d.sprint ? d.sprint.endsOn.slice(0, 10) : null)
 
   if (!isDemo && status === 'loading') {
     return <DashboardSkeleton />
@@ -146,7 +148,7 @@ export const DashboardPage = ({
     <div className="mx-auto flex max-w-4xl flex-col gap-6">
       {isDemo ? (
         <div className="rounded-lg border border-blue-200 bg-blue-50/60 px-4 py-3 text-sm text-blue-800">
-          데모 데이터를 보고 있습니다. 로그인하면 실제 팀 대시보드를 확인할 수 있어요.
+          {t('dashboard.demoNotice')}
         </div>
       ) : null}
 
@@ -159,19 +161,21 @@ export const DashboardPage = ({
             ) : null}
             {d.sprint ? <Badge variant="secondary">{d.sprint.label}</Badge> : null}
             <Badge variant="default" className="text-[10px]">
-              보는 사람: {currentUserName}
+              {t('dashboard.viewerPrefix')}
+              {currentUserName}
             </Badge>
           </div>
           <CardTitle className="mt-2 text-xl">{d.teamName}</CardTitle>
           <CardDescription>
-            {d.sprint?.periodLabel ?? ''} · 목 세션{' '}
+            {d.sprint?.periodLabel ? `${d.sprint.periodLabel} · ` : ''}
+            {t('dashboard.mockSessionLabel')}{' '}
             <span className="font-medium text-slate-700">{currentUserEmail}</span>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-2">
-          <p className="text-sm font-medium text-slate-700">이번 주 목표</p>
+          <p className="text-sm font-medium text-slate-700">{t('dashboard.weekGoal')}</p>
           <p className="text-base leading-relaxed text-slate-900">
-            {d.sprint?.sharedGoal ?? '목표가 설정되지 않았습니다'}
+            {d.sprint?.sharedGoal ?? t('dashboard.noGoal')}
           </p>
         </CardContent>
       </Card>
@@ -180,26 +184,30 @@ export const DashboardPage = ({
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">다음 마감</CardTitle>
-            <CardDescription>스프린트 종료일 기준</CardDescription>
+            <CardTitle className="text-base">{t('dashboard.nextDeadline')}</CardTitle>
+            <CardDescription>{t('dashboard.nextDeadlineSub')}</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm font-semibold text-rose-700">
-              {nextDeadlineLabel ?? '마감일 없음'}
+              {nextDeadlineLabel ?? t('dashboard.noDeadline')}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">이번 주 진행</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.progressTitle')}</CardTitle>
             <CardDescription>
-              완료 {String(d.doneTasks)} / 전체 {String(d.totalTasks)}
+              {t('dashboard.doneCountPrefix')}
+              {String(d.doneTasks)}
+              {t('dashboard.totalSeparator')}
+              {String(d.totalTasks)}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
             <Progress value={d.progressPercent} />
             <p className="text-xs text-slate-500">
-              {String(d.progressPercent)}% · 내 담당 {String(myTasks.length)}건 포함
+              {String(d.progressPercent)}
+              {t('dashboard.percentMineSuffix', { count: myTasks.length })}
             </p>
           </CardContent>
         </Card>
@@ -209,26 +217,20 @@ export const DashboardPage = ({
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 pb-2">
           <div>
-            <CardTitle className="text-base">팀 할 일</CardTitle>
+            <CardTitle className="text-base">{t('dashboard.tasksTitle')}</CardTitle>
             <CardDescription>
-              담당 &quot;나&quot;({currentUserName})는 배지로 표시 · 전체{' '}
-              {String(d.tasks.length)}건
+              {t('dashboard.tasksMineHint', {
+                name: currentUserName,
+                count: d.tasks.length,
+              })}
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => onNavigate?.('board')}
-            >
-              보드로 이동
+            <Button type="button" variant="secondary" onClick={() => onNavigate?.('board')}>
+              {t('dashboard.goBoard')}
             </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onNavigate?.('backlog')}
-            >
-              백로그
+            <Button type="button" variant="ghost" onClick={() => onNavigate?.('backlog')}>
+              {t('dashboard.backlog')}
             </Button>
           </div>
         </CardHeader>
@@ -238,12 +240,12 @@ export const DashboardPage = ({
             return (
               <div key={task.uuid}>
                 {index > 0 ? <Separator className="my-3" /> : null}
-                <TaskRow task={task} isMine={isMine} />
+                <TaskRow task={task} isMine={isMine} t={t} />
               </div>
             )
           })}
           {d.tasks.length === 0 ? (
-            <p className="py-4 text-center text-sm text-slate-400">등록된 할 일이 없습니다</p>
+            <p className="py-4 text-center text-sm text-slate-400">{t('dashboard.noTasks')}</p>
           ) : null}
         </CardContent>
       </Card>
@@ -252,7 +254,9 @@ export const DashboardPage = ({
       {d.blockerNote ? (
         <Card className="border-amber-200 bg-amber-50/40">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base text-amber-950">막힌 것</CardTitle>
+            <CardTitle className="text-base text-amber-950">
+              {t('dashboard.blockersTitle')}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-amber-950">{d.blockerNote}</p>
@@ -266,9 +270,11 @@ export const DashboardPage = ({
 const TaskRow = ({
   task,
   isMine,
+  t,
 }: {
   readonly task: DashboardTaskRead
   readonly isMine: boolean
+  readonly t: TFunction
 }) => (
   <div className="flex flex-wrap items-center gap-3">
     <Avatar label={task.assigneeName ?? '?'} size="sm" />
@@ -277,13 +283,13 @@ const TaskRow = ({
         <p className="font-medium text-slate-900">{task.title}</p>
         {isMine ? (
           <Badge variant="default" className="text-[10px]">
-            나
+            {t('common.me')}
           </Badge>
         ) : null}
       </div>
-      <p className="text-xs text-slate-500">{task.assigneeName ?? '미배정'}</p>
+      <p className="text-xs text-slate-500">{task.assigneeName ?? t('common.unassigned')}</p>
     </div>
-    {statusBadge(task.columnKey)}
+    <StatusBadge status={task.columnKey} />
   </div>
 )
 

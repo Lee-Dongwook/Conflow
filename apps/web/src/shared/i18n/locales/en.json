@@ -135,6 +135,7 @@
   "dashboard": {
     "demoNotice": "You are viewing demo data. Sign in to see your real team dashboard.",
     "viewerPrefix": "Viewer: ",
+    "mockSessionLabel": "Mock session",
     "weekGoal": "This week's goal",
     "noGoal": "No goal set",
     "nextDeadline": "Next deadline",
