@@ -18,6 +18,8 @@ import { RetroPage } from 'app/pages/RetroPage'
 import { SurveyPage } from 'app/pages/SurveyPage'
 import { ThisWeekPage } from 'app/pages/ThisWeekPage'
 import { UserPage } from 'app/pages/UserPage'
+import { captureLaunchRef, trackLaunchEvent } from 'app/shared/lib'
+import { ProductHuntBanner } from 'app/widgets/product-hunt-banner'
 import { SideBar } from 'app/widgets/sidebar'
 
 const NAV_TITLE: Record<string, string> = {
@@ -59,6 +61,10 @@ const AppContent = () => {
   const [consentChecked, setConsentChecked] = useState(false)
 
   const session = useSession()
+
+  useEffect(() => {
+    captureLaunchRef()
+  }, [])
 
   useEffect(() => {
     if (session.status !== 'authenticated') {
@@ -124,11 +130,20 @@ const AppContent = () => {
 
   return (
     <>
+      {isGuest && (
+        <ProductHuntBanner
+          onLoginRequest={() => setLoginOpen(true)}
+          productHuntUrl={import.meta.env.VITE_PRODUCT_HUNT_URL}
+        />
+      )}
       <div className="relative flex min-h-screen bg-slate-50">
         {isGuest && (
           <div
             className="absolute inset-0 z-40 cursor-pointer"
-            onClick={() => setLoginOpen(true)}
+            onClick={() => {
+              trackLaunchEvent('guest_overlay_click')
+              setLoginOpen(true)
+            }}
             aria-hidden="true"
           />
         )}

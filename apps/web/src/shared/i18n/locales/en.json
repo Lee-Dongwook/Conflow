@@ -540,6 +540,15 @@
     "fallbackName": "Lee Tt",
     "fallbackEmail": "ttaeng@conflow.local"
   },
+  "marketing": {
+    "banner": {
+      "title": "Welcome, Product Hunters!",
+      "subtitle": "Conflow is live on Product Hunt — open the app and your team's week is already on screen.",
+      "ctaPrimary": "Try Conflow free",
+      "ctaSecondary": "Upvote on Product Hunt",
+      "dismissLabel": "Dismiss Product Hunt banner"
+    }
+  },
   "errors": {
     "loadDocument": "Could not load the document."
   }

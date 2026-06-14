@@ -31,27 +31,381 @@ LoginModal
 
 ## 2. 산출물 정의 (Skill 기준 재정렬)
 
-### Task 1. 카피라이팅 (EN)
+### Task 1. 카피라이팅 (EN) — ✅ 작성 완료
 
-| 항목                  | 제약                                                       | 산출물       |
-| --------------------- | ---------------------------------------------------------- | ------------ |
-| Tagline               | ≤60 chars, outcome-focused                                 | 3안          |
-| Description           | ≤260 chars, problem→solution                               | 1안          |
-| Maker's First Comment | Problem → Multi-Agent/Monorepo solution → MVP feedback ask | 구조화된 1안 |
+> All copy in English. All counts are characters including spaces.
+> Writing angle: **Dashboard-as-entry** — _open the app → your team's week is already on screen_.
 
-작성 각도: _"Open Conflow → your team's week is already on screen"_ — Dashboard-as-entry 메시지를 카피에 녹인다.
+#### 1-A. Tagline (3 options, ≤60 chars, outcome-focused)
 
-### Task 2. 시각 자산 명세
+3가지 다른 각도로 작성 — A/B 테스트용.
 
-| 자산                                | 사양                                             | 비고                         |
-| ----------------------------------- | ------------------------------------------------ | ---------------------------- |
-| Thumbnail GIF                       | 240×240, 4:3, Multi-Agent workflow               | 프레임별 스토리보드 문서     |
-| Gallery Slide 1 (Hero)              | DashboardPage 데모 스크린샷 + 헤드라인           | 코드 자산 재활용             |
-| Gallery Slide 2 (Core Workflow)     | MeetingSummaryPage 또는 BoardPage 스크린샷       | 코드 자산 재활용 가능성 점검 |
-| Gallery Slide 3 (Tech/Architecture) | LangGraph + Monorepo 다이어그램                  | 신규 제작                    |
-| Gallery Slide 4 (Outcome)           | MetricsPage / RetroPage 스크린샷 + 수치 오버레이 | 코드 자산 재활용             |
-| Gallery Slide 5 (CTA)               | 로고 + URL + QR + Try Conflow 문구               | 신규 제작 (단순)             |
-| OG Image                            | 1200×630, Dashboard 스크린샷 + 로고 합성         | 신규 제작 (단순)             |
+**Option A — Instant-clarity (50 chars)**
+
+> **See your team's week the moment you open the app.**
+
+- Outcome: zero ramp-up time
+- Best if PH audience values "no setup required"
+
+**Option B — Automation (54 chars)**
+
+> **AI agents that watch the standup so you don't have to.**
+
+- Outcome: less coordination tax
+- Best for "I'm tired of running meetings" pain
+
+**Option C — Risk-reduction (45 chars)**
+
+> **Catch blockers before they catch your sprint.**
+
+- Outcome: prevent sprint slip
+- Best for sprint-savvy / dev-leaning audience
+
+**추천**: PH 리스팅엔 **Option A** — dashboard-as-entry 약속을 가장 즉시 전달하고 머릿속 스크린샷이 쉬움. B/C 는 소셜·이메일 후속용으로 보유.
+
+#### 1-B. Description (≤260 chars, problem → solution)
+
+> **Student teams waste hours stitching Slack, Notion, and Discord. Conflow opens to a live dashboard of your team's week — AI agents summarize meetings, surface blockers, and run sprint logistics so you focus on shipping, not coordinating.**
+
+- 길이: **234 / 260**
+- 구조: Problem(3 tools, scattered) → Solution(single live dashboard) → Outcome(focus on shipping)
+- PH 검색 키워드: AI agents, sprint, meetings, blockers, dashboard
+
+#### 1-C. Maker's First Comment
+
+구조: Problem(체험담) → How Conflow solves it(Multi-Agent + Monorepo) → 솔직한 피드백 요청. 보도자료가 아닌 메이커가 이야기 풀어내는 톤.
+
+```
+Hey Product Hunt,
+
+I built Conflow because running a university study team turned out to be a
+coordination tax. We had Slack for chat, Notion for docs, Discord for huddles —
+and every Sunday someone still asked "wait, what's due Monday?". Meeting notes
+lived in three places, blockers surfaced too late, and the sprint plan was
+already obsolete by Wednesday.
+
+Conflow flips the entry point. The moment you open the app, your team's week
+is already on screen — current sprint goal, who owns what, what's blocked,
+what's next. No setup wizard, no empty state.
+
+Under the hood, a LangGraph multi-agent supervisor routes work to specialized
+workers: meeting summary, blocker triage, retro insights, sprint planning.
+The whole codebase is a pnpm + Turbo monorepo with an A2UI-ready architecture —
+every business function is a headless, schema-first module the agents can
+invoke directly. That means new agent capabilities ship without rewriting the
+UI, and the UI itself stays thin and replaceable.
+
+This is genuinely an MVP. The rough edges are real, and I'd love brutally
+honest feedback:
+
+  1. Does the dashboard-as-entry feel like clarity or chaos on first open?
+  2. Where does the AI summary fall short of what your team would actually use?
+  3. What is the one missing surface that would make Conflow replace your
+     current stack — and what is the one feature you would not pay attention
+     to even if we built it?
+
+Reply here or DM me. I will read every word. Thank you for hunting with us.
+
+— Dongwook, maker of Conflow
+```
+
+- 길이: ~1,500 chars (PH first comment 권장: 1,000–2,000)
+- 3 단락 컨텍스트 + 3 번호 질문 = 스캔 가능
+- **부정 시그널 유도** ("feature you would not pay attention to") — 일반적인 "what do you think?" 보다 날카로운 피드백을 받음
+
+#### 1-D. 부록 — 소셜 배포 카피
+
+**Twitter / X (≤280 chars)**
+
+> Today we're launching Conflow on Product Hunt.
+>
+> The pitch in one line: open the app, your team's week is already on screen.
+>
+> AI agents summarize meetings, surface blockers, and run sprint logistics — so you ship the project, not the coordination.
+>
+> Link → [PH URL]
+
+**LinkedIn (short)**
+
+> Most coordination tools start with an empty workspace. Conflow starts with your team's week already on screen.
+>
+> We launched on Product Hunt today. Would love honest feedback from anyone who has run a study team, a side project, or a small squad and felt the standup-vs-shipping tradeoff.
+>
+> Link → [PH URL]
+
+**배너 i18n 소스 (이미 구현됨)**
+
+- `marketing.banner.title` — Welcome, Product Hunters!
+- `marketing.banner.subtitle` — Conflow is live on Product Hunt — open the app and your team's week is already on screen.
+- `marketing.banner.ctaPrimary` — Try Conflow free
+- `marketing.banner.ctaSecondary` — Upvote on Product Hunt
+
+### Task 2. 시각 자산 명세 — 📐 명세 작성 완료 / 제작 대기
+
+> 모든 슬라이드는 **Inter / SF Pro** 계열 sans-serif, 본문 그레이 `#0F172A` (slate-900), 강조 오렌지 `#F97316` (PH 컬러 매칭) 기준. 픽셀 단위 사양은 Pencil/Figma 작업 시 시작값.
+
+#### 자산 개요
+
+| 자산                                | 사양                              | 제작 방식                               | 비고                                                  |
+| ----------------------------------- | --------------------------------- | --------------------------------------- | ----------------------------------------------------- |
+| Thumbnail GIF                       | **240×240** (1:1), ≤3MB, 5초 루프 | React+Framer Motion → 화면녹화 → Gifski | Skill 문서엔 "4:3" 이라 적혀있으나 PH 현행 스펙은 1:1 |
+| Gallery Slide 1 (Hero)              | 1270×760, 16:9 근사               | Dashboard 스크린샷 + 텍스트 오버레이    | 코드 자산 재활용                                      |
+| Gallery Slide 2 (Core Workflow)     | 1270×760                          | MeetingSummaryPage 스크린샷 + 캡션      | 코드 자산 재활용                                      |
+| Gallery Slide 3 (Tech/Architecture) | 1270×760                          | Excalidraw 또는 Pencil 신규 다이어그램  | 신규 제작                                             |
+| Gallery Slide 4 (Outcome)           | 1270×760                          | MetricsPage 스크린샷 + 숫자 오버레이    | 코드 자산 재활용                                      |
+| Gallery Slide 5 (CTA)               | 1270×760                          | 로고 + QR + 문구                        | 신규 제작 (단순)                                      |
+| OG Image                            | 1200×630                          | Dashboard 스크린샷 + 로고 합성          | 신규 제작 (단순)                                      |
+
+---
+
+#### 2-A. Thumbnail GIF — 프레임별 스토리보드
+
+**컨셉**: Multi-Agent 가 회의 종료 신호를 받아 → 분산 처리 → Dashboard 타일이 살아나는 한 사이클.
+
+**기술 사양**
+
+- 캔버스: 240×240 (1:1, PH 현행 스펙)
+- 길이: **5초**, **24 fps**, 무한 루프
+- 색감: 화이트 베이스 + 오렌지(#F97316) 강조, 다크 노드(slate-800)
+- 출력: GIF ≤3MB. 코드 기반 캡처(ScreenStudio) → Gifski 압축
+
+**프레임 시퀀스**
+
+| 시점 | 프레임    | 화면 구성                                                                            | 모션                          |
+| ---- | --------- | ------------------------------------------------------------------------------------ | ----------------------------- |
+| 0.0s | F1 (정지) | 중앙에 `Conflow` 로고, 하단에 4개 회색 노드 (`Summary` `Blocker` `Retro` `Planning`) | Idle pulse                    |
+| 0.5s | F2        | 좌측 상단에 `Meeting ended` 칩 등장 → 중앙 `Supervisor` 노드로 화살표                | 칩이 supervisor 로 빨려들어감 |
+| 1.5s | F3        | Supervisor → `Summary` 노드 라우팅, 노드 오렌지로 점등                               | 화살표 stroke 애니메이션      |
+| 2.5s | F4        | Summary 진행 중에 `Blocker Triage` 도 병렬 점등                                      | 두 노드 동시 발광             |
+| 3.5s | F5        | 두 노드 결과가 상단 Dashboard 타일로 수렴 (`+3 actions`, `1 blocker`)                | 결과가 타일에 plug-in         |
+| 4.5s | F6        | Dashboard 타일이 풀 컬러로 전환, "Your team's week" 캐치 등장                        | 타일 풀스크린 확대            |
+| 5.0s | → F1      | 페이드 후 다시 F1                                                                    | 루프                          |
+
+**구현 가이드**
+
+- React 컴포넌트로 작성 (`apps/web/src/widgets/ph-thumbnail-demo/` 임시 위치) → ScreenStudio 로 영역 캡처 → Gifski 로 압축
+- Framer Motion `animate` + `staggerChildren` 으로 노드 등장
+- 텍스트는 SVG `text` 로 — 안티앨리어싱이 GIF 압축에 강함
+
+---
+
+#### 2-B. Gallery Slide 1 — Hero (실 Dashboard 스크린샷)
+
+**목적**: 첫인상에서 _"앱 열면 팀의 한 주가 이미 화면에 있다"_ 메시지를 0초 컷.
+
+**레이아웃 (1270×760)**
+
+```
++--------------------------------------------------+
+|  [Logo·Conflow]              [Live on PH 배지]   |  ← top 60px
+|                                                  |
+|  Your team's week — already on screen.           |  ← H1 (48pt, slate-900)
+|  Open Conflow, skip the standup.                 |  ← sub (20pt, slate-500)
+|                                                  |
+|  +--------- Dashboard 스크린샷 ---------+        |  ← 실 캡처 (1100×540)
+|  |  TeamName · Sprint 3 · Mar 10–23   |          |     drop shadow + radius 16
+|  |  Weekly goal: ...                  |          |
+|  |  [Deadline] [Progress 62%]         |          |
+|  |  [Task list with avatars]          |          |
+|  +------------------------------------+          |
++--------------------------------------------------+
+```
+
+**카피**
+
+- H1: `Your team's week — already on screen.`
+- Sub: `Open Conflow, skip the standup.`
+- 우상단 배지: `Live on Product Hunt 🟠` (이모지는 실제 PH 로고 SVG 로 교체)
+
+**하이라이트 처리**
+
+- Dashboard 의 **Progress 62%** 와 **Weekly goal** 두 카드만 살짝 spotlight (다른 영역은 6% 어두운 오버레이)
+
+---
+
+#### 2-C. Gallery Slide 2 — Core Workflow (MeetingSummaryPage)
+
+**목적**: Multi-Agent 가 실제로 _무엇을_ 자동화하는지 한눈에.
+
+**레이아웃**
+
+```
++--------------------------------------------------+
+|  Less standup, more shipped sprints.             |  ← H1 (40pt)
+|                                                  |
+|  Step 1     →     Step 2     →     Step 3        |  ← 3-step 헤더
+|  Huddle           AI Summary       Actions       |     (각 스텝당 1줄 부제)
+|  ends             generated        synced        |
+|                                                  |
+|  +------- MeetingSummaryPage 스크린샷 -------+  |
+|  |  [Transcript pane] | [Summary pane]       |  |
+|  |                    | [Action items]       |  |
+|  +------------------------------------------+  |
++--------------------------------------------------+
+```
+
+**카피**
+
+- H1: `Less standup, more shipped sprints.`
+- Step 1: `Huddle ends`
+- Step 2: `AI Summary generated`
+- Step 3: `Actions synced to board`
+
+**하이라이트**
+
+- 스크린샷 내 **Action items 패널**에 펄스 링 효과 (PNG 후처리)
+
+---
+
+#### 2-D. Gallery Slide 3 — Tech / Architecture (신규 다이어그램)
+
+**목적**: 개발자 PH 청중에게 _"진짜 멀티에이전트 + 모노레포"_ 임을 시각화.
+
+**레이아웃**
+
+```
++--------------------------------------------------+
+|  A multi-agent backend. A monorepo you can read. |  ← H1
+|                                                  |
+|  +-------- 다이어그램 (수동 작성) --------+      |
+|  |                                          |    |
+|  |   [Supervisor]                           |    |
+|  |       ↓                                  |    |
+|  |   ┌───┴───────────────┐                  |    |
+|  |   │ Summary  Blocker  │ ← 4개 워커 노드   |    |
+|  |   │ Retro    Planning │                  |    |
+|  |   └───┬───────────────┘                  |    |
+|  |       ↓                                  |    |
+|  |   [A2UI Headless Modules]                |    |
+|  |       ↓                                  |    |
+|  |   [React UI · pnpm + Turbo monorepo]     |    |
+|  +------------------------------------------+    |
+|                                                  |
+|  LangGraph · FastAPI · Vite · Tailwind · pgvector |  ← 기술 스택 chip 줄
++--------------------------------------------------+
+```
+
+**카피**
+
+- H1: `A multi-agent backend. A monorepo you can read.`
+- 하단 스택 chips: `LangGraph` `FastAPI` `Vite + React 18` `Tailwind 4` `pgvector` `Supabase`
+
+**제작 도구 후보**: Excalidraw (손그림 톤, 신뢰감) **또는** Pencil MCP (.pen 파일로 브랜드 색감 정확 매칭). 추천: **Excalidraw** — 개발자 신뢰 톤이 PH 청중과 잘 맞음.
+
+---
+
+#### 2-E. Gallery Slide 4 — Built for student teams (시나리오 슬라이드)
+
+> ✅ **결정**: 베타 실측 데이터 부재. 수치형 Outcome 슬라이드 대신 **사용 시나리오** 슬라이드로 진행. 베타 데이터 확보 시 추후 교체.
+
+**목적**: _"우리 팀 같은 곳에서 쓰는구나"_ 의 자기 동일시. 페르소나·시나리오 톤.
+
+**레이아웃 (1270×760)**
+
+```
++--------------------------------------------------+
+|  Built for the teams nobody built for.           |  ← H1 (40pt)
+|                                                  |
+|  +-- 3 columns of persona cards --+              |
+|  |  🎓 Capstone teams              |             |
+|  |     "5 majors, 1 deadline."     |             |
+|  |     [task list mini preview]    |             |
+|  |---------------------------------|             |
+|  |  📚 Study groups                |             |
+|  |     "Weekly KPT, no chaos."     |             |
+|  |     [retro snippet]             |             |
+|  |---------------------------------|             |
+|  |  💻 Side-project squads         |             |
+|  |     "Async standups that ship." |             |
+|  |     [board snippet]             |             |
+|  +---------------------------------+             |
++--------------------------------------------------+
+```
+
+**카피**
+
+- H1: `Built for the teams nobody built for.`
+- 3개 페르소나 카드:
+  - **Capstone teams** — _"5 majors, 1 deadline."_
+  - **Study groups** — _"Weekly KPT, no chaos."_
+  - **Side-project squads** — _"Async standups that ship."_
+
+**하이라이트**: 각 카드 안에 실제 페이지(BoardPage / RetroPage / DashboardPage)의 작은 스니펫 캡처를 넣어 _제품 진짜 있다_ 시그널 유지.
+
+> 📌 **베타 데이터 확보 시 교체 안**: H1 → `What teams ship after switching to Conflow.` / 3개 숫자(예: `-45% standup time`, `3 hours saved / week`, `100% blocker visibility`) + 자가보고 footnote. 이 노트는 데이터 확정 후 다시 활성화.
+
+---
+
+#### 2-F. Gallery Slide 5 — CTA
+
+**목적**: 마지막 슬라이드는 **단순할수록 강함**. 1초 안에 행동 유도.
+
+**레이아웃**
+
+```
++--------------------------------------------------+
+|                                                  |
+|             [Conflow 로고 — 큼]                  |
+|                                                  |
+|       Try Conflow free → conflow.app             |  ← 48pt
+|                                                  |
+|       [QR 코드 240×240]                          |  ← 우측 또는 중앙 하단
+|                                                  |
+|       Upvote us on Product Hunt today            |  ← 18pt, 오렌지
+|                                                  |
++--------------------------------------------------+
+```
+
+**카피**
+
+- 메인 CTA: `Try Conflow free → conflow.app`
+- 보조: `Upvote us on Product Hunt today`
+- QR 타겟: PH 페이지 URL (확정 후 생성)
+
+---
+
+#### 2-G. OG Image (1200×630)
+
+소셜 공유용. 갤러리 Slide 1 의 압축 버전과 동일 컨셉.
+
+**레이아웃**
+
+```
++--------------------------------------------------+
+|  [Conflow logo]            Live on Product Hunt  |
+|                                                  |
+|  Your team's week — already on screen.           |
+|                                                  |
+|  +-- Dashboard 스크린샷 (좌측 정렬, 60%) --+    |
+|  |                                          |    |
+|  +------------------------------------------+    |
++--------------------------------------------------+
+```
+
+**카피**: Slide 1 과 동일 H1. 부제는 생략 (1200×630 가독성 우선).
+
+**현재 상태** (`apps/web/index.html` 점검 결과)
+
+- ✅ OG / Twitter / JSON-LD 메타태그 **이미 완비** (`og:title`, `og:description`, `og:image=/og-image.png`, `og:locale=ko_KR`)
+- ✅ `og:locale:alternate=en_US` 추가 완료 (PH 글로벌 청중 대응)
+- ❌ **실제 이미지 파일 `apps/web/public/og-image.png` 미존재** — 신규 제작 필요
+- ❌ `favicon.svg`, `apple-touch-icon.png` 도 미존재 (별도 작업)
+
+**제작 시 주의**
+
+- 파일 경로는 기존 메타와 일치시키기 — `apps/web/public/og-image.png` (서브폴더 X)
+- 한·영 버전 분기 X — Korean OG primary 로 유지하고 description 은 키워드 위주라 영문 청중도 의미 전달 가능. 따로 EN 변형 만들면 캐시 무효화·SEO 분산 위험.
+
+---
+
+#### 2-H. 제작 핸드오프 체크리스트
+
+- [ ] Slide 1·2·4 의 **실 스크린샷 수집** — DashboardPage / MeetingSummaryPage / MetricsPage 데모 모드로 캡처 (Retina 2x)
+- [ ] Slide 3 다이어그램 — Excalidraw 초안 → 브랜드 색 톤 정리 → PNG export
+- [ ] Slide 5 — QR 코드는 PH URL 확정 후 생성 (qrcode-svg 사용 가능)
+- [ ] Thumbnail GIF — `widgets/ph-thumbnail-demo/` 임시 React 컴포넌트 작성 → ScreenStudio 캡처
+- [ ] OG 이미지 → `apps/web/public/og-image.png` 저장 (기존 `index.html` 메타가 이 경로 참조)
+- [ ] 모든 자산 sRGB 컬러스페이스, GIF/PNG 압축 후 최종 사이즈 확인 (PH 갤러리 슬라이드 ≤ 2MB 권장)
 
 ### Task 3. `ProductHuntBanner` 컴포넌트
 
@@ -90,15 +444,18 @@ i18n 키 신설: `marketing.banner.title`, `marketing.banner.subtitle`, `marketi
 
 ## 3. 우선순위 To-Do
 
-| 순위 | 작업                                                                   | 산출물                      |
-| ---- | ---------------------------------------------------------------------- | --------------------------- |
-| 🟢 1 | `widgets/product-hunt-banner` 구현 + `App.tsx` 마운트 + dismiss 영속화 | 코드 + Playwright smoke 1개 |
-| 🟢 1 | i18n 키 추가 (`marketing.banner.*`) — en/ko                            | locale JSON                 |
-| 🟡 2 | Tagline / Description / Maker's First Comment 작성                     | 카피 마크다운               |
-| 🟠 3 | Gallery 5슬라이드 명세 (레이아웃·카피·UI 하이라이트)                   | 슬라이드 스펙 문서          |
-| 🟠 3 | Thumbnail GIF 스토리보드 (프레임별)                                    | 스토리보드 문서             |
-| 🔵 4 | OG 이미지 + 메타 태그 (`apps/web/index.html`)                          | HTML + 이미지               |
-| 🔵 4 | UTM 추적 (`?ref=producthunt`) — 게스트 오버레이 클릭 로깅 (옵션)       | 코드                        |
+| 순위    | 작업                                                                     | 산출물                       |
+| ------- | ------------------------------------------------------------------------ | ---------------------------- |
+| ✅ 완료 | `widgets/product-hunt-banner` 구현 + 마운트 + dismiss 영속화             | 코드 (Playwright smoke 보류) |
+| ✅ 완료 | i18n 키 (`marketing.banner.*`) — en/ko                                   | locale JSON                  |
+| ✅ 완료 | Tagline / Description / Maker's First Comment                            | Task 1 인라인                |
+| ✅ 완료 | Gallery 5슬라이드 명세                                                   | Task 2 인라인                |
+| ✅ 완료 | Thumbnail GIF 스토리보드                                                 | Task 2-A                     |
+| ✅ 완료 | 메타태그 + `og:locale:alternate=en_US`                                   | `apps/web/index.html`        |
+| ✅ 완료 | UTM 추적 + 게스트 오버레이·배너 CTA 이벤트 로깅                          | `shared/lib/launch-ref.ts`   |
+| 🔵 잔여 | OG 이미지 PNG → `apps/web/public/og-image.png`                           | 디자인 작업                  |
+| 🔵 잔여 | Slide 1·2·4 스크린샷 + Slide 3 다이어그램 + Slide 5 QR + GIF 렌더        | 캡처/디자인 작업             |
+| 🔵 잔여 | analytics provider → `window.addEventListener('conflow:launch', …)` 구독 | 코드 (런칭 후도 가능)        |
 
 ---
 
@@ -107,6 +464,9 @@ i18n 키 신설: `marketing.banner.title`, `marketing.banner.subtitle`, `marketi
 1. **Product Hunt 페이지 URL** — Secondary CTA 타깃 (`VITE_PRODUCT_HUNT_URL` 환경변수로 분리)
 2. **런칭 D-day** — 자산 마감일 역산용
 3. **배너 카피 언어 범위** — EN-only(글로벌 트래픽) vs ko/en 둘 다(i18n 일관성)
+4. **Primary Tagline 확정** — Option A / B / C 중 택 1 (추천: A)
+5. **Maker Comment 에 학교·기수 등 사회적 증거 명시 여부** — 신뢰도 ↑ vs 익명성 유지
+6. **Korean 배너 톤 native 검수** — 현재 자동 번역 톤이라 원어민 1차 검토 필요
 
 ---
 

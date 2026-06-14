@@ -540,6 +540,15 @@
     "fallbackName": "이땡땡",
     "fallbackEmail": "ttaeng@conflow.local"
   },
+  "marketing": {
+    "banner": {
+      "title": "Product Hunt 에서 오셨나요?",
+      "subtitle": "Conflow 는 Product Hunt 에 런칭했습니다 — 앱을 열면 팀의 한 주가 바로 화면에 펼쳐집니다.",
+      "ctaPrimary": "무료로 시작하기",
+      "ctaSecondary": "Product Hunt 에서 응원하기",
+      "dismissLabel": "Product Hunt 배너 닫기"
+    }
+  },
   "errors": {
     "loadDocument": "문서를 불러올 수 없습니다."
   }
