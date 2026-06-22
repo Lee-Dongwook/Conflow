@@ -104,7 +104,7 @@ export const SideBar = ({
   return (
     <aside
       className={cn(
-        'flex h-screen w-[240px] shrink-0 flex-col border-r border-slate-200 bg-white',
+        'flex min-h-screen w-[240px] shrink-0 flex-col border-r border-slate-200 bg-white',
         className,
       )}
     >
