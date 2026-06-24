@@ -24,12 +24,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### TODO (Next)
 
-- `00-vision/product-vision.md` (5년 청사진)
-- `01-market/jtbd.md`, `pricing-strategy.md`, `gtm-strategy.md`
-- `02-product/` 도메인별 상세 (PM / Comms / HR / 문서발급)
+- `02-product/domain-documents.md` (4도메인 문서 중 마지막)
+- `01-market/gtm-strategy.md`
 - `03-roadmap/` (MoSCoW + Phase 0→4)
 - `04-architecture/` (멀티테넌트 데이터 모델, A2UI 전략, SOC2/K-ISMS 로드맵)
 - 루트 `README.md` 나머지 섹션 (Tech Stack, Roadmap, Wireframe, ERD) 정리 — Phase 0 문서 확정 후 일괄
+
+## [0.3.1] - 2026-06-24 -- Enterprise Pivot Docs (Vision → Market → Product/4-Domain)
+
+엔터프라이즈 피벗(0.3) 직후 문서 라인 확장. 비전/시장/제품 3개 계층을 한 번에 채워 도메인 설계의 입력을 확정.
+
+### Added
+
+#### Documentation — Vision
+
+- **`docs/00-vision/product-vision.md`** (draft v1, 295줄): 5년 청사진. 2031년 North Star("한국 IT SMB 유료 워크스페이스 12-18% / 1,500개 / 평균 ACV 4천만원", 도달 실패 확률 30-40% 정직 표기), Phase 0→4 타임라인(각 Phase 빌드 목표/**안 빌드하는 것**/종료 조건), 불변 원칙 5개(단일 데이터 모델 / 단일 권한 모델 / A2UI 우선 / KR-first / Linear 벤치마크 UX), 변동 영역 표 5개, 비전-레벨 Watch List 6개, Anti-Vision 6항(카테고리 창조 금지 / 5번째 도메인 금지 / 2030년 이전 영미권 진출 금지 등).
+
+#### Documentation — Market
+
+- **`docs/01-market/jtbd.md`** (draft v1, 347줄): Bob Moesta 식 JTBD 프레임. Big Job 2개("회사 운영의 단일 화면" + "회사가 커져도 도구를 안 갈아엎기")에 각각 4 Forces(Push/Pull/Anxiety/Habit) 부착, 페르소나(COO/CEO/사용자/IT)별 Functional Job + P0-P3 우선순위(P0 10개), Emotional Jobs / Social Jobs, Switch Trigger 6개(Atlassian 가격 인상 / Slack Connect 권한 / 노무 이슈 카톡 유출 / 신입 4명 동시 입사 / CEO ChatGPT 시도 / 시리즈 B 마이그레이션 견적), Job → 4도메인 매핑표 5개를 **02-product/ 도메인 문서의 직접 입력**으로 박음.
+- **`docs/01-market/pricing-strategy.md`** (draft v1, 377줄): PLG 4-Tier 가격 (Free 0원 / Team 시트당 월 12,000원·연 10,000원 / Business 22,000원·18,000원 / Enterprise 35,000원+ Custom, KRW 부가세 별도), 경쟁사 가격 비교(30/80/200/500명 4구간), AI/A2UI 가격 모델(메시지 cap + 도메인 횡단은 Business+), 한국 결제 디테일(카드/세금계산서/연계약/부가세), 가격 안티패턴 6가지, Phase별 출시 순서, 재무 모델 가정. **A2UI over-cap 단가 / Enterprise floor / Phase 4 노무 프리미엄 인상 폭**은 metrics.md로 검증 책임 이전.
+
+#### Documentation — Product (4-Domain Architecture)
+
+- **`docs/02-product/domain-overview.md`** (draft v1, 476줄): 4도메인(PM/Comms/HR/Documents) 통합 그림. 도메인별 책임/비-책임 + 공유 핵심 엔티티 5개(`Workspace`·`Member`·`Role/RoleAssignment`·`AuditLog`·`EntityLink` — 외래키 대신 EntityLink로 도메인 횡단 참조 표준화), 도메인 의존 다이어그램, **이벤트 카탈로그 13개** + Phase 도입 시점, **A2UI Tool 카탈로그 16개** + Tier 게이팅을 `tool_registry.yaml` 한 곳에서 강제하는 원칙, 데이터 격리 결정(같은 테이블 + `workspace_id` + RLS, Phase 4+ Enterprise 별도 클러스터 옵션), 도메인 횡단 쿼리 3개 시나리오 검증, **도메인 문서 4개가 받아갈 계약표 5개**.
+- **`docs/02-product/domain-pm.md`** (draft v1, 633줄): PM 도메인 상세. 핵심 엔티티 7개(Issue/Sprint/Project/Board/BacklogItem/Label/Comment, Milestone·Roadmap·OKR·Dependency는 Phase 2+ 보류), Phase 1 P0 14개(Issue CRUD / Sprint / Project / Backlog / Board / Label / Comment / 키보드 단축키 / Cmd+K / 실시간 보드 / Optimistic UI / Jira·Linear 임포터 / REST+Webhook), **A2UI Tool 10개**(search / create / transition / comment / sprint_summary / blockers / start_sprint / end_sprint / import / release_note), 횡단 시나리오 2개(회고 자동 생성 / 메시지→이슈, Business+ 게이트), 임포터 우선순위(Jira > Linear > Notion), 정확도 < 90%는 Watch List 신호. External(노무사)은 PM 0건 노출 명시. 영구 안 함: 게임화 / 커스텀 status / Confluence급 위키.
+- **`docs/02-product/domain-comms.md`** (draft v1, 712줄): Comms 도메인 상세. 엔티티 8개(Channel/Message/Thread/Reaction/Huddle/**Decision**/Notification/SearchIndex), Phase 1 P0 12개, **A2UI Tool 9개**(search_messages / post_message / summarize_channel / **detect_decisions** / confirm_decision / **message_to_issue** / summarize_huddle / list_unread_mentions / create_channel). **Decision 추출 차별화** 목표 precision > 80% / recall 50-60% 허용 / 오탐률 < 20% + 1클릭 컨펌 워크플로우. **외부 협업자 권한 모델**(지정 채널만 가시 / 다른 채널 검색 0 노출 / 외부↔외부 DM 금지 / DM은 Admin도 못 봄) — Slack Connect 대비 차별점. Huddle은 Phase 2 BaaS(Daily.co 등) 외주로 시작. 영구 안 함: 이메일 보관·통합 / 자체 캘린더 / Zoom급 화상회의.
+- **`docs/02-product/domain-hr.md`** (draft v1, 790줄): HR 도메인 상세, **차별화 축 3(KR-first Compliance) 짊어짐**. 엔티티 13개(EmployeeProfile / OrgUnit / OnboardingWorkflow(+Step) / OffboardingWorkflow / OneOnOne / LeaveRequest / Attendance / EvaluationCycle / InsuranceEnrollment / LaborDocument / PayrollRecord / KpiNote). Phase 분배: Phase 2 알파 P0 10개 / Phase 3 정식 P1 12개(4대 보험 + 노무사 외부 협업자 + 근로기준법 8개 워크플로우 + SCIM + Flex 임포터) / Phase 4 P2 7개(KISA / ezTax / PayrollRecord / K-ISMS / EDI 자동화 / 한국 리전). **A2UI Tool 9개** + 도메인 횡단 시나리오 3개(블로커×1:1 / 신입 온보딩×1:1 / 퇴사자 인수인계). **노무사 외부 협업자 모델**: 무료 시트 / 멀티 클라이언트사 동시 / 1-click 5초 access 회수 / `AuditLog.external_collaborator=true` / 외부↔외부 DM 금지 — Switch Trigger #3("노무 이슈 카톡 유출") 직접 해결. **프라이버시 4계층**: Public / Manager-visible / HR-only / Self-only. **1:1 노트는 Admin도 못 봄**(감사 모드 제외), A2UI 호출자 권한이 sub-tool 단계에서 적용되어 1:1 키워드조차 누수 차단. **근로기준법 8개 워크플로우** 매핑(연차 60조 / 주 52시간 / 권고사직 23조 / 해고 27조 / 임금명세서 48조 / 직장 내 괴롭힘 76조의2 / 출산휴가·육아휴직 / 퇴직금 34조). 영구 안 함: 자체 급여 계산 엔진 / 채용 ATS / LMS / CRM식 영업 평가 / 자체 캘린더. 글로벌 노무는 Phase 4+ 일본만 검토.
+
+### Changed
+
+- **`docs/README.md`**: 작성 상태 표·"어떤 문서를 언제 보는가" 가이드·"다음 작성 순서" 매번 동기화 (7회 업데이트). `02-product/` 폴더 신규 생성.
+
+### Notes
+
+- 7개 문서 / 총 약 3,630줄.
+- 모든 문서는 README 작성 규칙 준수: 한국어 / 프론트매터(`title`/`최종 업데이트`/`상태`/`독자`) / 첫 섹션 "이 문서로 내릴 결정" / 백과사전 금지(결정 중심).
+- 결정 의도적 보류 다수: ERD·RLS SQL → `04-architecture/data-model.md`, Tool Registry 구현 → `a2ui-strategy.md`, Event Bus 기술 → `tech-stack.md`, SCIM → `security-compliance.md`, Phase OKR → `03-roadmap/phases.md`, A2UI over-cap 단가 → `metrics.md`, KISA 자체구축 vs 모두싸인 OEM → Phase 3 종료 시점 재결정.
 
 ## [0.2.0] - 2026-05-31
 
@@ -184,6 +215,7 @@ The foundational release of Conflow, establishing the monorepo structure, backen
 - LangGraph graph schema reference
 - Architecture documentation with version snapshots
 
-[Unreleased]: https://github.com/dlehddnr0713/conflow/compare/c22b95a...HEAD
+[Unreleased]: https://github.com/dlehddnr0713/conflow/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/dlehddnr0713/conflow/compare/43f8aed...HEAD
 [0.2.0]: https://github.com/dlehddnr0713/conflow/compare/cefb23d...c22b95a
 [0.1.0]: https://github.com/dlehddnr0713/conflow/commits/cefb23d
