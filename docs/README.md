@@ -29,7 +29,8 @@ title: Conflow 문서 맵
 | `02-product/`      | [domain-overview.md](./02-product/domain-overview.md)            | draft v1 |
 | `02-product/`      | [domain-pm.md](./02-product/domain-pm.md)                        | draft v1 |
 | `02-product/`      | [domain-comms.md](./02-product/domain-comms.md)                  | draft v1 |
-| `02-product/`      | domain-hr / domain-documents                                     | TODO     |
+| `02-product/`      | [domain-hr.md](./02-product/domain-hr.md)                        | draft v1 |
+| `02-product/`      | domain-documents                                                 | TODO     |
 | `03-roadmap/`      | moscow.md / phases.md / metrics.md                               | TODO     |
 | `04-architecture/` | tech-stack / data-model / a2ui-strategy / security-compliance    | TODO     |
 
@@ -62,6 +63,9 @@ title: Conflow 문서 맵
 **Comms 도메인 상세 (채널/메시지/Huddle/Decision 추출/Slack 임포터)**
 → [`02-product/domain-comms.md`](./02-product/domain-comms.md) — 엔티티 8개, Phase 1 P0 12개, A2UI Tool 9개, Decision 추출 정밀도 목표, 외부 협업자 권한 모델
 
+**HR 도메인 상세 (인사·노무·노무사 협업·프라이버시)**
+→ [`02-product/domain-hr.md`](./02-product/domain-hr.md) — 엔티티 13개, Phase 2/3/4 단계 출시, A2UI Tool 9개, 노무사 외부 협업자 모델, 프라이버시 4계층, 근로기준법 8 워크플로우
+
 ---
 
 ## 다음 작성 순서 (제안)
@@ -70,7 +74,7 @@ title: Conflow 문서 맵
 2. ~~`01-market/jtbd.md`~~ — 완료 (draft v1)
 3. ~~`01-market/pricing-strategy.md`~~ — 완료 (draft v1)
 4. ~~`02-product/domain-overview.md`~~ — 완료 (draft v1)
-5. 도메인별 상세 — ~~`domain-pm`~~(완료) / ~~`domain-comms`~~(완료) / `domain-hr` **다음 차례** / `domain-documents`
+5. 도메인별 상세 — ~~`domain-pm`~~(완료) / ~~`domain-comms`~~(완료) / ~~`domain-hr`~~(완료) / `domain-documents` **다음 차례**
 6. `03-roadmap/` — MoSCoW와 Phase 0→4.
 7. `04-architecture/` — 기술 스택 결정, 데이터 모델, 컴플라이언스.
 
