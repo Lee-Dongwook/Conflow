@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+#### Product Strategy
+
+- **엔터프라이즈 피벗 결정 (2026-06-24)**: 타깃을 "대학생 · 스터디 팀"에서 **SMB(10-200명) → 미드마켓(200-2000명) PLG**로 전면 전환. 도메인 범위를 PM(Jira 스타일) + Comms(Slack/Huddle) + HR + 문서발급 4개로 확장.
+- **루트 `README.md` 소개부 교체**: 새 태그라인 ("PM · Comms · HR · 문서발급을 하나로 잇는 엔터프라이즈 협업 OS"), Problem/Solution 표를 ICP-1 챔피언(COO/Head of Ops)의 페인 포인트로 재작성.
+
+#### Documentation
+
+- **`docs/` 전체 아카이브**: 기존 문서를 `docs/_archive/2026-06-24-pre-enterprise-pivot/`로 이동 (git rename으로 히스토리 보존).
+- **신규 `docs/` 작성 시작** (draft v1):
+  - `docs/README.md` — 문서 맵 + 다음 작성 순서
+  - `docs/00-vision/positioning.md` — 한 문장 포지셔닝 + 차별화
+  - `docs/00-vision/competitive-landscape.md` — Jira / Linear / Slack / Monday / Workday 대비 분석
+  - `docs/01-market/icp.md` — ICP-1 (한국 30-80명 IT 회사 beachhead) → ICP-2 → ICP-3 단계별 정의, 자격 기준, 비-ICP 목록
+
+### TODO (Next)
+
+- `00-vision/product-vision.md` (5년 청사진)
+- `01-market/jtbd.md`, `pricing-strategy.md`, `gtm-strategy.md`
+- `02-product/` 도메인별 상세 (PM / Comms / HR / 문서발급)
+- `03-roadmap/` (MoSCoW + Phase 0→4)
+- `04-architecture/` (멀티테넌트 데이터 모델, A2UI 전략, SOC2/K-ISMS 로드맵)
+- 루트 `README.md` 나머지 섹션 (Tech Stack, Roadmap, Wireframe, ERD) 정리 — Phase 0 문서 확정 후 일괄
+
 ## [0.2.0] - 2026-05-31
 
 ### Added
