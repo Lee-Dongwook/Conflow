@@ -21,9 +21,10 @@ title: Conflow 문서 맵
 | ------------------ | ------------------------------------------------------------------ | -------- |
 | `00-vision/`       | [positioning.md](./00-vision/positioning.md)                       | draft v1 |
 | `00-vision/`       | [competitive-landscape.md](./00-vision/competitive-landscape.md)   | draft v1 |
-| `00-vision/`       | product-vision.md                                                  | TODO     |
+| `00-vision/`       | [product-vision.md](./00-vision/product-vision.md)                 | draft v1 |
 | `01-market/`       | [icp.md](./01-market/icp.md)                                       | draft v1 |
-| `01-market/`       | jtbd.md / pricing-strategy.md / gtm-strategy.md                    | TODO     |
+| `01-market/`       | [jtbd.md](./01-market/jtbd.md)                                     | draft v1 |
+| `01-market/`       | pricing-strategy.md / gtm-strategy.md                              | TODO     |
 | `02-product/`      | domain-overview / domain-pm / domain-comms / domain-hr / documents | TODO     |
 | `03-roadmap/`      | moscow.md / phases.md / metrics.md                                 | TODO     |
 | `04-architecture/` | tech-stack / data-model / a2ui-strategy / security-compliance      | TODO     |
@@ -39,13 +40,19 @@ title: Conflow 문서 맵
 **누구에게 무엇을 팔지 결정할 때**
 → [`01-market/icp.md`](./01-market/icp.md) — ICP-1(beachhead) → ICP-2 → ICP-3 단계별 정의, 자격 기준, 비-ICP 목록
 
+**5년 뒤 모습과 Phase 0→4 순서가 궁금할 때**
+→ [`00-vision/product-vision.md`](./00-vision/product-vision.md) — North Star, Phase별 빌드/안빌드/종료 조건, 불변 원칙, Watch List
+
+**고객이 우리 제품을 "왜" 고용하는지 / 무엇을 빌드 우선순위로 둘지**
+→ [`01-market/jtbd.md`](./01-market/jtbd.md) — Big Job 2개, Functional Jobs P0-P3 우선순위, 도메인 매핑표, Switch Trigger
+
 ---
 
 ## 다음 작성 순서 (제안)
 
-1. `00-vision/product-vision.md` — 5년 청사진. positioning을 시간축으로 풀어낸 것.
-2. `01-market/jtbd.md` — ICP의 Job-to-be-done. 도메인 설계의 입력.
-3. `01-market/pricing-strategy.md` — PLG 가격 모델 (free → team → business → enterprise).
+1. ~~`00-vision/product-vision.md`~~ — 완료 (draft v1)
+2. ~~`01-market/jtbd.md`~~ — 완료 (draft v1)
+3. `01-market/pricing-strategy.md` — PLG 가격 모델 (free → team → business → enterprise). **다음 차례**
 4. `02-product/domain-overview.md` — 4개 도메인 통합 그림, 데이터/이벤트 흐름.
 5. 이후 도메인별 상세 (`domain-pm`, `domain-comms`, `domain-hr`, `domain-documents`).
 6. `03-roadmap/` — MoSCoW와 Phase 0→4.
