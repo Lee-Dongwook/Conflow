@@ -28,7 +28,8 @@ title: Conflow 문서 맵
 | `01-market/`       | gtm-strategy.md                                                  | TODO     |
 | `02-product/`      | [domain-overview.md](./02-product/domain-overview.md)            | draft v1 |
 | `02-product/`      | [domain-pm.md](./02-product/domain-pm.md)                        | draft v1 |
-| `02-product/`      | domain-comms / domain-hr / domain-documents                      | TODO     |
+| `02-product/`      | [domain-comms.md](./02-product/domain-comms.md)                  | draft v1 |
+| `02-product/`      | domain-hr / domain-documents                                     | TODO     |
 | `03-roadmap/`      | moscow.md / phases.md / metrics.md                               | TODO     |
 | `04-architecture/` | tech-stack / data-model / a2ui-strategy / security-compliance    | TODO     |
 
@@ -58,6 +59,9 @@ title: Conflow 문서 맵
 **PM 도메인 상세 (이슈/스프린트/보드/임포터/PM A2UI Tool)**
 → [`02-product/domain-pm.md`](./02-product/domain-pm.md) — 핵심 엔티티 7개, Phase 1 P0 14개, A2UI Tool 10개, Jira/Linear/Notion 임포터 우선순위
 
+**Comms 도메인 상세 (채널/메시지/Huddle/Decision 추출/Slack 임포터)**
+→ [`02-product/domain-comms.md`](./02-product/domain-comms.md) — 엔티티 8개, Phase 1 P0 12개, A2UI Tool 9개, Decision 추출 정밀도 목표, 외부 협업자 권한 모델
+
 ---
 
 ## 다음 작성 순서 (제안)
@@ -66,7 +70,7 @@ title: Conflow 문서 맵
 2. ~~`01-market/jtbd.md`~~ — 완료 (draft v1)
 3. ~~`01-market/pricing-strategy.md`~~ — 완료 (draft v1)
 4. ~~`02-product/domain-overview.md`~~ — 완료 (draft v1)
-5. 도메인별 상세 — ~~`domain-pm`~~(완료) / `domain-comms` **다음 차례** / `domain-hr` / `domain-documents`
+5. 도메인별 상세 — ~~`domain-pm`~~(완료) / ~~`domain-comms`~~(완료) / `domain-hr` **다음 차례** / `domain-documents`
 6. `03-roadmap/` — MoSCoW와 Phase 0→4.
 7. `04-architecture/` — 기술 스택 결정, 데이터 모델, 컴플라이언스.
 
