@@ -17,18 +17,19 @@ title: Conflow 문서 맵
 
 ## 작성 상태
 
-| 폴더               | 문서                                                               | 상태     |
-| ------------------ | ------------------------------------------------------------------ | -------- |
-| `00-vision/`       | [positioning.md](./00-vision/positioning.md)                       | draft v1 |
-| `00-vision/`       | [competitive-landscape.md](./00-vision/competitive-landscape.md)   | draft v1 |
-| `00-vision/`       | [product-vision.md](./00-vision/product-vision.md)                 | draft v1 |
-| `01-market/`       | [icp.md](./01-market/icp.md)                                       | draft v1 |
-| `01-market/`       | [jtbd.md](./01-market/jtbd.md)                                     | draft v1 |
-| `01-market/`       | [pricing-strategy.md](./01-market/pricing-strategy.md)             | draft v1 |
-| `01-market/`       | gtm-strategy.md                                                    | TODO     |
-| `02-product/`      | domain-overview / domain-pm / domain-comms / domain-hr / documents | TODO     |
-| `03-roadmap/`      | moscow.md / phases.md / metrics.md                                 | TODO     |
-| `04-architecture/` | tech-stack / data-model / a2ui-strategy / security-compliance      | TODO     |
+| 폴더               | 문서                                                             | 상태     |
+| ------------------ | ---------------------------------------------------------------- | -------- |
+| `00-vision/`       | [positioning.md](./00-vision/positioning.md)                     | draft v1 |
+| `00-vision/`       | [competitive-landscape.md](./00-vision/competitive-landscape.md) | draft v1 |
+| `00-vision/`       | [product-vision.md](./00-vision/product-vision.md)               | draft v1 |
+| `01-market/`       | [icp.md](./01-market/icp.md)                                     | draft v1 |
+| `01-market/`       | [jtbd.md](./01-market/jtbd.md)                                   | draft v1 |
+| `01-market/`       | [pricing-strategy.md](./01-market/pricing-strategy.md)           | draft v1 |
+| `01-market/`       | gtm-strategy.md                                                  | TODO     |
+| `02-product/`      | [domain-overview.md](./02-product/domain-overview.md)            | draft v1 |
+| `02-product/`      | domain-pm / domain-comms / domain-hr / domain-documents          | TODO     |
+| `03-roadmap/`      | moscow.md / phases.md / metrics.md                               | TODO     |
+| `04-architecture/` | tech-stack / data-model / a2ui-strategy / security-compliance    | TODO     |
 
 ---
 
@@ -50,6 +51,9 @@ title: Conflow 문서 맵
 **얼마에 팔지 / 어떤 가격 실수를 피할지**
 → [`01-market/pricing-strategy.md`](./01-market/pricing-strategy.md) — Free/Team/Business/Enterprise 4-Tier, 경쟁사 대비 가격, AI 가격 모델, 안티패턴
 
+**4도메인 경계 / 공유 엔티티 / 이벤트·A2UI Tool 카탈로그가 궁금할 때**
+→ [`02-product/domain-overview.md`](./02-product/domain-overview.md) — 도메인 경계, 공유 엔티티 5개, 이벤트 13개, A2UI Tool 16개, 도메인 문서 4개 계약표
+
 ---
 
 ## 다음 작성 순서 (제안)
@@ -57,8 +61,8 @@ title: Conflow 문서 맵
 1. ~~`00-vision/product-vision.md`~~ — 완료 (draft v1)
 2. ~~`01-market/jtbd.md`~~ — 완료 (draft v1)
 3. ~~`01-market/pricing-strategy.md`~~ — 완료 (draft v1)
-4. `02-product/domain-overview.md` — 4개 도메인 통합 그림, 데이터/이벤트 흐름. **다음 차례**
-5. 이후 도메인별 상세 (`domain-pm`, `domain-comms`, `domain-hr`, `domain-documents`).
+4. ~~`02-product/domain-overview.md`~~ — 완료 (draft v1)
+5. 도메인별 상세 (`domain-pm`, `domain-comms`, `domain-hr`, `domain-documents`). **다음 차례 (domain-pm부터)**
 6. `03-roadmap/` — MoSCoW와 Phase 0→4.
 7. `04-architecture/` — 기술 스택 결정, 데이터 모델, 컴플라이언스.
 
