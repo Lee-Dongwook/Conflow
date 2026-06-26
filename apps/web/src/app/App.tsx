@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 
 import { AuthProvider, useSession } from 'app/entities/session'
+import { QueryProvider } from 'app/app/providers'
+import { AppRouter } from 'app/app/router'
 import { consentApi, ConsentForm, type ConsentAccept } from 'app/features/consent'
 import { BacklogPage } from 'app/pages/BacklogPage'
 import { BoardPage } from 'app/pages/BoardPage'
@@ -15,7 +17,6 @@ import { MetricsPage } from 'app/pages/MetricsPage'
 import { PlaceholderPage } from 'app/pages/PlaceholderPage'
 import { RetroPage } from 'app/pages/RetroPage'
 
-import { SurveyPage } from 'app/pages/SurveyPage'
 import { ThisWeekPage } from 'app/pages/ThisWeekPage'
 import { UserPage } from 'app/pages/UserPage'
 import { captureLaunchRef, trackLaunchEvent } from 'app/shared/lib'
@@ -166,16 +167,12 @@ const AppContent = () => {
   )
 }
 
-const isSurveyRoute = () =>
-  typeof window !== 'undefined' && window.location.pathname.startsWith('/survey')
-
-export const App = () => {
-  if (isSurveyRoute()) {
-    return <SurveyPage />
-  }
-  return (
+export const App = () => (
+  <QueryProvider>
     <AuthProvider>
-      <AppContent />
+      <AppRouter
+        legacyApp={<AppContent />}
+      />
     </AuthProvider>
-  )
-}
+  </QueryProvider>
+)
