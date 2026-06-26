@@ -31,7 +31,8 @@ title: Conflow 문서 맵
 | `02-product/`      | [domain-comms.md](./02-product/domain-comms.md)                  | draft v1 |
 | `02-product/`      | [domain-hr.md](./02-product/domain-hr.md)                        | draft v1 |
 | `02-product/`      | [domain-documents.md](./02-product/domain-documents.md)          | draft v1 |
-| `03-roadmap/`      | moscow.md / phases.md / metrics.md                               | TODO     |
+| `03-roadmap/`      | [moscow.md](./03-roadmap/moscow.md)                              | draft v1 |
+| `03-roadmap/`      | phases.md / metrics.md                                           | TODO     |
 | `04-architecture/` | tech-stack / data-model / a2ui-strategy / security-compliance    | TODO     |
 
 ---
@@ -69,6 +70,9 @@ title: Conflow 문서 맵
 **Documents 도메인 상세 (정형 문서·전자서명·ezTax·노무사 작업면·보존 정책)**
 → [`02-product/domain-documents.md`](./02-product/domain-documents.md) — 엔티티 13개, Phase 2/3/4 단계 출시, A2UI Tool 8개, 노무사 작업면 인터페이스, 보존 정책 매트릭스 12종, KISA/ezTax Phase 4 결정
 
+**무엇이 출시 비건이고 무엇은 명시적으로 안 하는가 / 영업의 끼워넣기를 거절할 근거가 필요할 때**
+→ [`03-roadmap/moscow.md`](./03-roadmap/moscow.md) — Must (Phase 1 출시 비건) / Should (차별화 4축 강화) / Could (ICP-3 + ACV 1억원+) / Won't (영구 안 함 + Phase 4+ 보류). JTBD P0-P3 + 도메인 Phase별 표를 MoSCoW로 재매핑
+
 ---
 
 ## 다음 작성 순서 (제안)
@@ -78,7 +82,7 @@ title: Conflow 문서 맵
 3. ~~`01-market/pricing-strategy.md`~~ — 완료 (draft v1)
 4. ~~`02-product/domain-overview.md`~~ — 완료 (draft v1)
 5. 도메인별 상세 — ~~`domain-pm`~~(완료) / ~~`domain-comms`~~(완료) / ~~`domain-hr`~~(완료) / ~~`domain-documents`~~(완료)
-6. `03-roadmap/` — MoSCoW와 Phase 0→4.
+6. `03-roadmap/` — ~~`moscow.md`~~(완료) / `phases.md` (분기 OKR) / `metrics.md` (성공 지표 측정 정의).
 7. `04-architecture/` — 기술 스택 결정, 데이터 모델, 컴플라이언스.
 
 ---
