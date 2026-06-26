@@ -106,3 +106,59 @@ export const MemberInviteOutput = z.object({
   invite_url: z.string(),
 })
 export type MemberInviteOutput = z.infer<typeof MemberInviteOutput>
+
+// ---------------------------------------------------------------------------
+// PM Issue (mirror `pm/schemas.py`)
+// ---------------------------------------------------------------------------
+
+export const IssueRead = z.object({
+  uuid: z.string(),
+  workspace_uuid: z.string(),
+  project_uuid: z.string().nullable(),
+  sprint_uuid: z.string().nullable(),
+  title: z.string(),
+  description: z.string().nullable(),
+  status: IssueStatus,
+  priority: IssuePriority,
+  reporter_member_uuid: z.string(),
+  assignee_member_uuid: z.string().nullable(),
+  due_date: z.string().nullable(),
+  blocked_since: z.string().nullable(),
+  blocked_reason: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+})
+export type IssueRead = z.infer<typeof IssueRead>
+
+export const IssueCreateInput = z.object({
+  title: z.string().min(1).max(200),
+  description: z.string().optional(),
+  project_uuid: z.string().optional(),
+  sprint_uuid: z.string().optional(),
+  priority: IssuePriority.optional(),
+  assignee_member_uuid: z.string().optional(),
+  due_date: z.string().optional(),
+})
+export type IssueCreateInput = z.infer<typeof IssueCreateInput>
+
+export const IssueTransitionInput = z.object({
+  new_status: IssueStatus,
+  blocked_reason: z.string().optional(),
+})
+export type IssueTransitionInput = z.infer<typeof IssueTransitionInput>
+
+export const IssueListFilter = z.object({
+  status: IssueStatus.optional(),
+  assignee_member_uuid: z.string().optional(),
+  sprint_uuid: z.string().optional(),
+  project_uuid: z.string().optional(),
+  limit: z.number().int().min(1).max(200).optional(),
+  offset: z.number().int().min(0).optional(),
+})
+export type IssueListFilter = z.infer<typeof IssueListFilter>
+
+export const IssueListOutput = z.object({
+  issues: z.array(IssueRead),
+  total: z.number().int(),
+})
+export type IssueListOutput = z.infer<typeof IssueListOutput>

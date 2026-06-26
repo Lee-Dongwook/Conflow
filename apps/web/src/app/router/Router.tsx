@@ -17,6 +17,8 @@ import type { ReactNode } from 'react'
 import { CreateWorkspacePage } from 'app/pages/CreateWorkspacePage'
 import { LandingRedirectPage } from 'app/pages/LandingRedirectPage'
 import { LegalPage } from 'app/pages/legal'
+import { PMIssueDetailPage } from 'app/pages/PMIssueDetailPage'
+import { PMIssuesPage } from 'app/pages/PMIssuesPage'
 import { SurveyPage } from 'app/pages/SurveyPage'
 
 import {
@@ -24,7 +26,6 @@ import {
   CommsChannelsPlaceholder,
   DocumentsInstancesPlaceholder,
   HrEmployeesPlaceholder,
-  PmIssuesPlaceholder,
   WorkspaceIndexPlaceholder,
 } from './placeholders'
 import { WorkspaceShell } from './WorkspaceShell'
@@ -43,7 +44,11 @@ export const AppRouter = ({ legacyApp }: AppRouterProps) => (
 
       <Route path="/w/:workspaceUuid" element={<WorkspaceShell />}>
         <Route index element={<WorkspaceIndexPlaceholder />} />
-        <Route path="pm/issues" element={<PmIssuesPlaceholder />} />
+        <Route path="pm/issues" element={<PMIssuesPage />} />
+        <Route
+          path="pm/issues/:issueUuid"
+          element={<PMIssueDetailPage />}
+        />
         <Route path="comms/channels" element={<CommsChannelsPlaceholder />} />
         <Route path="hr/profiles" element={<HrEmployeesPlaceholder />} />
         <Route
