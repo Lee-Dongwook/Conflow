@@ -36,6 +36,10 @@ COMMS_MENTION_CREATED: Final = "comms.mention.created"
 HR_MEMBER_ONBOARDED: Final = "hr.member.onboarded"
 HR_MEMBER_OFFBOARDED: Final = "hr.member.offboarded"
 HR_PROFILE_UPDATED: Final = "hr.profile.updated"
+HR_LEAVE_SUBMITTED: Final = "hr.leave.submitted"
+HR_LEAVE_APPROVED: Final = "hr.leave.approved"
+HR_LEAVE_REJECTED: Final = "hr.leave.rejected"
+HR_ONE_ON_ONE_RECORDED: Final = "hr.one_on_one.recorded"
 
 # Workspace lifecycle (Shared Core domain `system`)
 WORKSPACE_MEMBER_INVITED: Final = "workspace.member.invited"

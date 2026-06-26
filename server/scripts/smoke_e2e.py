@@ -47,11 +47,16 @@ async def _run(*, user_uuid_arg: str | None, cleanup: bool) -> int:
         AuditLog,
         EventOutbox,
         Member,
+        MemberInviteInput,
+        MemberStatus,
         Role,
         RoleAssignment,
+        RoleName,
         Workspace,
         WorkspaceCreateInput,
+        accept_invitation,
         create_workspace,
+        invite_member,
     )
     from src.app.core.shared_init import load_dotenv
     from src.app.pm.model import Issue
@@ -223,6 +228,63 @@ async def _run(*, user_uuid_arg: str | None, cleanup: bool) -> int:
                 "(worker is running — fine)",
             )
 
+        # ---------- 5b. invite + accept ----------
+        print("[5b] invite_member + accept_invitation")
+        invitee_email = f"invitee-{_uuid.uuid4().hex[:8]}@example.local"
+        invite_out = await invite_member(
+            workspace_uuid=workspace_uuid,
+            caller_member_uuid=member.uuid,
+            payload=MemberInviteInput(
+                email=invitee_email,
+                role_name=RoleName.MEMBER,
+            ),
+            db=db,
+        )
+        invited_uuid = invite_out.member_uuid
+        _ok("invited", f"{invitee_email} → member_uuid={invited_uuid}")
+
+        invitee_user = User(name="smoke-invitee", email=invitee_email)
+        db.add(invitee_user)
+        await db.commit()
+        await db.refresh(invitee_user)
+        _ok("invitee User created", invitee_user.uuid)
+
+        joined = await accept_invitation(
+            workspace_uuid=workspace_uuid,
+            invited_member_uuid=invited_uuid,
+            caller_user_uuid=invitee_user.uuid,
+            db=db,
+        )
+        if joined.status == MemberStatus.ACTIVE and joined.user_uuid == invitee_user.uuid:
+            _ok("accepted (status=ACTIVE, user_uuid bound)")
+        else:
+            _fail(
+                "accept_invitation",
+                f"status={joined.status} user_uuid={joined.user_uuid}",
+            )
+            failures += 1
+
+        # Extra event check: two new outbox events (invited, joined)
+        invite_event_res = await db.execute(
+            select(EventOutbox.event_name)
+            .where(
+                EventOutbox.workspace_uuid == workspace_uuid,
+                EventOutbox.event_name.in_(
+                    ("workspace.member.invited", "workspace.member.joined")
+                ),
+            )
+            .order_by(EventOutbox.occurred_at)
+        )
+        invite_events = [r[0] for r in invite_event_res.all()]
+        if (
+            "workspace.member.invited" in invite_events
+            and "workspace.member.joined" in invite_events
+        ):
+            _ok("invite/joined outbox events emitted", str(invite_events))
+        else:
+            _fail("invite events", f"got {invite_events}")
+            failures += 1
+
         # ---------- 6. cleanup ----------
         if cleanup and failures == 0:
             print("[6] cleanup")
@@ -252,6 +314,8 @@ async def _run(*, user_uuid_arg: str | None, cleanup: bool) -> int:
             await db.execute(delete(Workspace).where(Workspace.uuid == workspace_uuid))
             if not user_uuid_arg:
                 await db.execute(delete(User).where(User.uuid == user.uuid))
+            # Invitee User is always cleaned up (it was created by this run).
+            await db.execute(delete(User).where(User.uuid == invitee_user.uuid))
             await db.commit()
             _ok("cleanup complete")
         elif cleanup and failures > 0:

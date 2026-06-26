@@ -44,6 +44,12 @@ from src.app.core.shared import (  # noqa: E402, F401
     Workspace,
 )
 from src.app.dashboard.model import DashboardConfig  # noqa: E402, F401
+from src.app.documents.model import (  # noqa: E402, F401
+    DocumentInstance,
+    DocumentTemplate,
+    RetentionPolicy,
+    ReviewWorkflow,
+)
 from src.app.hr.model import (  # noqa: E402, F401
     EmployeeProfile,
     LeaveRequest,
