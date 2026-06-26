@@ -24,6 +24,7 @@ from src.app.core.outbox import outbox_worker_loop
 from src.app.core.runtime import logger
 from src.app.core.shared.api import router as workspace_router
 from src.app.dashboard.api import router as dashboard_router
+from src.app.documents.api import router as documents_router
 from src.app.home.api import router as home_router
 from src.app.hr.api import router as hr_router
 from src.app.pm.api import router as pm_router
@@ -121,6 +122,8 @@ app.include_router(comms_router)
 app.include_router(comms_router, prefix="/api")
 app.include_router(hr_router)
 app.include_router(hr_router, prefix="/api")
+app.include_router(documents_router)
+app.include_router(documents_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)

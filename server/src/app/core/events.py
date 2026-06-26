@@ -45,6 +45,11 @@ HR_ONE_ON_ONE_RECORDED: Final = "hr.one_on_one.recorded"
 WORKSPACE_MEMBER_INVITED: Final = "workspace.member.invited"
 WORKSPACE_MEMBER_JOINED: Final = "workspace.member.joined"
 
+# Documents
+DOCUMENTS_INSTANCE_ISSUED: Final = "documents.instance.issued"
+DOCUMENTS_CONTRACT_SIGNED: Final = "documents.contract.signed"
+DOCUMENTS_INSTANCE_VOIDED: Final = "documents.instance.voided"
+
 
 def emit_event(
     db: AsyncSession,
