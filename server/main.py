@@ -18,6 +18,7 @@ from src.app.comms.api import router as comms_router
 from src.app.consent.api import router as consent_router
 from src.app.core import database as core_db
 from src.app.core import shared_init
+from src.app.core.a2ui.api import router as a2ui_router
 from src.app.core.exceptions import global_exception_handler
 from src.app.core.middlewares import setup_middleware
 from src.app.core.outbox import outbox_worker_loop
@@ -52,6 +53,9 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 
     # Subscriber registrations import their handlers at module import time;
     # importing here keeps the registry populated before the worker loop polls.
+    # A2UI Tool registrations (side-effect import) — populates the Tool
+    # Registry before the catalog endpoint can be hit.
+    import src.app.core.a2ui.tools  # noqa: F401, PLC0415
     import src.app.core.outbox_subscribers  # noqa: F401, PLC0415
 
     worker_task: asyncio.Task[None] | None = None
@@ -124,6 +128,8 @@ app.include_router(hr_router)
 app.include_router(hr_router, prefix="/api")
 app.include_router(documents_router)
 app.include_router(documents_router, prefix="/api")
+app.include_router(a2ui_router)
+app.include_router(a2ui_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
