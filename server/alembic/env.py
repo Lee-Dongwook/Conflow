@@ -44,6 +44,7 @@ from src.app.core.shared import (  # noqa: E402, F401
     Workspace,
 )
 from src.app.dashboard.model import DashboardConfig  # noqa: E402, F401
+from src.app.hr.model import EmployeeProfile, OrgUnit  # noqa: E402, F401
 from src.app.inbox.model import InboxEntry  # noqa: E402, F401
 from src.app.pm.model import Issue, Project  # noqa: E402, F401
 from src.app.pm.model import Sprint as PmSprint  # noqa: E402, F401
