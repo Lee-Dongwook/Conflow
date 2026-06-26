@@ -22,7 +22,7 @@ from collections.abc import Awaitable, Callable
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from .runtime import logger
@@ -87,7 +87,14 @@ async def process_unpublished_batch(
 
     Rows whose handler chain raises are left with `published_at` NULL and
     retried on the next cycle.
+
+    Sets `app.system_mode = 'true'` for the duration of this transaction so
+    that the cross-workspace SELECT bypasses the per-workspace RLS policy.
+    Handlers run AFTER this batch select and own their own sessions, so
+    they re-establish a normal per-workspace context themselves.
     """
+    await db.execute(text("SET LOCAL app.system_mode = 'true'"))
+
     res = await db.execute(
         select(EventOutbox)
         .where(EventOutbox.published_at.is_(None))

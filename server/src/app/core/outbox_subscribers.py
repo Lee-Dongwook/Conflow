@@ -120,7 +120,13 @@ async def _handle_contract_signed(envelope: EventEnvelope) -> None:
         )
         return
 
+    # Subscribers run in their own session, so the per-workspace RLS
+    # context must be re-established here (the worker batch's system_mode
+    # only applies to the batch select, not to handler sessions).
+    from .db_context import set_workspace_context  # noqa: PLC0415
+
     async with async_session() as db:
+        await set_workspace_context(db, workspace_uuid=envelope.workspace_uuid)
         result = await db.execute(
             update(EmployeeProfile)
             .where(

@@ -20,6 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...user.model import User
+from ..db_context import set_workspace_context
 from ..events import (
     WORKSPACE_MEMBER_INVITED,
     WORKSPACE_MEMBER_JOINED,
@@ -123,6 +124,10 @@ async def create_workspace(
     )
     db.add(workspace)
     await db.flush()
+
+    # Now that `workspace.uuid` exists, set the RLS context so the rest of
+    # the seeding INSERTs + final refresh see the new tenant.
+    await set_workspace_context(db, workspace_uuid=workspace.uuid)
 
     creator_member = Member(
         workspace_uuid=workspace.uuid,
@@ -306,6 +311,9 @@ async def accept_invitation(
     This blocks invite-URL leakage from being exploited by a different
     signed-up account.
     """
+    # RLS context — accept doesn't go through get_caller_member.
+    await set_workspace_context(db, workspace_uuid=workspace_uuid)
+
     res = await db.execute(
         select(Member).where(
             Member.uuid == invited_member_uuid,

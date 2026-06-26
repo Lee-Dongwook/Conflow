@@ -228,6 +228,52 @@ async def _run(*, user_uuid_arg: str | None, cleanup: bool) -> int:
                 "(worker is running — fine)",
             )
 
+        # ---------- 5c. cross-tenant isolation probe ----------
+        # Creates a second workspace + new user/member, then tries to read
+        # rows from the first workspace using the second workspace's RLS
+        # context. When RLS is enabled, all such reads MUST return 0 rows.
+        # (Without RLS this still passes because the application filter is
+        # equally tight — the test just becomes a sanity check.)
+        print("[5c] cross-tenant isolation probe")
+        from src.app.core.db_context import set_workspace_context as _set_ctx
+
+        probe_email = f"probe-{_uuid.uuid4().hex[:8]}@example.local"
+        probe_user = User(name="smoke-probe", email=probe_email)
+        db.add(probe_user)
+        await db.commit()
+        await db.refresh(probe_user)
+        probe_ws = await create_workspace(
+            creator_user_uuid=probe_user.uuid,
+            payload=WorkspaceCreateInput(
+                name="Probe WS",
+                slug=f"probe-{_uuid.uuid4().hex[:8]}",
+            ),
+            db=db,
+        )
+
+        # Now set RLS context to probe workspace and try to count rows
+        # belonging to the first workspace. Expectation: 0 (RLS) OR
+        # the application filter still works (no RLS, no leak).
+        await _set_ctx(db, workspace_uuid=probe_ws.uuid)
+        leaked_issues = await db.scalar(
+            select(func.count())
+            .select_from(Issue)
+            .where(Issue.workspace_uuid == workspace_uuid)
+        )
+        if leaked_issues == 0:
+            _ok("cross-tenant Issue probe", "0 leaked rows")
+        else:
+            _fail(
+                "cross-tenant leak",
+                f"{leaked_issues} Issue rows visible from probe workspace "
+                "— RLS not enforced (apply manual_sql/rls_policies.sql)",
+            )
+            failures += 1
+        # Restore original workspace context for the rest of the script.
+        await _set_ctx(
+            db, workspace_uuid=workspace_uuid, member_uuid=member.uuid
+        )
+
         # ---------- 5b. invite + accept ----------
         print("[5b] invite_member + accept_invitation")
         invitee_email = f"invitee-{_uuid.uuid4().hex[:8]}@example.local"
@@ -314,8 +360,26 @@ async def _run(*, user_uuid_arg: str | None, cleanup: bool) -> int:
             await db.execute(delete(Workspace).where(Workspace.uuid == workspace_uuid))
             if not user_uuid_arg:
                 await db.execute(delete(User).where(User.uuid == user.uuid))
-            # Invitee User is always cleaned up (it was created by this run).
+            # Invitee + probe Users are always cleaned up (created by this run).
             await db.execute(delete(User).where(User.uuid == invitee_user.uuid))
+            # Probe workspace and its members/roles/audit must be cleaned too.
+            await db.execute(
+                delete(RoleAssignment).where(
+                    RoleAssignment.workspace_uuid == probe_ws.uuid
+                )
+            )
+            await db.execute(delete(Role).where(Role.workspace_uuid == probe_ws.uuid))
+            await db.execute(
+                delete(AuditLog).where(AuditLog.workspace_uuid == probe_ws.uuid)
+            )
+            await db.execute(
+                delete(EventOutbox).where(EventOutbox.workspace_uuid == probe_ws.uuid)
+            )
+            await db.execute(
+                delete(Member).where(Member.workspace_uuid == probe_ws.uuid)
+            )
+            await db.execute(delete(Workspace).where(Workspace.uuid == probe_ws.uuid))
+            await db.execute(delete(User).where(User.uuid == probe_user.uuid))
             await db.commit()
             _ok("cleanup complete")
         elif cleanup and failures > 0:
