@@ -31,6 +31,7 @@ _load_dotenv_for_migrations()
 # Import every ORM class so tables register on Base.metadata before autogenerate runs.
 from src.app.backlog.model import BacklogItem  # noqa: E402, F401
 from src.app.board.model import BoardCard  # noqa: E402, F401
+from src.app.comms.model import Channel, ChannelMember, Message  # noqa: E402, F401
 from src.app.consent.model import UserConsent  # noqa: E402, F401
 from src.app.core.database import Base  # noqa: E402
 from src.app.core.shared import (  # noqa: E402, F401
