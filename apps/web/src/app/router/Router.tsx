@@ -17,18 +17,16 @@ import type { ReactNode } from 'react'
 import { CommsChannelDetailPage } from 'app/pages/CommsChannelDetailPage'
 import { CommsChannelsPage } from 'app/pages/CommsChannelsPage'
 import { CreateWorkspacePage } from 'app/pages/CreateWorkspacePage'
+import { DocumentsInstancesPage } from 'app/pages/DocumentsInstancesPage'
+import { HREmployeesPage } from 'app/pages/HREmployeesPage'
 import { LandingRedirectPage } from 'app/pages/LandingRedirectPage'
 import { LegalPage } from 'app/pages/legal'
+import { A2UIToolsPage } from 'app/pages/A2UIToolsPage'
 import { PMIssueDetailPage } from 'app/pages/PMIssueDetailPage'
 import { PMIssuesPage } from 'app/pages/PMIssuesPage'
 import { SurveyPage } from 'app/pages/SurveyPage'
 
-import {
-  A2UIToolsPlaceholder,
-  DocumentsInstancesPlaceholder,
-  HrEmployeesPlaceholder,
-  WorkspaceIndexPlaceholder,
-} from './placeholders'
+import { WorkspaceIndexPlaceholder } from './placeholders'
 import { WorkspaceShell } from './WorkspaceShell'
 
 interface AppRouterProps {
@@ -55,12 +53,12 @@ export const AppRouter = ({ legacyApp }: AppRouterProps) => (
           path="comms/channels/:channelUuid"
           element={<CommsChannelDetailPage />}
         />
-        <Route path="hr/profiles" element={<HrEmployeesPlaceholder />} />
+        <Route path="hr/profiles" element={<HREmployeesPage />} />
         <Route
           path="documents/instances"
-          element={<DocumentsInstancesPlaceholder />}
+          element={<DocumentsInstancesPage />}
         />
-        <Route path="a2ui/tools" element={<A2UIToolsPlaceholder />} />
+        <Route path="a2ui/tools" element={<A2UIToolsPage />} />
       </Route>
 
       {/* Catch-all: legacy state-based UI keeps working until pages migrate. */}

@@ -245,3 +245,169 @@ export const MessageListOutput = z.object({
   has_more: z.boolean(),
 })
 export type MessageListOutput = z.infer<typeof MessageListOutput>
+
+// ---------------------------------------------------------------------------
+// HR (mirror `hr/schemas.py`)
+//
+// `EmployeeProfileOutput` fields are nearly all nullable because the
+// backend masks them according to the caller's role (public /
+// manager_visible / hr_only / self_only). A `null` doesn't necessarily
+// mean "no value" — it can also mean "you're not allowed to see this".
+// ---------------------------------------------------------------------------
+
+export const TenureStatus = z.enum([
+  'candidate',
+  'pre_hire',
+  'active',
+  'on_leave',
+  'pre_offboarding',
+  'offboarded',
+  'archived_legal',
+])
+export type TenureStatus = z.infer<typeof TenureStatus>
+
+export const EmploymentType = z.enum([
+  'regular',
+  'contract',
+  'outsourced',
+  'intern',
+])
+export type EmploymentType = z.infer<typeof EmploymentType>
+
+export const EmployeeProfileOutput = z.object({
+  uuid: z.string(),
+  workspace_uuid: z.string(),
+  member_uuid: z.string(),
+  title: z.string().nullable(),
+  org_unit_uuid: z.string().nullable(),
+  hired_at: z.string().nullable(),
+  manager_member_uuid: z.string().nullable(),
+  tenure_status: TenureStatus,
+  leave_balance_days: z.union([z.string(), z.number()]).nullable(),
+  employee_no: z.string().nullable(),
+  employment_type: EmploymentType.nullable(),
+  birth_date: z.string().nullable(),
+  phone: z.string().nullable(),
+  insurance_consent_at: z.string().nullable(),
+  contract_signed_at: z.string().nullable(),
+  data_retention_expires_at: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+})
+export type EmployeeProfileOutput = z.infer<typeof EmployeeProfileOutput>
+
+export const EmployeeProfileListFilter = z.object({
+  tenure_status: TenureStatus.optional(),
+  org_unit_uuid: z.string().optional(),
+  manager_member_uuid: z.string().optional(),
+  limit: z.number().int().min(1).max(200).optional(),
+  offset: z.number().int().min(0).optional(),
+})
+export type EmployeeProfileListFilter = z.infer<typeof EmployeeProfileListFilter>
+
+export const EmployeeProfileListOutput = z.object({
+  profiles: z.array(EmployeeProfileOutput),
+  total: z.number().int(),
+})
+export type EmployeeProfileListOutput = z.infer<typeof EmployeeProfileListOutput>
+
+export const TenureTransitionInput = z.object({
+  new_status: TenureStatus,
+})
+export type TenureTransitionInput = z.infer<typeof TenureTransitionInput>
+
+// ---------------------------------------------------------------------------
+// Documents (mirror `documents/schemas.py`)
+// ---------------------------------------------------------------------------
+
+export const DocumentInstanceState = z.enum([
+  'draft',
+  'pending_review',
+  'approved',
+  'signed',
+  'issued',
+  'archived',
+  'archived_legal_only',
+  'void',
+])
+export type DocumentInstanceState = z.infer<typeof DocumentInstanceState>
+
+export const DocumentCategory = z.enum([
+  'labor',
+  'tax',
+  'internal_issuance',
+  'external_submission',
+  'report',
+])
+export type DocumentCategory = z.infer<typeof DocumentCategory>
+
+export const DocumentInstanceOutput = z.object({
+  uuid: z.string(),
+  workspace_uuid: z.string(),
+  template_uuid: z.string(),
+  template_version: z.string(),
+  subject_member_uuid: z.string().nullable(),
+  requester_member_uuid: z.string(),
+  variables_snapshot: z.record(z.string(), z.unknown()),
+  rendered_pdf_uri: z.string().nullable(),
+  state: DocumentInstanceState,
+  review_workflow_uuid: z.string().nullable(),
+  signature_request_uuid: z.string().nullable(),
+  retention_policy_uuid: z.string(),
+  retention_expires_at: z.string().nullable(),
+  issued_at: z.string().nullable(),
+  void_reason: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+})
+export type DocumentInstanceOutput = z.infer<typeof DocumentInstanceOutput>
+
+export const DocumentInstanceListFilter = z.object({
+  state: DocumentInstanceState.optional(),
+  template_uuid: z.string().optional(),
+  subject_member_uuid: z.string().optional(),
+  limit: z.number().int().min(1).max(200).optional(),
+  offset: z.number().int().min(0).optional(),
+})
+export type DocumentInstanceListFilter = z.infer<typeof DocumentInstanceListFilter>
+
+export const DocumentInstanceListOutput = z.object({
+  instances: z.array(DocumentInstanceOutput),
+  total: z.number().int(),
+})
+export type DocumentInstanceListOutput = z.infer<typeof DocumentInstanceListOutput>
+
+export const DocumentInstanceVoidInput = z.object({
+  void_reason: z.string().min(1),
+})
+export type DocumentInstanceVoidInput = z.infer<typeof DocumentInstanceVoidInput>
+
+// ---------------------------------------------------------------------------
+// A2UI (mirror `core/a2ui/api.py`)
+// ---------------------------------------------------------------------------
+
+export const ToolCatalogEntry = z.object({
+  id: z.string(),
+  domain: z.string(),
+  description: z.string(),
+  min_tier: z.string(),
+  permission_required: z.string(),
+  cross_domain: z.boolean(),
+  phase: z.number().int(),
+  // JSON Schema produced by Pydantic — opaque object, render as-is.
+  input_schema: z.record(z.string(), z.unknown()),
+  output_schema: z.record(z.string(), z.unknown()),
+  tags: z.array(z.string()),
+})
+export type ToolCatalogEntry = z.infer<typeof ToolCatalogEntry>
+
+export const ToolCatalogOutput = z.object({
+  tools: z.array(ToolCatalogEntry),
+})
+export type ToolCatalogOutput = z.infer<typeof ToolCatalogOutput>
+
+export const ToolInvokeOutput = z.object({
+  tool_id: z.string(),
+  result: z.record(z.string(), z.unknown()),
+})
+export type ToolInvokeOutput = z.infer<typeof ToolInvokeOutput>

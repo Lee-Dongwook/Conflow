@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added (2026-06-27) — A2UI 런타임 + 4도메인 프론트엔드 스캐폴딩
+
+엔터프라이즈 피벗 문서(0.3.x)에서 정의한 **A2UI Tool 카탈로그**와 **4도메인(PM/Comms/HR/Documents)** 을 실제 코드로 착수. 백엔드에 A2UI 디스패치 런타임을 세우고, 프론트엔드는 워크스페이스 셸 위에 도메인별 end-to-end 흐름을 FSD 구조로 구현.
+
+#### Backend — A2UI Runtime
+
+- **A2UI Tool Registry** (`260173a`): `core/a2ui/` 신규 모듈 — `registry.py`(툴 등록/Tier 게이팅), `dispatcher.py`(호출 라우팅), `api.py`(HTTP 엔드포인트), 도메인별 툴 정의(`tools/pm.py`·`comms.py`·`hr.py`·`documents.py`). `main.py`에 라우터 연결.
+- **LangChain Tool Bridge** (`838bdc4`): `agent/a2ui_bridge.py` — A2UI 툴을 LangChain 툴로 변환하는 브리지. `tools/cross_domain.py`(도메인 횡단 툴) 추가, PM/Comms/HR 툴 확장. `scripts/smoke_e2e.py` 스모크 테스트 추가.
+- **Outbox 재시도 + Dead-letter** (`89cdd35`): 아웃박스에 retry/dead-letter 컬럼 + `any_pending` 마이그레이션 2건, `core/outbox.py`·`shared/event_outbox.py` 재시도 로직. `agent/graphs/a2ui_query.py`(A2UI 쿼리 그래프) + `agent/mode.py` 추가, `blocker_triage` 보정.
+- **테넌트 격리 + 평가 하네스** (`89cdd35`): `tests/integration/test_tenant_isolation.py`(멀티테넌트 RLS 격리 검증) + `conftest.py` 픽스처, `scripts/run_eval.py` + `tests/eval/cases.json` 에이전트 평가 하네스.
+
+#### Frontend — 4-Domain FSD Scaffolding
+
+- **Account + Workspace 셸** (`bb0b6bd`): `QueryProvider`(TanStack Query)·`WorkspaceProvider` 추가, `Router` + `WorkspaceShell` 라우팅 셸, `entities/workspace`(api/queries) + `workspace-create` 폼 + 랜딩 리다이렉트. `shared/api`(paths/queryKeys) + `shared/types/api` 공통 계약 정의.
+- **PM 도메인 end-to-end** (`43b6da5`): `entities/issue`(api/queries), `issue-create` 폼, `issue-list` 위젯, 이슈 목록/상세 페이지(`PMIssuesPage`·`PMIssueDetailPage`).
+- **Comms 도메인 end-to-end** (`bd28b9b`): `entities/channel`·`entities/message`, `channel-create` 폼 + `message-post` 컴포저, `channel-list`·`message-stream` 위젯, 채널 목록/상세 페이지.
+- **HR · Documents · A2UI 도구 콘솔** (`3eec099`): `entities/employee-profile`·`document-instance`·`a2ui`, `a2ui-tool-invoke` 폼, `a2ui-tool-catalog`·`document-instance-list`·`employee-list` 위젯, HR 직원/문서 인스턴스/A2UI 도구 페이지.
+
+#### Documentation
+
+- **`docs/01-market/gtm-strategy.md`** (`89cdd35`): GTM 전략 문서 추가 (TODO 항목 소진).
+
 ### Changed
 
 #### Product Strategy
@@ -25,7 +47,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### TODO (Next)
 
 - `02-product/domain-documents.md` (4도메인 문서 중 마지막)
-- `01-market/gtm-strategy.md`
 - `03-roadmap/` (MoSCoW + Phase 0→4)
 - `04-architecture/` (멀티테넌트 데이터 모델, A2UI 전략, SOC2/K-ISMS 로드맵)
 - 루트 `README.md` 나머지 섹션 (Tech Stack, Roadmap, Wireframe, ERD) 정리 — Phase 0 문서 확정 후 일괄
