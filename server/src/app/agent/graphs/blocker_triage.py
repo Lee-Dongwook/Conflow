@@ -56,9 +56,14 @@ class BlockerTriageState(TypedDict, total=False):
 
 
 def _resolve_agent_mode() -> Literal["mock", "llm"]:
-    """Resolve runtime mode from environment."""
-    raw = os.environ.get(AGENT_MODE_ENV, "mock").strip().lower()
-    return "llm" if raw == "llm" else "mock"
+    """Resolve runtime mode from the canonical `agent.mode` helper.
+
+    Per docs/04-architecture/tech-stack.md "Agent Mode" — `ollama` and
+    `vllm` modes route through the same `bind_tools` path as `llm`, so
+    they collapse to "llm" here. Only "mock" disables LLM calls.
+    """
+    from ..mode import is_llm_active  # noqa: PLC0415 — avoid import cycle
+    return "llm" if is_llm_active() else "mock"
 
 
 def _contains_any(text: str, hints: tuple[str, ...]) -> bool:

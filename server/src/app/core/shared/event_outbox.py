@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import DateTime, ForeignKey, Index, String, text
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, String, Text, text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -60,16 +60,49 @@ class EventOutbox(Base, AutoUUIDMixin):
         nullable=True,
     )
 
+    # Number of full handler-chain attempts that have failed. The worker
+    # bumps this on each failure; once it crosses `MAX_RETRIES` (in
+    # `core/outbox.py`), `dead_at` is stamped and the row drops out of
+    # the unpublished partition.
+    retry_count: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        nullable=False,
+        server_default=text("0"),
+    )
+
+    # Exponential backoff. The worker filters `next_attempt_at <= NOW()` so
+    # a failed row is invisible until its delay elapses.
+    next_attempt_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    # Stamped when retries exhaust. Together with `published_at` this gives
+    # the lifecycle: pending → published OR pending → dead.
+    dead_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
     # OpenTelemetry trace id (32-char hex). Nullable until tracing rolls out.
     trace_id: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
     __table_args__ = (
-        # Hot path: worker polls "next unpublished, oldest first". Partial
-        # index keeps it tiny — published rows fall out automatically.
+        # Hot path: worker polls "next unpublished (and not dead), eligible
+        # now, oldest first". Partial index keeps it tiny.
         Index(
             "idx_event_outbox_unpublished",
             "occurred_at",
-            postgresql_where=text("published_at IS NULL"),
+            postgresql_where=text("published_at IS NULL AND dead_at IS NULL"),
+        ),
+        # Dead-letter inspection — small, but very hot when triaging incidents.
+        Index(
+            "idx_event_outbox_dead",
+            "dead_at",
+            postgresql_where=text("dead_at IS NOT NULL"),
         ),
         # Per-workspace event timeline / replay.
         Index(
@@ -83,3 +116,7 @@ class EventOutbox(Base, AutoUUIDMixin):
     @property
     def is_published(self) -> bool:
         return self.published_at is not None
+
+    @property
+    def is_dead(self) -> bool:
+        return self.dead_at is not None

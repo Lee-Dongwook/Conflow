@@ -42,6 +42,7 @@ dependencies = [
 dev = [
     "httpx>=0.28.0",
     "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
     "ruff>=0.8.0",
     "respx>=0.22.0",
     "langgraph-cli[inmem]>=0.3.0",
@@ -98,6 +99,8 @@ select = ["E", "F", "I", "UP"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
 
 [tool.mypy]
 strict = true

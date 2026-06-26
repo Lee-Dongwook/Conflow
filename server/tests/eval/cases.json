@@ -1,0 +1,66 @@
+{
+  "_doc": "Deterministic A2UI Tool regression cases. Each case runs against a freshly seeded workspace (Free tier, OWNER caller). The runner asserts on shape (status_code / keys / truthy / equals).",
+  "cases": [
+    {
+      "id": "pm.search_issues.empty",
+      "tool_id": "pm.search_issues",
+      "raw_input": {"limit": 10},
+      "expect": {
+        "status": "ok",
+        "keys": ["issues", "total"],
+        "equals": {"total": 0}
+      }
+    },
+    {
+      "id": "pm.identify_blockers.empty",
+      "tool_id": "pm.identify_blockers",
+      "raw_input": {},
+      "expect": {
+        "status": "error",
+        "status_code": 402,
+        "detail_contains": "tier"
+      },
+      "_note": "Free workspace cannot reach Team-tier identify_blockers"
+    },
+    {
+      "id": "pm.create_issue.tier_gate",
+      "tool_id": "pm.create_issue",
+      "raw_input": {"title": "should not create"},
+      "expect": {
+        "status": "error",
+        "status_code": 402,
+        "detail_contains": "team"
+      }
+    },
+    {
+      "id": "a2ui.cross_domain_query.tier_gate",
+      "tool_id": "a2ui.cross_domain_query",
+      "raw_input": {"intent": "blockers", "params": {}},
+      "expect": {
+        "status": "error",
+        "status_code": 402,
+        "detail_contains": "business"
+      }
+    },
+    {
+      "id": "documents.list_pending_review.tier_gate",
+      "tool_id": "documents.list_pending_review",
+      "raw_input": {"limit": 10},
+      "expect": {
+        "status": "error",
+        "status_code": 402,
+        "detail_contains": "business"
+      }
+    },
+    {
+      "id": "pm.search_issues.unknown_tool",
+      "tool_id": "pm.search_issues",
+      "raw_input": {"limit": "not_an_int"},
+      "expect": {
+        "status": "error",
+        "status_code": 422
+      },
+      "_note": "Input schema validation surfaces as 422"
+    }
+  ]
+}

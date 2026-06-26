@@ -25,7 +25,7 @@ title: Conflow 문서 맵
 | `01-market/`       | [icp.md](./01-market/icp.md)                                       | draft v1 |
 | `01-market/`       | [jtbd.md](./01-market/jtbd.md)                                     | draft v1 |
 | `01-market/`       | [pricing-strategy.md](./01-market/pricing-strategy.md)             | draft v1 |
-| `01-market/`       | gtm-strategy.md                                                    | TODO     |
+| `01-market/`       | [gtm-strategy.md](./01-market/gtm-strategy.md)                     | draft v1 |
 | `02-product/`      | [domain-overview.md](./02-product/domain-overview.md)              | draft v1 |
 | `02-product/`      | [domain-pm.md](./02-product/domain-pm.md)                          | draft v1 |
 | `02-product/`      | [domain-comms.md](./02-product/domain-comms.md)                    | draft v1 |

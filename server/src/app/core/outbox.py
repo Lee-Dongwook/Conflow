@@ -19,7 +19,7 @@ from __future__ import annotations
 import asyncio
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from sqlalchemy import select, text
@@ -78,6 +78,16 @@ def clear_subscribers() -> None:
     _subscribers.clear()
 
 
+MAX_RETRIES = 5
+# Exponential backoff: 2^n seconds, capped to keep dead-letter latency bounded.
+_BACKOFF_CAP_SECONDS = 60
+
+
+def _backoff_seconds(retry_count: int) -> int:
+    """Backoff for the Nth retry (1-indexed). Capped at `_BACKOFF_CAP_SECONDS`."""
+    return min(2**retry_count, _BACKOFF_CAP_SECONDS)
+
+
 async def process_unpublished_batch(
     db: AsyncSession,
     *,
@@ -85,8 +95,9 @@ async def process_unpublished_batch(
 ) -> int:
     """Process one batch. Returns the number of rows fully published.
 
-    Rows whose handler chain raises are left with `published_at` NULL and
-    retried on the next cycle.
+    Selection excludes rows that are already published, declared dead, or
+    in a backoff window. Failed rows bump `retry_count`; when `MAX_RETRIES`
+    is hit, `dead_at` is stamped and the row drops out permanently.
 
     Sets `app.system_mode = 'true'` for the duration of this transaction so
     that the cross-workspace SELECT bypasses the per-workspace RLS policy.
@@ -95,9 +106,15 @@ async def process_unpublished_batch(
     """
     await db.execute(text("SET LOCAL app.system_mode = 'true'"))
 
+    now = datetime.now(timezone.utc)  # noqa: UP017
     res = await db.execute(
         select(EventOutbox)
-        .where(EventOutbox.published_at.is_(None))
+        .where(
+            EventOutbox.published_at.is_(None),
+            EventOutbox.dead_at.is_(None),
+            (EventOutbox.next_attempt_at.is_(None))
+            | (EventOutbox.next_attempt_at <= now),
+        )
         .order_by(EventOutbox.occurred_at)
         .limit(limit)
         .with_for_update(skip_locked=True)
@@ -106,16 +123,16 @@ async def process_unpublished_batch(
     if not rows:
         return 0
 
-    now = datetime.now(timezone.utc)  # noqa: UP017
     published = 0
     for row in rows:
         handlers = _subscribers.get(row.event_name, [])
         envelope = EventEnvelope(row)
         all_ok = True
+        last_error: str | None = None
         for handler in handlers:
             try:
                 await handler(envelope)
-            except Exception:
+            except Exception as exc:
                 handler_name = getattr(handler, "__name__", repr(handler))
                 logger.exception(
                     "outbox subscriber failed: event=%s uuid=%s handler=%s",
@@ -124,12 +141,33 @@ async def process_unpublished_batch(
                     handler_name,
                 )
                 all_ok = False
+                last_error = f"{handler_name}: {exc!r}"
                 # Keep running remaining handlers; the row stays unpublished
                 # and the whole chain is retried next cycle. Handlers MUST
                 # be idempotent.
+
         if all_ok:
             row.published_at = now
+            row.last_error = None
             published += 1
+        else:
+            row.retry_count = (row.retry_count or 0) + 1
+            row.last_error = last_error
+            if row.retry_count >= MAX_RETRIES:
+                row.dead_at = now
+                logger.error(
+                    "outbox row dead-lettered after %d retries: "
+                    "event=%s uuid=%s last_error=%s",
+                    row.retry_count,
+                    row.event_name,
+                    row.uuid,
+                    last_error,
+                )
+            else:
+                row.next_attempt_at = now + timedelta(
+                    seconds=_backoff_seconds(row.retry_count)
+                )
+
     await db.commit()
     return published
 
