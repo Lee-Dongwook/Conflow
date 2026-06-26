@@ -10,9 +10,12 @@ Per docs/02-product/domain-overview.md and docs/04-architecture/data-model.md:
 Domains read these but never mutate them directly.
 """
 
+from .member import Member, MemberStatus
 from .workspace import Workspace, WorkspaceRegion, WorkspaceTier
 
 __all__ = [
+    "Member",
+    "MemberStatus",
     "Workspace",
     "WorkspaceRegion",
     "WorkspaceTier",
