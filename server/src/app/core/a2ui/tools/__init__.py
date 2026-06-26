@@ -7,4 +7,4 @@ before the first HTTP request.
 
 from __future__ import annotations
 
-from . import comms, documents, hr, pm  # noqa: F401  side-effect imports
+from . import comms, cross_domain, documents, hr, pm  # noqa: F401  side-effect imports

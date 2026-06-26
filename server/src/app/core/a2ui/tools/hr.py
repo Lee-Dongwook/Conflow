@@ -16,10 +16,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ....hr.model import EmployeeProfile
 from ....hr.schemas import (
     EmployeeProfileOutput,
+    OffboardingOutput,
+    OffboardingStartInput,
     OnboardingListFilter,
     OnboardingListOutput,
+    OneOnOneListFilter,
+    OneOnOneListOutput,
 )
-from ....hr.service import get_employee_profile, list_onboardings
+from ....hr.service import (
+    get_employee_profile,
+    list_my_one_on_ones,
+    list_onboardings,
+    start_offboarding,
+)
 from ...shared import WorkspaceTier
 from ..registry import PermissionLevel, ToolSpec, register_tool
 
@@ -105,6 +114,83 @@ register_tool(
         output_schema=OnboardingListOutput,
         min_tier=WorkspaceTier.BUSINESS,
         permission_required=PermissionLevel.MEMBER,
+        phase=2,
+    )
+)
+
+
+# ---------------------------------------------------------------------------
+# hr.list_one_on_ones — caller-scoped (manager or report only)
+# ---------------------------------------------------------------------------
+
+
+async def _hr_list_one_on_ones(
+    *,
+    workspace_uuid: str,
+    caller_member_uuid: str,
+    payload: OneOnOneListFilter,
+    db: AsyncSession,
+) -> OneOnOneListOutput:
+    return await list_my_one_on_ones(
+        workspace_uuid=workspace_uuid,
+        caller_member_uuid=caller_member_uuid,
+        filters=payload,
+        db=db,
+    )
+
+
+register_tool(
+    ToolSpec(
+        id="hr.list_one_on_ones",
+        domain="hr",
+        description=(
+            "List 1:1 sessions where the caller is manager OR report. "
+            "Never exposes 1:1s the caller isn't a participant in — even "
+            "Admin/Owner cannot see others' 1:1s through this Tool."
+        ),
+        handler=_hr_list_one_on_ones,
+        input_schema=OneOnOneListFilter,
+        output_schema=OneOnOneListOutput,
+        min_tier=WorkspaceTier.BUSINESS,
+        permission_required=PermissionLevel.MEMBER,
+        phase=2,
+    )
+)
+
+
+# ---------------------------------------------------------------------------
+# hr.start_offboarding — HR Admin only, sensitive
+# ---------------------------------------------------------------------------
+
+
+async def _hr_start_offboarding(
+    *,
+    workspace_uuid: str,
+    caller_member_uuid: str,
+    payload: OffboardingStartInput,
+    db: AsyncSession,
+) -> OffboardingOutput:
+    return await start_offboarding(
+        workspace_uuid=workspace_uuid,
+        caller_member_uuid=caller_member_uuid,
+        payload=payload,
+        db=db,
+    )
+
+
+register_tool(
+    ToolSpec(
+        id="hr.start_offboarding",
+        domain="hr",
+        description=(
+            "Start an offboarding workflow for a Member. Sensitive reason "
+            "codes (agreed_termination / dismissal) auto-queue 노무사 review."
+        ),
+        handler=_hr_start_offboarding,
+        input_schema=OffboardingStartInput,
+        output_schema=OffboardingOutput,
+        min_tier=WorkspaceTier.BUSINESS,
+        permission_required=PermissionLevel.ADMIN,
         phase=2,
     )
 )

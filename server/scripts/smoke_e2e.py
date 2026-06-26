@@ -331,6 +331,70 @@ async def _run(*, user_uuid_arg: str | None, cleanup: bool) -> int:
             _fail("invite events", f"got {invite_events}")
             failures += 1
 
+        # ---------- 5d. A2UI Tool invoke ----------
+        # Side-effect import: Tool registry must be populated before invoke.
+        # (lifespan does this; the standalone smoke script needs it too.)
+        print("[5d] A2UI invoke")
+        import src.app.core.a2ui.tools  # noqa: F401
+        from src.app.core.a2ui import ToolInvocationError, invoke_tool
+
+        search_result = await invoke_tool(
+            workspace_uuid=workspace_uuid,
+            caller_member_uuid=member.uuid,
+            tool_id="pm.search_issues",
+            raw_input={"limit": 50},
+            db=db,
+        )
+        issue_uuids = [i.uuid for i in search_result.issues]
+        if issue_uuid in issue_uuids:
+            _ok("pm.search_issues returned our issue", f"total={search_result.total}")
+        else:
+            _fail(
+                "pm.search_issues",
+                f"our issue {issue_uuid} missing from {issue_uuids}",
+            )
+            failures += 1
+
+        # Tier gate: workspace is FREE, pm.create_issue requires TEAM → 402.
+        try:
+            await invoke_tool(
+                workspace_uuid=workspace_uuid,
+                caller_member_uuid=member.uuid,
+                tool_id="pm.create_issue",
+                raw_input={"title": "should be blocked"},
+                db=db,
+            )
+            _fail("tier gate", "expected 402, request succeeded")
+            failures += 1
+        except ToolInvocationError as exc:
+            if exc.status_code == 402:
+                _ok("tier gate blocked Free→Team Tool", "402 Payment Required")
+            else:
+                _fail("tier gate", f"expected 402, got {exc.status_code}: {exc.detail}")
+                failures += 1
+
+        # AuditLog: one success + one failure → both `a2ui.tool.*` actions.
+        a2ui_audit_res = await db.execute(
+            select(AuditLog.action)
+            .where(
+                AuditLog.workspace_uuid == workspace_uuid,
+                AuditLog.resource_type == "a2ui.tool",
+            )
+            .order_by(AuditLog.occurred_at)
+        )
+        a2ui_actions = [r[0] for r in a2ui_audit_res.all()]
+        if (
+            "a2ui.tool.invoked" in a2ui_actions
+            and "a2ui.tool.failed" in a2ui_actions
+        ):
+            _ok("A2UI audit rows", str(a2ui_actions))
+        else:
+            _fail(
+                "A2UI audit",
+                f"expected both invoked + failed, got {a2ui_actions}",
+            )
+            failures += 1
+
         # ---------- 6. cleanup ----------
         if cleanup and failures == 0:
             print("[6] cleanup")
