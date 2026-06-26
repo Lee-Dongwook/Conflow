@@ -17,6 +17,7 @@ class AuditDomain(enum.Enum):
     COMMS = "comms"
     HR = "hr"
     DOCUMENTS = "documents"
+    SYSTEM = "system"  # workspace lifecycle, scheduled jobs, migrations
 
 
 class AuditLog(Base, AutoUUIDMixin):

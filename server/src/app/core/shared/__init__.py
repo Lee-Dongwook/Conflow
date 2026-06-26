@@ -15,6 +15,11 @@ from .entity_link import EntityLink, EntityLinkKind
 from .member import Member, MemberStatus
 from .role import Role, RoleName, RoleScope
 from .role_assignment import RoleAssignment
+from .service import (
+    WorkspaceCreateInput,
+    WorkspaceReadOutput,
+    create_workspace,
+)
 from .workspace import Workspace, WorkspaceRegion, WorkspaceTier
 
 __all__ = [
@@ -29,6 +34,9 @@ __all__ = [
     "RoleName",
     "RoleScope",
     "Workspace",
+    "WorkspaceCreateInput",
+    "WorkspaceReadOutput",
     "WorkspaceRegion",
     "WorkspaceTier",
+    "create_workspace",
 ]

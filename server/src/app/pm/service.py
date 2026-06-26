@@ -5,8 +5,9 @@ keyword-only arguments and returns Pydantic models — no React, no FastAPI
 Depends. This is the contract the A2UI Tool Registry depends on
 (docs/04-architecture/a2ui-strategy.md).
 
-Permission checks are stubbed (`# PERMISSION-TODO`) and will be wired to
-RoleAssignment in the next step.
+Authorization is delegated to `core.permissions` — no role logic is inlined
+in this file (Watch List #2). Project Maintainer (resource-scoped) lands
+with the Documents / external-collaborator step.
 """
 
 from __future__ import annotations
@@ -17,7 +18,14 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ..core.shared import AuditDomain, AuditLog
+from ..core.permissions import (
+    PermissionDenied,
+    is_workspace_admin,
+    require_workspace_admin,
+    require_workspace_member,
+    require_workspace_writer,
+)
+from ..core.shared import AuditDomain, AuditLog, RoleName
 from .model import Issue, IssueStatus
 from .schemas import (
     IssueCreateInput,
@@ -105,6 +113,22 @@ async def _get_issue_or_404(
     return issue
 
 
+def _can_modify_issue(
+    issue: Issue,
+    *,
+    caller_member_uuid: str,
+    roles: set[RoleName],
+) -> bool:
+    """Issue write authority (per docs/02-product/domain-pm.md):
+    reporter, assignee, or workspace Admin. Project Maintainer is TBD.
+    """
+    return (
+        issue.reporter_member_uuid == caller_member_uuid
+        or issue.assignee_member_uuid == caller_member_uuid
+        or is_workspace_admin(roles)
+    )
+
+
 async def create_issue(
     *,
     workspace_uuid: str,
@@ -112,7 +136,9 @@ async def create_issue(
     payload: IssueCreateInput,
     db: AsyncSession,
 ) -> IssueReadOutput:
-    # PERMISSION-TODO: caller must have role >= MEMBER on this workspace.
+    await require_workspace_writer(
+        db, workspace_uuid=workspace_uuid, member_uuid=caller_member_uuid
+    )
     issue = Issue(
         workspace_uuid=workspace_uuid,
         reporter_member_uuid=caller_member_uuid,
@@ -146,12 +172,15 @@ async def create_issue(
 async def get_issue(
     *,
     workspace_uuid: str,
-    caller_member_uuid: str,  # noqa: ARG001  # PERMISSION-TODO
+    caller_member_uuid: str,
     issue_uuid: str,
     db: AsyncSession,
 ) -> IssueReadOutput:
-    # PERMISSION-TODO: caller must be able to read this issue
-    # (workspace Member, or Project member if project is private).
+    # Workspace membership grants issue read; Project visibility (private)
+    # scoping is enforced when the Project entity gets its permission layer.
+    await require_workspace_member(
+        db, workspace_uuid=workspace_uuid, member_uuid=caller_member_uuid
+    )
     issue = await _get_issue_or_404(
         db, workspace_uuid=workspace_uuid, issue_uuid=issue_uuid
     )
@@ -161,11 +190,13 @@ async def get_issue(
 async def list_issues(
     *,
     workspace_uuid: str,
-    caller_member_uuid: str,  # noqa: ARG001  # PERMISSION-TODO
+    caller_member_uuid: str,
     filters: IssueListFilter,
     db: AsyncSession,
 ) -> IssueListOutput:
-    # PERMISSION-TODO: scope to projects the caller can see.
+    await require_workspace_member(
+        db, workspace_uuid=workspace_uuid, member_uuid=caller_member_uuid
+    )
     base = select(Issue).where(
         Issue.workspace_uuid == workspace_uuid,
         Issue.deleted_at.is_(None),
@@ -199,10 +230,14 @@ async def update_issue(
     payload: IssueUpdateInput,
     db: AsyncSession,
 ) -> IssueReadOutput:
-    # PERMISSION-TODO: reporter, assignee, project maintainer, or workspace admin.
+    roles = await require_workspace_writer(
+        db, workspace_uuid=workspace_uuid, member_uuid=caller_member_uuid
+    )
     issue = await _get_issue_or_404(
         db, workspace_uuid=workspace_uuid, issue_uuid=issue_uuid
     )
+    if not _can_modify_issue(issue, caller_member_uuid=caller_member_uuid, roles=roles):
+        raise PermissionDenied("Only reporter, assignee, or workspace Admin may update")
     changes = payload.model_dump(exclude_unset=True)
     if not changes:
         return IssueReadOutput.model_validate(issue)
@@ -229,10 +264,16 @@ async def transition_issue_status(
     payload: IssueTransitionInput,
     db: AsyncSession,
 ) -> IssueReadOutput:
-    # PERMISSION-TODO: reporter, assignee, project maintainer, or workspace admin.
+    roles = await require_workspace_writer(
+        db, workspace_uuid=workspace_uuid, member_uuid=caller_member_uuid
+    )
     issue = await _get_issue_or_404(
         db, workspace_uuid=workspace_uuid, issue_uuid=issue_uuid
     )
+    if not _can_modify_issue(issue, caller_member_uuid=caller_member_uuid, roles=roles):
+        raise PermissionDenied(
+            "Only reporter, assignee, or workspace Admin may transition"
+        )
     new_status = payload.new_status
     if new_status == issue.status:
         return IssueReadOutput.model_validate(issue)
@@ -282,7 +323,11 @@ async def delete_issue(
     issue_uuid: str,
     db: AsyncSession,
 ) -> None:
-    # PERMISSION-TODO: project maintainer or workspace admin only.
+    # Hard rule: workspace Admin only. Project Maintainer override lands
+    # with the Project visibility / resource-scoped permission step.
+    await require_workspace_admin(
+        db, workspace_uuid=workspace_uuid, member_uuid=caller_member_uuid
+    )
     issue = await _get_issue_or_404(
         db, workspace_uuid=workspace_uuid, issue_uuid=issue_uuid
     )
