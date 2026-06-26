@@ -43,6 +43,8 @@ from src.app.core.shared import (  # noqa: E402, F401
 )
 from src.app.dashboard.model import DashboardConfig  # noqa: E402, F401
 from src.app.inbox.model import InboxEntry  # noqa: E402, F401
+from src.app.pm.model import Issue, Project  # noqa: E402, F401
+from src.app.pm.model import Sprint as PmSprint  # noqa: E402, F401
 from src.app.retro.model import RetroBoard, RetroColumn, RetroItem  # noqa: E402, F401
 from src.app.sprint.model import Sprint, SprintMetricSnapshot  # noqa: E402, F401
 from src.app.team.model import Team, TeamMembership  # noqa: E402, F401
