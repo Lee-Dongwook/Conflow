@@ -162,3 +162,86 @@ export const IssueListOutput = z.object({
   total: z.number().int(),
 })
 export type IssueListOutput = z.infer<typeof IssueListOutput>
+
+// ---------------------------------------------------------------------------
+// Comms Channel + Message (mirror `comms/schemas.py`)
+// ---------------------------------------------------------------------------
+
+export const ChannelRead = z.object({
+  uuid: z.string(),
+  workspace_uuid: z.string(),
+  name: z.string(),
+  type: ChannelType,
+  topic: z.string().nullable(),
+  is_archived: z.boolean(),
+  created_by_member_uuid: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+})
+export type ChannelRead = z.infer<typeof ChannelRead>
+
+export const ChannelCreateInput = z.object({
+  name: z.string().min(1).max(100),
+  type: ChannelType,
+  topic: z.string().optional(),
+  initial_member_uuids: z.array(z.string()).optional(),
+})
+export type ChannelCreateInput = z.infer<typeof ChannelCreateInput>
+
+export const ChannelListFilter = z.object({
+  type: ChannelType.optional(),
+  include_archived: z.boolean().optional(),
+  member_only: z.boolean().optional(),
+  limit: z.number().int().min(1).max(200).optional(),
+  offset: z.number().int().min(0).optional(),
+})
+export type ChannelListFilter = z.infer<typeof ChannelListFilter>
+
+export const ChannelListOutput = z.object({
+  channels: z.array(ChannelRead),
+  total: z.number().int(),
+})
+export type ChannelListOutput = z.infer<typeof ChannelListOutput>
+
+export const MessageRead = z.object({
+  uuid: z.string(),
+  workspace_uuid: z.string(),
+  channel_uuid: z.string(),
+  thread_root_uuid: z.string().nullable(),
+  author_member_uuid: z.string(),
+  body: z.string(),
+  attachments: z.array(z.record(z.string(), z.unknown())),
+  mentions: z.array(z.string()),
+  created_at: z.string(),
+  edited_at: z.string().nullable(),
+})
+export type MessageRead = z.infer<typeof MessageRead>
+
+export const MessagePostInput = z.object({
+  channel_uuid: z.string(),
+  body: z.string().min(1),
+  thread_root_uuid: z.string().optional(),
+  mentions: z.array(z.string()).optional(),
+  attachments: z.array(z.record(z.string(), z.unknown())).optional(),
+})
+export type MessagePostInput = z.infer<typeof MessagePostInput>
+
+export const MessageUpdateInput = z.object({
+  body: z.string().min(1),
+})
+export type MessageUpdateInput = z.infer<typeof MessageUpdateInput>
+
+export const MessageListFilter = z.object({
+  channel_uuid: z.string(),
+  thread_root_uuid: z.string().optional(),
+  before: z.string().optional(),
+  after: z.string().optional(),
+  limit: z.number().int().min(1).max(200).optional(),
+})
+export type MessageListFilter = z.infer<typeof MessageListFilter>
+
+export const MessageListOutput = z.object({
+  messages: z.array(MessageRead),
+  has_more: z.boolean(),
+})
+export type MessageListOutput = z.infer<typeof MessageListOutput>

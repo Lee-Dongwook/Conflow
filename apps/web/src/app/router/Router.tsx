@@ -14,6 +14,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
+import { CommsChannelDetailPage } from 'app/pages/CommsChannelDetailPage'
+import { CommsChannelsPage } from 'app/pages/CommsChannelsPage'
 import { CreateWorkspacePage } from 'app/pages/CreateWorkspacePage'
 import { LandingRedirectPage } from 'app/pages/LandingRedirectPage'
 import { LegalPage } from 'app/pages/legal'
@@ -23,7 +25,6 @@ import { SurveyPage } from 'app/pages/SurveyPage'
 
 import {
   A2UIToolsPlaceholder,
-  CommsChannelsPlaceholder,
   DocumentsInstancesPlaceholder,
   HrEmployeesPlaceholder,
   WorkspaceIndexPlaceholder,
@@ -49,7 +50,11 @@ export const AppRouter = ({ legacyApp }: AppRouterProps) => (
           path="pm/issues/:issueUuid"
           element={<PMIssueDetailPage />}
         />
-        <Route path="comms/channels" element={<CommsChannelsPlaceholder />} />
+        <Route path="comms/channels" element={<CommsChannelsPage />} />
+        <Route
+          path="comms/channels/:channelUuid"
+          element={<CommsChannelDetailPage />}
+        />
         <Route path="hr/profiles" element={<HrEmployeesPlaceholder />} />
         <Route
           path="documents/instances"
