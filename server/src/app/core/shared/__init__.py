@@ -10,12 +10,24 @@ Per docs/02-product/domain-overview.md and docs/04-architecture/data-model.md:
 Domains read these but never mutate them directly.
 """
 
+from .audit_log import AuditDomain, AuditLog
+from .entity_link import EntityLink, EntityLinkKind
 from .member import Member, MemberStatus
+from .role import Role, RoleName, RoleScope
+from .role_assignment import RoleAssignment
 from .workspace import Workspace, WorkspaceRegion, WorkspaceTier
 
 __all__ = [
+    "AuditDomain",
+    "AuditLog",
+    "EntityLink",
+    "EntityLinkKind",
     "Member",
     "MemberStatus",
+    "Role",
+    "RoleAssignment",
+    "RoleName",
+    "RoleScope",
     "Workspace",
     "WorkspaceRegion",
     "WorkspaceTier",
