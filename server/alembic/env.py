@@ -37,6 +37,7 @@ from src.app.core.database import Base  # noqa: E402
 from src.app.core.shared import (  # noqa: E402, F401
     AuditLog,
     EntityLink,
+    EventOutbox,
     Member,
     Role,
     RoleAssignment,

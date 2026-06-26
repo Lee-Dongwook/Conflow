@@ -18,6 +18,14 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.events import (
+    PM_ISSUE_BLOCKED,
+    PM_ISSUE_CANCELLED,
+    PM_ISSUE_CREATED,
+    PM_ISSUE_RESOLVED,
+    PM_ISSUE_UNBLOCKED,
+    emit_event,
+)
 from ..core.permissions import (
     PermissionDenied,
     is_workspace_admin,
@@ -61,6 +69,20 @@ _TRANSITION_ACTIONS: dict[IssueStatus, str] = {
     IssueStatus.DONE: "pm.issue.resolved",
     IssueStatus.CANCELLED: "pm.issue.cancelled",
 }
+
+# Transition → outbox event map. Keyed by (prev, new) so we can distinguish
+# `unblocked` (only from BLOCKED) from a generic enter-in_progress.
+_TRANSITION_EVENTS: dict[tuple[IssueStatus, IssueStatus], str] = {
+    (IssueStatus.TODO, IssueStatus.BLOCKED): PM_ISSUE_BLOCKED,
+    (IssueStatus.IN_PROGRESS, IssueStatus.BLOCKED): PM_ISSUE_BLOCKED,
+    (IssueStatus.BLOCKED, IssueStatus.IN_PROGRESS): PM_ISSUE_UNBLOCKED,
+    (IssueStatus.IN_PROGRESS, IssueStatus.DONE): PM_ISSUE_RESOLVED,
+    (IssueStatus.BACKLOG, IssueStatus.CANCELLED): PM_ISSUE_CANCELLED,
+    (IssueStatus.TODO, IssueStatus.CANCELLED): PM_ISSUE_CANCELLED,
+    (IssueStatus.IN_PROGRESS, IssueStatus.CANCELLED): PM_ISSUE_CANCELLED,
+    (IssueStatus.BLOCKED, IssueStatus.CANCELLED): PM_ISSUE_CANCELLED,
+}
+
 
 
 def _not_found() -> HTTPException:
@@ -151,7 +173,7 @@ async def create_issue(
         due_date=payload.due_date,
     )
     db.add(issue)
-    await db.flush()  # populate issue.uuid before AuditLog
+    await db.flush()  # populate issue.uuid before AuditLog / outbox
     _audit(
         db,
         workspace_uuid=workspace_uuid,
@@ -162,6 +184,19 @@ async def create_issue(
             "title": issue.title,
             "priority": issue.priority.value,
             "assignee_member_uuid": issue.assignee_member_uuid,
+        },
+    )
+    emit_event(
+        db,
+        workspace_uuid=workspace_uuid,
+        event_name=PM_ISSUE_CREATED,
+        payload={
+            "issue_uuid": issue.uuid,
+            "reporter_member_uuid": issue.reporter_member_uuid,
+            "assignee_member_uuid": issue.assignee_member_uuid,
+            "project_uuid": issue.project_uuid,
+            "sprint_uuid": issue.sprint_uuid,
+            "priority": issue.priority.value,
         },
     )
     await db.commit()
@@ -311,6 +346,26 @@ async def transition_issue_status(
             "blocked_reason": payload.blocked_reason,
         },
     )
+
+    # Outbox event for the subset of transitions that downstream domains
+    # actually react to. backlog↔todo / in_progress↔todo are routine and
+    # tracked via AuditLog only.
+    event_name = _TRANSITION_EVENTS.get((prev_status, new_status))
+    if event_name is not None:
+        event_payload: dict = {
+            "issue_uuid": issue.uuid,
+            "assignee_member_uuid": issue.assignee_member_uuid,
+            "from": prev_status.value,
+            "to": new_status.value,
+        }
+        if event_name == PM_ISSUE_BLOCKED:
+            event_payload["blocked_reason"] = payload.blocked_reason
+        emit_event(
+            db,
+            workspace_uuid=workspace_uuid,
+            event_name=event_name,
+            payload=event_payload,
+        )
     await db.commit()
     await db.refresh(issue)
     return IssueReadOutput.model_validate(issue)

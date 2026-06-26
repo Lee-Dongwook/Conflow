@@ -12,6 +12,7 @@ Domains read these but never mutate them directly.
 
 from .audit_log import AuditDomain, AuditLog
 from .entity_link import EntityLink, EntityLinkKind
+from .event_outbox import EventOutbox
 from .member import Member, MemberStatus
 from .role import Role, RoleName, RoleScope
 from .role_assignment import RoleAssignment
@@ -27,6 +28,7 @@ __all__ = [
     "AuditLog",
     "EntityLink",
     "EntityLinkKind",
+    "EventOutbox",
     "Member",
     "MemberStatus",
     "Role",

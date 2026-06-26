@@ -19,6 +19,11 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from ..core.events import (
+    COMMS_MENTION_CREATED,
+    COMMS_MESSAGE_POSTED,
+    emit_event,
+)
 from ..core.permissions import (
     PermissionDenied,
     is_workspace_admin,
@@ -439,6 +444,19 @@ async def post_message(
             "attachment_count": len(payload.attachments),
         },
     )
+    emit_event(
+        db,
+        workspace_uuid=workspace_uuid,
+        event_name=COMMS_MESSAGE_POSTED,
+        payload={
+            "message_uuid": message.uuid,
+            "channel_uuid": channel.uuid,
+            "channel_type": channel.type.value,
+            "author_member_uuid": caller_member_uuid,
+            "thread_root_uuid": payload.thread_root_uuid,
+            "mention_count": len(payload.mentions),
+        },
+    )
     if payload.mentions:
         _audit(
             db,
@@ -448,6 +466,17 @@ async def post_message(
             resource_type="comms.message",
             resource_uuid=message.uuid,
             metadata={"mentioned_member_uuids": payload.mentions},
+        )
+        emit_event(
+            db,
+            workspace_uuid=workspace_uuid,
+            event_name=COMMS_MENTION_CREATED,
+            payload={
+                "message_uuid": message.uuid,
+                "channel_uuid": channel.uuid,
+                "author_member_uuid": caller_member_uuid,
+                "mentioned_member_uuids": payload.mentions,
+            },
         )
 
     await db.commit()
