@@ -14,6 +14,7 @@ from scalar_fastapi import get_scalar_api_reference
 from src.app.agent.api import router as agent_router
 from src.app.backlog.api import router as backlog_router
 from src.app.board.api import router as board_router
+from src.app.comms.api import router as comms_router
 from src.app.consent.api import router as consent_router
 from src.app.core import database as core_db
 from src.app.core import shared_init
@@ -21,8 +22,10 @@ from src.app.core.exceptions import global_exception_handler
 from src.app.core.middlewares import setup_middleware
 from src.app.core.outbox import outbox_worker_loop
 from src.app.core.runtime import logger
+from src.app.core.shared.api import router as workspace_router
 from src.app.dashboard.api import router as dashboard_router
 from src.app.home.api import router as home_router
+from src.app.pm.api import router as pm_router
 from src.app.sprint.api import router as sprint_router
 from src.app.survey.api import router as survey_router
 from src.app.team.api import router as team_router
@@ -109,6 +112,12 @@ app.include_router(survey_router)
 app.include_router(survey_router, prefix="/api")
 app.include_router(week_router)
 app.include_router(week_router, prefix="/api")
+app.include_router(workspace_router)
+app.include_router(workspace_router, prefix="/api")
+app.include_router(pm_router)
+app.include_router(pm_router, prefix="/api")
+app.include_router(comms_router)
+app.include_router(comms_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
