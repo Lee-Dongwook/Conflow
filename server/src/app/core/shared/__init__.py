@@ -17,9 +17,14 @@ from .member import Member, MemberStatus
 from .role import Role, RoleName, RoleScope
 from .role_assignment import RoleAssignment
 from .service import (
+    MemberInviteInput,
+    MemberInviteOutput,
+    MemberReadOutput,
     WorkspaceCreateInput,
     WorkspaceReadOutput,
+    accept_invitation,
     create_workspace,
+    invite_member,
 )
 from .workspace import Workspace, WorkspaceRegion, WorkspaceTier
 
@@ -30,6 +35,9 @@ __all__ = [
     "EntityLinkKind",
     "EventOutbox",
     "Member",
+    "MemberInviteInput",
+    "MemberInviteOutput",
+    "MemberReadOutput",
     "MemberStatus",
     "Role",
     "RoleAssignment",
@@ -40,5 +48,7 @@ __all__ = [
     "WorkspaceReadOutput",
     "WorkspaceRegion",
     "WorkspaceTier",
+    "accept_invitation",
     "create_workspace",
+    "invite_member",
 ]

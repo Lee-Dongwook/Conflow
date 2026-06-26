@@ -37,6 +37,10 @@ HR_MEMBER_ONBOARDED: Final = "hr.member.onboarded"
 HR_MEMBER_OFFBOARDED: Final = "hr.member.offboarded"
 HR_PROFILE_UPDATED: Final = "hr.profile.updated"
 
+# Workspace lifecycle (Shared Core domain `system`)
+WORKSPACE_MEMBER_INVITED: Final = "workspace.member.invited"
+WORKSPACE_MEMBER_JOINED: Final = "workspace.member.joined"
+
 
 def emit_event(
     db: AsyncSession,

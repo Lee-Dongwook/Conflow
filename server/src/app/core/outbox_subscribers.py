@@ -24,6 +24,8 @@ from .events import (
     PM_ISSUE_RESOLVED,
     PM_ISSUE_UNBLOCKED,
     PM_ISSUE_UPDATED,
+    WORKSPACE_MEMBER_INVITED,
+    WORKSPACE_MEMBER_JOINED,
 )
 from .outbox import EventEnvelope, register_subscriber_handler
 from .runtime import logger
@@ -40,6 +42,8 @@ _DEBUG_EVENTS = (
     HR_MEMBER_ONBOARDED,
     HR_MEMBER_OFFBOARDED,
     HR_PROFILE_UPDATED,
+    WORKSPACE_MEMBER_INVITED,
+    WORKSPACE_MEMBER_JOINED,
 )
 
 
