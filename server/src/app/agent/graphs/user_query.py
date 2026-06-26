@@ -10,7 +10,7 @@ from langchain_core.messages import BaseMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel, Field
-from src.app.core.shared import logger
+from src.app.core.runtime import logger
 from typing_extensions import TypedDict
 
 DEFAULT_TASK = "Process the team collaboration request."

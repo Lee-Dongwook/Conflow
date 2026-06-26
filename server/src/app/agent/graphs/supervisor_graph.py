@@ -31,7 +31,7 @@ from src.app.agent.graphs.workers import (
     default_transcript_when_missing,
     format_meeting_summary_for_supervisor,
 )
-from src.app.core.shared import logger
+from src.app.core.runtime import logger
 
 FINISH: Literal["FINISH"] = "FINISH"
 RETRY: Literal["RETRY"] = "RETRY"
