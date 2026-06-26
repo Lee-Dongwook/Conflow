@@ -1,0 +1,294 @@
+#!/usr/bin/env python3
+"""End-to-end smoke: workspace → issue → transition → outbox/audit verify.
+
+Walks the full Phase 0-1 alpha flow against a real PostgreSQL DB:
+    1. ensure a test User exists (raw insert; bypass Supabase signup)
+    2. create_workspace  → Workspace + 5 Role + creator Member + OWNER + AuditLog
+    3. create_issue      → Issue + AuditLog + EventOutbox(pm.issue.created)
+    4. transition BLOCKED → AuditLog + EventOutbox(pm.issue.blocked)
+    5. count AuditLog + EventOutbox rows in this workspace and print a verdict
+
+Usage:
+    cd server
+    uv run python scripts/smoke_e2e.py                  # use a fresh test user
+    uv run python scripts/smoke_e2e.py --user-uuid <u>  # reuse an existing user
+    uv run python scripts/smoke_e2e.py --cleanup        # delete the test rows on success
+
+Requires the schema (alembic upgrade head) to already be applied.
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+import os
+import sys
+import uuid as _uuid
+from pathlib import Path
+
+SERVER_ROOT = Path(__file__).resolve().parents[1]
+if str(SERVER_ROOT) not in sys.path:
+    sys.path.insert(0, str(SERVER_ROOT))
+
+
+def _ok(label: str, detail: str = "") -> None:
+    print(f"  [ok]   {label}{(': ' + detail) if detail else ''}")
+
+
+def _fail(label: str, detail: str) -> None:
+    print(f"  [FAIL] {label}: {detail}")
+
+
+async def _run(*, user_uuid_arg: str | None, cleanup: bool) -> int:
+    from sqlalchemy import delete, func, select
+    from src.app.comms.model import Channel, ChannelMember, Message
+    from src.app.core import database as core_db
+    from src.app.core.shared import (
+        AuditLog,
+        EventOutbox,
+        Member,
+        Role,
+        RoleAssignment,
+        Workspace,
+        WorkspaceCreateInput,
+        create_workspace,
+    )
+    from src.app.core.shared_init import load_dotenv
+    from src.app.pm.model import Issue
+    from src.app.pm.schemas import (
+        IssueCreateInput,
+        IssuePriority,
+        IssueStatus,
+        IssueTransitionInput,
+    )
+    from src.app.pm.service import create_issue, transition_issue_status
+    from src.app.user.model import User
+
+    load_dotenv(os.environ.get("ENV", "local"))
+    await core_db.initialize_postgres_db()
+    if core_db.async_session is None:
+        print("Error: async_session not initialized; check DB_* env vars.")
+        return 2
+
+    test_slug = f"smoke-{_uuid.uuid4().hex[:8]}"
+    failures = 0
+
+    async with core_db.async_session() as db:
+        # ---------- 1. test User ----------
+        print("[1] ensure test User")
+        if user_uuid_arg:
+            user = await db.get(User, user_uuid_arg)
+            if user is None:
+                print(f"  user_uuid {user_uuid_arg} not found")
+                return 2
+            _ok("existing user reused", user.uuid)
+        else:
+            user = User(
+                name="smoke-e2e",
+                email=f"smoke-{_uuid.uuid4().hex[:8]}@example.local",
+            )
+            db.add(user)
+            await db.commit()
+            await db.refresh(user)
+            _ok("fresh User created", user.uuid)
+
+        # ---------- 2. create_workspace ----------
+        print("[2] create_workspace + role/member seed")
+        ws_out = await create_workspace(
+            creator_user_uuid=user.uuid,
+            payload=WorkspaceCreateInput(name="Smoke WS", slug=test_slug),
+            db=db,
+        )
+        workspace_uuid = ws_out.uuid
+        _ok("workspace created", f"{workspace_uuid} slug={test_slug}")
+
+        role_count = await db.scalar(
+            select(func.count()).select_from(Role).where(Role.workspace_uuid == workspace_uuid)
+        )
+        if role_count == 5:
+            _ok("5 roles seeded")
+        else:
+            _fail("role seed", f"expected 5, got {role_count}")
+            failures += 1
+
+        member_res = await db.execute(
+            select(Member).where(
+                Member.workspace_uuid == workspace_uuid,
+                Member.user_uuid == user.uuid,
+            )
+        )
+        member = member_res.scalar_one_or_none()
+        if member is None:
+            _fail("creator Member", "row missing")
+            failures += 1
+            return failures or 1
+        _ok("creator Member exists", member.uuid)
+
+        assignment_res = await db.execute(
+            select(RoleAssignment).where(
+                RoleAssignment.workspace_uuid == workspace_uuid,
+                RoleAssignment.member_uuid == member.uuid,
+            )
+        )
+        assignments = list(assignment_res.scalars().all())
+        if len(assignments) == 1:
+            _ok("1 OWNER RoleAssignment")
+        else:
+            _fail("OWNER assignment", f"expected 1, got {len(assignments)}")
+            failures += 1
+
+        # ---------- 3. create_issue ----------
+        print("[3] create_issue")
+        issue_out = await create_issue(
+            workspace_uuid=workspace_uuid,
+            caller_member_uuid=member.uuid,
+            payload=IssueCreateInput(
+                title="smoke test issue",
+                description="created by smoke_e2e",
+                priority=IssuePriority.HIGH,
+                assignee_member_uuid=member.uuid,
+            ),
+            db=db,
+        )
+        issue_uuid = issue_out.uuid
+        _ok("issue created", issue_uuid)
+
+        # ---------- 4. transition to BLOCKED ----------
+        print("[4] transition BACKLOG → BLOCKED (via TODO)")
+        # need to walk the state machine: backlog → todo → blocked
+        await transition_issue_status(
+            workspace_uuid=workspace_uuid,
+            caller_member_uuid=member.uuid,
+            issue_uuid=issue_uuid,
+            payload=IssueTransitionInput(new_status=IssueStatus.TODO),
+            db=db,
+        )
+        blocked_out = await transition_issue_status(
+            workspace_uuid=workspace_uuid,
+            caller_member_uuid=member.uuid,
+            issue_uuid=issue_uuid,
+            payload=IssueTransitionInput(
+                new_status=IssueStatus.BLOCKED,
+                blocked_reason="awaiting design review",
+            ),
+            db=db,
+        )
+        if blocked_out.status == IssueStatus.BLOCKED and blocked_out.blocked_reason:
+            _ok(
+                "issue is BLOCKED with reason",
+                f"reason='{blocked_out.blocked_reason}'",
+            )
+        else:
+            _fail("transition", f"status={blocked_out.status} reason={blocked_out.blocked_reason}")
+            failures += 1
+
+        # ---------- 5. verify AuditLog + EventOutbox ----------
+        print("[5] AuditLog + EventOutbox counts")
+        audit_total = await db.scalar(
+            select(func.count())
+            .select_from(AuditLog)
+            .where(AuditLog.workspace_uuid == workspace_uuid)
+        )
+        # expected actions: workspace.created, pm.issue.created,
+        # pm.issue.transitioned (backlog→todo), pm.issue.blocked = 4
+        if audit_total is not None and audit_total >= 4:
+            _ok("AuditLog rows", f"{audit_total} (expected ≥4)")
+        else:
+            _fail("AuditLog rows", f"got {audit_total}, expected ≥4")
+            failures += 1
+
+        outbox_res = await db.execute(
+            select(EventOutbox.event_name, EventOutbox.published_at)
+            .where(EventOutbox.workspace_uuid == workspace_uuid)
+            .order_by(EventOutbox.occurred_at)
+        )
+        outbox_rows = list(outbox_res.all())
+        names = [r.event_name for r in outbox_rows]
+        if "pm.issue.created" in names and "pm.issue.blocked" in names:
+            _ok("outbox events emitted", str(names))
+        else:
+            _fail("outbox events", f"expected pm.issue.created + pm.issue.blocked, got {names}")
+            failures += 1
+
+        unpublished = [r for r in outbox_rows if r.published_at is None]
+        if len(unpublished) == len(outbox_rows):
+            _ok(
+                "all outbox rows unpublished",
+                f"{len(unpublished)}/{len(outbox_rows)} (worker will pick up)",
+            )
+        else:
+            _ok(
+                "some outbox rows already published",
+                f"{len(outbox_rows) - len(unpublished)}/{len(outbox_rows)} "
+                "(worker is running — fine)",
+            )
+
+        # ---------- 6. cleanup ----------
+        if cleanup and failures == 0:
+            print("[6] cleanup")
+            await db.execute(
+                delete(Message).where(Message.workspace_uuid == workspace_uuid)
+            )
+            await db.execute(
+                delete(ChannelMember).where(ChannelMember.workspace_uuid == workspace_uuid)
+            )
+            await db.execute(
+                delete(Channel).where(Channel.workspace_uuid == workspace_uuid)
+            )
+            await db.execute(delete(Issue).where(Issue.workspace_uuid == workspace_uuid))
+            await db.execute(
+                delete(EventOutbox).where(EventOutbox.workspace_uuid == workspace_uuid)
+            )
+            await db.execute(
+                delete(AuditLog).where(AuditLog.workspace_uuid == workspace_uuid)
+            )
+            await db.execute(
+                delete(RoleAssignment).where(
+                    RoleAssignment.workspace_uuid == workspace_uuid
+                )
+            )
+            await db.execute(delete(Role).where(Role.workspace_uuid == workspace_uuid))
+            await db.execute(delete(Member).where(Member.workspace_uuid == workspace_uuid))
+            await db.execute(delete(Workspace).where(Workspace.uuid == workspace_uuid))
+            if not user_uuid_arg:
+                await db.execute(delete(User).where(User.uuid == user.uuid))
+            await db.commit()
+            _ok("cleanup complete")
+        elif cleanup and failures > 0:
+            print("[6] cleanup skipped (failures present — rows kept for debugging)")
+        else:
+            print(
+                f"[6] cleanup skipped (default). workspace_uuid={workspace_uuid} "
+                "kept for inspection."
+            )
+
+    print()
+    if failures == 0:
+        print("RESULT: PASS")
+        return 0
+    print(f"RESULT: FAIL ({failures} check(s) failed)")
+    return 1
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="End-to-end smoke for workspace+pm+outbox.")
+    parser.add_argument(
+        "--user-uuid",
+        default=None,
+        help="Reuse an existing users.uuid (else a fresh User row is inserted)",
+    )
+    parser.add_argument(
+        "--cleanup",
+        action="store_true",
+        help="Delete all rows created by this run on success (User kept if reused)",
+    )
+    args = parser.parse_args()
+
+    code = asyncio.run(
+        _run(user_uuid_arg=args.user_uuid, cleanup=args.cleanup)
+    )
+    sys.exit(code)
+
+
+if __name__ == "__main__":
+    main()

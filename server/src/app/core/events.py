@@ -32,6 +32,11 @@ PM_ISSUE_CANCELLED: Final = "pm.issue.cancelled"
 COMMS_MESSAGE_POSTED: Final = "comms.message.posted"
 COMMS_MENTION_CREATED: Final = "comms.mention.created"
 
+# HR
+HR_MEMBER_ONBOARDED: Final = "hr.member.onboarded"
+HR_MEMBER_OFFBOARDED: Final = "hr.member.offboarded"
+HR_PROFILE_UPDATED: Final = "hr.profile.updated"
+
 
 def emit_event(
     db: AsyncSession,

@@ -25,6 +25,7 @@ from src.app.core.runtime import logger
 from src.app.core.shared.api import router as workspace_router
 from src.app.dashboard.api import router as dashboard_router
 from src.app.home.api import router as home_router
+from src.app.hr.api import router as hr_router
 from src.app.pm.api import router as pm_router
 from src.app.sprint.api import router as sprint_router
 from src.app.survey.api import router as survey_router
@@ -118,6 +119,8 @@ app.include_router(pm_router)
 app.include_router(pm_router, prefix="/api")
 app.include_router(comms_router)
 app.include_router(comms_router, prefix="/api")
+app.include_router(hr_router)
+app.include_router(hr_router, prefix="/api")
 app.include_router(signaling_router)
 
 app.add_exception_handler(Exception, global_exception_handler)
