@@ -1,5 +1,6 @@
 """ASGI entrypoint for the Conflow API."""
 
+import asyncio
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -14,9 +15,12 @@ from src.app.agent.api import router as agent_router
 from src.app.backlog.api import router as backlog_router
 from src.app.board.api import router as board_router
 from src.app.consent.api import router as consent_router
+from src.app.core import database as core_db
 from src.app.core import shared_init
 from src.app.core.exceptions import global_exception_handler
 from src.app.core.middlewares import setup_middleware
+from src.app.core.outbox import outbox_worker_loop
+from src.app.core.runtime import logger
 from src.app.dashboard.api import router as dashboard_router
 from src.app.home.api import router as home_router
 from src.app.sprint.api import router as sprint_router
@@ -29,12 +33,50 @@ from src.app.week.api import router as week_router
 env_type = os.environ.get("ENV", "development")
 shared_init.load_dotenv(env_type)
 
+_OUTBOX_WORKER_ENV = "CONFLOW_OUTBOX_WORKER_ENABLED"
+
+
+def _outbox_worker_enabled() -> bool:
+    return os.environ.get(_OUTBOX_WORKER_ENV, "true").lower() in ("1", "true", "yes", "on")
+
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
     """Manage application startup and shutdown."""
     shared_init.initialize()
-    yield
+
+    # Subscriber registrations import their handlers at module import time;
+    # importing here keeps the registry populated before the worker loop polls.
+    import src.app.core.outbox_subscribers  # noqa: F401, PLC0415
+
+    worker_task: asyncio.Task[None] | None = None
+    if _outbox_worker_enabled():
+        try:
+            await core_db.initialize_postgres_db()
+        except Exception:
+            logger.exception("DB init failed; outbox worker disabled")
+        else:
+            session_factory = core_db.async_session
+            if session_factory is None:
+                logger.warning("async_session unavailable; outbox worker disabled")
+            else:
+                worker_task = asyncio.create_task(
+                    outbox_worker_loop(session_factory),
+                    name="outbox-worker",
+                )
+                logger.info("outbox worker task scheduled")
+    else:
+        logger.info("outbox worker disabled via %s", _OUTBOX_WORKER_ENV)
+
+    try:
+        yield
+    finally:
+        if worker_task is not None:
+            worker_task.cancel()
+            try:
+                await worker_task
+            except asyncio.CancelledError:
+                pass
 
 
 app = FastAPI(

@@ -1,7 +1,4 @@
 import json
-import logging
-import os
-import sys
 import time
 from typing import Any
 from urllib.parse import parse_qs
@@ -9,9 +6,9 @@ from urllib.parse import parse_qs
 from starlette.datastructures import Headers
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-from . import shared
+from . import runtime
 
-logger = shared.logger
+logger = runtime.logger
 
 
 def parse_body_content(body_bytes: bytes, content_type: str) -> Any:
@@ -50,7 +47,9 @@ def parse_body_content(body_bytes: bytes, content_type: str) -> Any:
                                     value = content.rstrip(b"\r\n").decode("utf-8", errors="ignore")
                                     form_data[name] = value
 
-                return form_data if form_data else body_bytes.decode("utf-8", errors="ignore")[:1000]
+                if form_data:
+                    return form_data
+                return body_bytes.decode("utf-8", errors="ignore")[:1000]
         except Exception:
             pass
     
@@ -67,8 +66,6 @@ class LoggingMiddleware:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
-
-        logger = shared.logger
 
         start_time = time.time()
 
