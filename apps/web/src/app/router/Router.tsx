@@ -6,13 +6,13 @@
  *   `/survey`               → SurveyPage (one-off marketing route)
  *   `/workspace/new`        → CreateWorkspacePage
  *   `/w/:workspaceUuid/...` → workspace-scoped domain pages
- *   `*`                     → redirect to `/`
+ *   `*`                     → NotFoundPage (404)
  *
  * The legacy state-based AppContent tree has been retired; guests see the
- * GuestLandingPage and everything unmatched redirects home.
+ * GuestLandingPage and everything unmatched renders the 404 page.
  */
 
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
 import { CommsChannelDetailPage } from 'app/pages/CommsChannelDetailPage'
@@ -22,6 +22,7 @@ import { DocumentsInstancesPage } from 'app/pages/DocumentsInstancesPage'
 import { HREmployeesPage } from 'app/pages/HREmployeesPage'
 import { LandingRedirectPage } from 'app/pages/LandingRedirectPage'
 import { LegalPage } from 'app/pages/legal'
+import { NotFoundPage } from 'app/pages/NotFoundPage'
 import { A2UIToolsPage } from 'app/pages/A2UIToolsPage'
 import { PMIssueDetailPage } from 'app/pages/PMIssueDetailPage'
 import { PMIssuesPage } from 'app/pages/PMIssuesPage'
@@ -60,10 +61,12 @@ export const AppRouter = ({ guestLanding }: AppRouterProps) => (
           element={<DocumentsInstancesPage />}
         />
         <Route path="a2ui/tools" element={<A2UIToolsPage />} />
+        {/* Unknown sub-path under a valid workspace → 404 inside the shell. */}
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
 
-      {/* Anything unmatched returns to the auth-aware landing. */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Anything unmatched renders the 404 page. */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   </BrowserRouter>
 )
