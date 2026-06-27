@@ -22,15 +22,15 @@ import type { ReactNode } from 'react'
 import { useCurrentWorkspaceUuid, WorkspaceProvider } from 'app/app/providers'
 import { useSession } from 'app/entities/session'
 import { consentApi, ConsentForm, type ConsentAccept } from 'app/features/consent'
-import { LoginModal } from 'app/pages/LoginPage'
+import { WaitlistModal } from 'app/features/waitlist'
 import { demoGuard, isDemoWorkspace } from 'app/shared/demo'
 import { SidebarMobileBar, WorkspaceSidebar } from 'app/widgets/sidebar'
 
 const DemoModeBar = () => {
-  const [loginOpen, setLoginOpen] = useState(false)
+  const [waitlistOpen, setWaitlistOpen] = useState(false)
 
   useEffect(() => {
-    demoGuard.setOnWriteAttempt(() => setLoginOpen(true))
+    demoGuard.setOnWriteAttempt(() => setWaitlistOpen(true))
     return () => demoGuard.setOnWriteAttempt(null)
   }, [])
 
@@ -40,13 +40,13 @@ const DemoModeBar = () => {
         <span>🎭 데모 모드로 둘러보는 중입니다 — 변경 사항은 저장되지 않아요.</span>
         <button
           type="button"
-          onClick={() => setLoginOpen(true)}
+          onClick={() => setWaitlistOpen(true)}
           className="rounded-md bg-amber-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-800"
         >
-          로그인하고 시작하기
+          출시 알림 받기
         </button>
       </div>
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
     </>
   )
 }

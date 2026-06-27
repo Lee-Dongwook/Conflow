@@ -67,6 +67,8 @@ export type LaunchEvent =
   | 'ph_banner_cta_primary'
   | 'ph_banner_cta_secondary'
   | 'ph_banner_dismiss'
+  | 'waitlist_open'
+  | 'waitlist_submit'
 
 export const trackLaunchEvent = (
   event: LaunchEvent,

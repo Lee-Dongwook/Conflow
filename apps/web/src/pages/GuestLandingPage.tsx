@@ -12,7 +12,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { LoginModal } from 'app/pages/LoginPage'
+import { WaitlistModal } from 'app/features/waitlist'
 import { DEMO_OVERVIEW, OverviewContent } from 'app/pages/WorkspaceOverviewPage'
 import { DEMO_WORKSPACE_UUID } from 'app/shared/demo'
 import { captureLaunchRef, trackLaunchEvent } from 'app/shared/lib'
@@ -23,7 +23,7 @@ const DEMO_BASE = `/w/${DEMO_WORKSPACE_UUID}`
 
 export const GuestLandingPage = () => {
   const navigate = useNavigate()
-  const [loginOpen, setLoginOpen] = useState(false)
+  const [waitlistOpen, setWaitlistOpen] = useState(false)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   useEffect(() => {
@@ -38,7 +38,7 @@ export const GuestLandingPage = () => {
   return (
     <>
       <ProductHuntBanner
-        onLoginRequest={() => setLoginOpen(true)}
+        onLoginRequest={() => setWaitlistOpen(true)}
         productHuntUrl={import.meta.env.VITE_PRODUCT_HUNT_URL}
       />
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-teal-200 bg-teal-50 px-4 py-2.5 text-sm text-teal-900 sm:px-6">
@@ -54,7 +54,7 @@ export const GuestLandingPage = () => {
       <div className="flex min-h-screen bg-slate-50">
         <WorkspaceSidebar
           workspaceUuid={DEMO_WORKSPACE_UUID}
-          onLoginRequest={() => setLoginOpen(true)}
+          onLoginRequest={() => setWaitlistOpen(true)}
           mobileOpen={mobileNavOpen}
           onClose={() => setMobileNavOpen(false)}
         />
@@ -69,7 +69,7 @@ export const GuestLandingPage = () => {
           </main>
         </div>
       </div>
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
     </>
   )
 }

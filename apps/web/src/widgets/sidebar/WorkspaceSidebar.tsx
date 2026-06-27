@@ -237,7 +237,7 @@ export const WorkspaceSidebar = ({
               className="w-full text-sm"
               onClick={onLoginRequest}
             >
-              로그인
+              출시 알림 받기
             </Button>
           )}
         </div>
