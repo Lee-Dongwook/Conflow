@@ -3,6 +3,7 @@
  */
 
 import { apiClient, commsPaths } from 'app/shared/api'
+import { demoGuard, demoMessageList, isDemoWorkspace } from 'app/shared/demo'
 import {
   MessageListFilter as MessageListFilterSchema,
   type MessageListFilter,
@@ -20,6 +21,7 @@ export async function listMessages(args: {
   readonly workspaceUuid: string
   readonly filters: MessageListFilter
 }): Promise<MessageListOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoMessageList(args.filters)
   const parsed = MessageListFilterSchema.parse(args.filters)
   const { data } = await apiClient.get(commsPaths.messages(args.workspaceUuid), {
     params: parsed,
@@ -31,6 +33,7 @@ export async function postMessage(args: {
   readonly workspaceUuid: string
   readonly payload: MessagePostInput
 }): Promise<MessageReadType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = MessagePostInputSchema.parse(args.payload)
   const { data } = await apiClient.post(
     commsPaths.messages(args.workspaceUuid),
@@ -44,6 +47,7 @@ export async function editMessage(args: {
   readonly messageUuid: string
   readonly payload: MessageUpdateInput
 }): Promise<MessageReadType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = MessageUpdateInputSchema.parse(args.payload)
   const { data } = await apiClient.patch(
     commsPaths.message(args.workspaceUuid, args.messageUuid),
@@ -56,6 +60,7 @@ export async function deleteMessage(args: {
   readonly workspaceUuid: string
   readonly messageUuid: string
 }): Promise<void> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   await apiClient.delete(
     commsPaths.message(args.workspaceUuid, args.messageUuid),
   )

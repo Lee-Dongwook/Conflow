@@ -3,6 +3,7 @@
  */
 
 import { apiClient, commsPaths } from 'app/shared/api'
+import { demoChannelList, demoGuard, isDemoWorkspace } from 'app/shared/demo'
 import {
   ChannelCreateInput as ChannelCreateInputSchema,
   type ChannelCreateInput,
@@ -18,6 +19,7 @@ export async function listChannels(args: {
   readonly workspaceUuid: string
   readonly filters: ChannelListFilter
 }): Promise<ChannelListOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoChannelList(args.filters)
   const parsed = ChannelListFilterSchema.parse(args.filters)
   const { data } = await apiClient.get(commsPaths.channels(args.workspaceUuid), {
     params: parsed,
@@ -29,6 +31,7 @@ export async function createChannel(args: {
   readonly workspaceUuid: string
   readonly payload: ChannelCreateInput
 }): Promise<ChannelReadType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = ChannelCreateInputSchema.parse(args.payload)
   const { data } = await apiClient.post(
     commsPaths.channels(args.workspaceUuid),
@@ -41,6 +44,7 @@ export async function archiveChannel(args: {
   readonly workspaceUuid: string
   readonly channelUuid: string
 }): Promise<ChannelReadType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const { data } = await apiClient.post(
     commsPaths.channelArchive(args.workspaceUuid, args.channelUuid),
   )
@@ -51,6 +55,7 @@ export async function joinChannel(args: {
   readonly workspaceUuid: string
   readonly channelUuid: string
 }): Promise<void> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   await apiClient.post(
     commsPaths.channelJoin(args.workspaceUuid, args.channelUuid),
   )
@@ -60,6 +65,7 @@ export async function leaveChannel(args: {
   readonly workspaceUuid: string
   readonly channelUuid: string
 }): Promise<void> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   await apiClient.post(
     commsPaths.channelLeave(args.workspaceUuid, args.channelUuid),
   )

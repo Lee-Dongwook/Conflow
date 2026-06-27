@@ -6,6 +6,7 @@
  */
 
 import { apiClient, pmPaths } from 'app/shared/api'
+import { demoGuard, demoIssue, demoIssueList, isDemoWorkspace } from 'app/shared/demo'
 import {
   IssueCreateInput as IssueCreateInputSchema,
   type IssueCreateInput,
@@ -23,6 +24,7 @@ export async function listIssues(args: {
   readonly workspaceUuid: string
   readonly filters: IssueListFilter
 }): Promise<IssueListOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoIssueList(args.filters)
   const parsed = IssueListFilterSchema.parse(args.filters)
   const { data } = await apiClient.get(pmPaths.issues(args.workspaceUuid), {
     params: parsed,
@@ -34,6 +36,7 @@ export async function getIssue(args: {
   readonly workspaceUuid: string
   readonly issueUuid: string
 }): Promise<IssueReadType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoIssue(args.issueUuid)
   const { data } = await apiClient.get(
     pmPaths.issue(args.workspaceUuid, args.issueUuid),
   )
@@ -44,6 +47,7 @@ export async function createIssue(args: {
   readonly workspaceUuid: string
   readonly payload: IssueCreateInput
 }): Promise<IssueReadType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = IssueCreateInputSchema.parse(args.payload)
   const { data } = await apiClient.post(
     pmPaths.issues(args.workspaceUuid),
@@ -57,6 +61,7 @@ export async function transitionIssue(args: {
   readonly issueUuid: string
   readonly payload: IssueTransitionInput
 }): Promise<IssueReadType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = IssueTransitionInputSchema.parse(args.payload)
   const { data } = await apiClient.post(
     pmPaths.issueTransition(args.workspaceUuid, args.issueUuid),

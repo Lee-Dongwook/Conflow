@@ -14,6 +14,8 @@
 import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
 
+import { isDemoWorkspace } from 'app/shared/demo'
+
 const LAST_VISITED_KEY = 'conflow.workspace.lastVisitedUuid'
 
 interface WorkspaceContextValue {
@@ -30,9 +32,10 @@ export const WorkspaceProvider = ({ children }: WorkspaceProviderProps) => {
   const { workspaceUuid } = useParams<{ workspaceUuid: string }>()
 
   // Persist on visit. Wrap in try/catch so private-browsing rejections
-  // don't crash navigation.
+  // don't crash navigation. The demo sentinel is never persisted, so a
+  // returning authenticated user is not redirected into `/w/demo`.
   useEffect(() => {
-    if (!workspaceUuid) return
+    if (!workspaceUuid || isDemoWorkspace(workspaceUuid)) return
     try {
       window.localStorage.setItem(LAST_VISITED_KEY, workspaceUuid)
     } catch {

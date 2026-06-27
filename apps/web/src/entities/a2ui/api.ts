@@ -6,6 +6,7 @@
  */
 
 import { apiClient, a2uiPaths } from 'app/shared/api'
+import { demoGuard, demoToolCatalog, isDemoWorkspace } from 'app/shared/demo'
 import {
   ToolCatalogOutput,
   type ToolCatalogOutput as ToolCatalogOutputType,
@@ -16,6 +17,7 @@ import {
 export async function listTools(
   workspaceUuid: string,
 ): Promise<ToolCatalogOutputType> {
+  if (isDemoWorkspace(workspaceUuid)) return demoToolCatalog()
   const { data } = await apiClient.get(a2uiPaths.tools(workspaceUuid))
   return ToolCatalogOutput.parse(data)
 }
@@ -25,6 +27,7 @@ export async function invokeTool(args: {
   readonly toolId: string
   readonly rawInput: Record<string, unknown>
 }): Promise<ToolInvokeOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const { data } = await apiClient.post(
     a2uiPaths.invoke(args.workspaceUuid, args.toolId),
     args.rawInput,

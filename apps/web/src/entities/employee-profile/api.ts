@@ -7,6 +7,7 @@
  */
 
 import { apiClient, hrPaths } from 'app/shared/api'
+import { demoEmployee, demoEmployeeList, demoGuard, isDemoWorkspace } from 'app/shared/demo'
 import {
   EmployeeProfileListFilter as EmployeeProfileListFilterSchema,
   type EmployeeProfileListFilter,
@@ -22,6 +23,7 @@ export async function listEmployeeProfiles(args: {
   readonly workspaceUuid: string
   readonly filters: EmployeeProfileListFilter
 }): Promise<EmployeeProfileListOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoEmployeeList(args.filters)
   const parsed = EmployeeProfileListFilterSchema.parse(args.filters)
   const { data } = await apiClient.get(hrPaths.profiles(args.workspaceUuid), {
     params: parsed,
@@ -33,6 +35,7 @@ export async function getEmployeeProfile(args: {
   readonly workspaceUuid: string
   readonly profileUuid: string
 }): Promise<EmployeeProfileOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoEmployee(args.profileUuid)
   const { data } = await apiClient.get(
     hrPaths.profile(args.workspaceUuid, args.profileUuid),
   )
@@ -44,6 +47,7 @@ export async function transitionTenure(args: {
   readonly profileUuid: string
   readonly payload: TenureTransitionInput
 }): Promise<EmployeeProfileOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = TenureTransitionInputSchema.parse(args.payload)
   const { data } = await apiClient.post(
     `${hrPaths.profile(args.workspaceUuid, args.profileUuid)}/transition`,

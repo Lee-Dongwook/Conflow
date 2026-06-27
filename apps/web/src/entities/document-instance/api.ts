@@ -6,6 +6,7 @@
  */
 
 import { apiClient, documentsPaths } from 'app/shared/api'
+import { demoDocument, demoDocumentList, demoGuard, isDemoWorkspace } from 'app/shared/demo'
 import {
   DocumentInstanceListFilter as DocumentInstanceListFilterSchema,
   type DocumentInstanceListFilter,
@@ -27,6 +28,7 @@ export async function listDocumentInstances(args: {
   readonly workspaceUuid: string
   readonly filters: DocumentInstanceListFilter
 }): Promise<DocumentInstanceListOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoDocumentList(args.filters)
   const parsed = DocumentInstanceListFilterSchema.parse(args.filters)
   const { data } = await apiClient.get(
     documentsPaths.instances(args.workspaceUuid),
@@ -39,6 +41,7 @@ export async function getDocumentInstance(args: {
   readonly workspaceUuid: string
   readonly instanceUuid: string
 }): Promise<DocumentInstanceOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoDocument(args.instanceUuid)
   const { data } = await apiClient.get(
     `${documentsPaths.instances(args.workspaceUuid)}/${args.instanceUuid}`,
   )
@@ -50,6 +53,7 @@ const transition = async (
   instanceUuid: string,
   action: 'submit' | 'approve' | 'reject' | 'issue',
 ): Promise<DocumentInstanceOutputType> => {
+  if (isDemoWorkspace(workspaceUuid)) return demoGuard.blockWrite()
   const { data } = await apiClient.post(
     instanceAction(workspaceUuid, instanceUuid, action),
   )
@@ -81,6 +85,7 @@ export async function voidInstance(args: {
   readonly instanceUuid: string
   readonly payload: DocumentInstanceVoidInput
 }): Promise<DocumentInstanceOutputType> {
+  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = DocumentInstanceVoidInputSchema.parse(args.payload)
   const { data } = await apiClient.post(
     instanceAction(args.workspaceUuid, args.instanceUuid, 'void'),
