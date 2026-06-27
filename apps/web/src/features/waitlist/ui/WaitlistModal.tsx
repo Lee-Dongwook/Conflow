@@ -2,13 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Button } from '@conflow/ui'
 
-import { getLaunchRef, trackLaunchEvent } from 'app/shared/lib'
+import { getLaunchRef, supabase, trackLaunchEvent } from 'app/shared/lib'
 
 /**
  * Waitlist modal — temporary stand-in for the login/signup flow while the
  * backend is offline (traffic-only deploy). Collects an email (and optional
- * name), fires a `waitlist_submit` launch event for attribution, and posts to
- * an external collector when `VITE_WAITLIST_ENDPOINT` is configured.
+ * name), fires a `waitlist_submit` launch event for attribution, and inserts
+ * the entry into the Supabase `waitlist` table (anon-insert RLS). This path is
+ * independent of the FastAPI backend, so it works even while Render is down.
  *
  * Drop-in compatible with `LoginModal` props (`open` / `onClose`) so call sites
  * can swap back to real auth once the backend is live again.
@@ -38,14 +39,13 @@ const persistLocally = (entry: WaitlistEntry): void => {
   }
 }
 
-const postToEndpoint = async (entry: WaitlistEntry): Promise<void> => {
-  const endpoint = import.meta.env.VITE_WAITLIST_ENDPOINT as string | undefined
-  if (!endpoint) return
-  await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(entry),
+const saveToSupabase = async (entry: WaitlistEntry): Promise<void> => {
+  const { error } = await supabase.from('waitlist').insert({
+    email: entry.email,
+    name: entry.name || null,
+    ref: entry.ref,
   })
+  if (error) throw error
 }
 
 export const WaitlistModal = ({ open, onClose }: WaitlistModalProps) => {
@@ -100,11 +100,11 @@ export const WaitlistModal = ({ open, onClose }: WaitlistModalProps) => {
     trackLaunchEvent('waitlist_submit', { email: entry.email })
 
     try {
-      await postToEndpoint(entry)
+      await saveToSupabase(entry)
       setDone(true)
     } catch {
       // The email is already persisted locally and tracked — treat a failed
-      // network post as success so the visitor still sees confirmation.
+      // insert as success so the visitor still sees confirmation.
       setDone(true)
     }
     setLoading(false)
