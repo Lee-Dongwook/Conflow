@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 
-import { Avatar, Badge, Button, cn } from '@conflow/ui'
+import { Avatar, Button, cn } from '@conflow/ui'
 
 import { useLogout, useSession } from 'app/entities/session'
 import type { SidebarGlyph } from './icons'
@@ -157,29 +157,15 @@ export const WorkspaceSidebar = ({
         <div className="flex items-center justify-between gap-2 border-b border-slate-100 px-3 py-3">
           <NavLink to={base} end onClick={onClose} className="flex min-w-0 items-center gap-2">
             <span className="truncate font-semibold tracking-tight text-slate-900">Conflow</span>
-            <Badge variant="outline" className="shrink-0 text-[10px]">
-              워크스페이스
-            </Badge>
           </NavLink>
-          <div className="flex shrink-0 items-center gap-1">
-            <Button
-              type="button"
-              variant="secondary"
-              className="h-8 shrink-0 px-2 text-xs"
-              aria-label="빠른 기록"
-            >
-              <SidebarIcon name="plus" className="size-4" />
-              기록
-            </Button>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="메뉴 닫기"
-              className="rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-100 md:hidden"
-            >
-              <SidebarIcon name="close" className="size-5" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="메뉴 닫기"
+            className="shrink-0 rounded-md p-1 text-slate-500 transition-colors hover:bg-slate-100 md:hidden"
+          >
+            <SidebarIcon name="close" className="size-5" />
+          </button>
         </div>
 
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2">
