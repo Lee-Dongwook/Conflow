@@ -8,8 +8,6 @@ export {
 export {
   demoChannelList,
   demoCreateIssue,
-  demoDocument,
-  demoDocumentList,
   demoEmployee,
   demoEmployeeList,
   demoIssue,
@@ -24,3 +22,10 @@ export {
   demoTypingAuthor,
   DEMO_VISITOR_UUID,
 } from './message-store'
+export {
+  demoDocument,
+  demoDocumentList,
+  demoTransitionDocument,
+  demoVoidDocument,
+  type DocumentAction,
+} from './document-store'

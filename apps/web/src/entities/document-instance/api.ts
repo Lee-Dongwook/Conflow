@@ -6,7 +6,13 @@
  */
 
 import { apiClient, documentsPaths } from 'app/shared/api'
-import { demoDocument, demoDocumentList, demoGuard, isDemoWorkspace } from 'app/shared/demo'
+import {
+  demoDocument,
+  demoDocumentList,
+  demoTransitionDocument,
+  demoVoidDocument,
+  isDemoWorkspace,
+} from 'app/shared/demo'
 import {
   DocumentInstanceListFilter as DocumentInstanceListFilterSchema,
   type DocumentInstanceListFilter,
@@ -53,7 +59,11 @@ const transition = async (
   instanceUuid: string,
   action: 'submit' | 'approve' | 'reject' | 'issue',
 ): Promise<DocumentInstanceOutputType> => {
-  if (isDemoWorkspace(workspaceUuid)) return demoGuard.blockWrite()
+  // Demo exception: run the lifecycle transition against the in-memory store
+  // so visitors can drive documents through their state machine.
+  if (isDemoWorkspace(workspaceUuid)) {
+    return demoTransitionDocument(instanceUuid, action)
+  }
   const { data } = await apiClient.post(
     instanceAction(workspaceUuid, instanceUuid, action),
   )
@@ -85,8 +95,10 @@ export async function voidInstance(args: {
   readonly instanceUuid: string
   readonly payload: DocumentInstanceVoidInput
 }): Promise<DocumentInstanceOutputType> {
-  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = DocumentInstanceVoidInputSchema.parse(args.payload)
+  if (isDemoWorkspace(args.workspaceUuid)) {
+    return demoVoidDocument(args.instanceUuid, parsed.void_reason)
+  }
   const { data } = await apiClient.post(
     instanceAction(args.workspaceUuid, args.instanceUuid, 'void'),
     parsed,

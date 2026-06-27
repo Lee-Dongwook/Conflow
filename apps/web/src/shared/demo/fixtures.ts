@@ -11,8 +11,6 @@ import type {
   ChannelListFilter,
   ChannelListOutput,
   ChannelRead,
-  DocumentInstanceListFilter,
-  DocumentInstanceListOutput,
   DocumentInstanceOutput,
   EmployeeProfileListFilter,
   EmployeeProfileListOutput,
@@ -454,7 +452,9 @@ export const demoEmployee = (profileUuid: string): EmployeeProfileOutput =>
 // Documents
 // ---------------------------------------------------------------------------
 
-const DOCUMENTS: readonly DocumentInstanceOutput[] = [
+// Exported as the seed for the in-memory demo document store (see
+// `document-store.ts`), which lets demo visitors run lifecycle actions.
+export const DEMO_SEED_DOCUMENTS: readonly DocumentInstanceOutput[] = [
   {
     uuid: 'demo-doc-1',
     workspace_uuid: WS,
@@ -532,19 +532,6 @@ const DOCUMENTS: readonly DocumentInstanceOutput[] = [
     updated_at: '2026-06-22T00:00:00Z',
   },
 ]
-
-export const demoDocumentList = (
-  filters: DocumentInstanceListFilter = {},
-): DocumentInstanceListOutput => {
-  const filtered = DOCUMENTS.filter((d) => {
-    if (filters.state && d.state !== filters.state) return false
-    return true
-  })
-  return { instances: filtered, total: filtered.length }
-}
-
-export const demoDocument = (instanceUuid: string): DocumentInstanceOutput =>
-  DOCUMENTS.find((d) => d.uuid === instanceUuid) ?? firstOf(DOCUMENTS)
 
 // ---------------------------------------------------------------------------
 // A2UI Tool catalog
