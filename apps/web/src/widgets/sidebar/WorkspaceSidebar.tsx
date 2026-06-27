@@ -4,7 +4,6 @@ import { NavLink } from 'react-router-dom'
 import { Avatar, Badge, Button, cn } from '@conflow/ui'
 
 import { useLogout, useSession } from 'app/entities/session'
-import { useTheme } from 'app/shared'
 import type { SidebarGlyph } from './icons'
 import { SidebarIcon } from './icons'
 
@@ -81,7 +80,6 @@ export const WorkspaceSidebar = ({
   onLoginRequest,
   className,
 }: WorkspaceSidebarProps) => {
-  const { theme, setTheme } = useTheme()
   const session = useSession()
   const logout = useLogout()
 
@@ -153,37 +151,6 @@ export const WorkspaceSidebar = ({
           </div>
         ))}
       </nav>
-
-      <div className="border-t border-slate-100 px-2 py-2">
-        <p className="mb-1.5 px-2 text-[10px] font-medium uppercase tracking-wide text-slate-400">
-          화면 모드
-        </p>
-        <div className="flex rounded-lg bg-slate-100 p-0.5 text-[11px] font-medium">
-          {(
-            [
-              { id: 'light' as const, label: '라이트' },
-              { id: 'system' as const, label: '자동' },
-              { id: 'dark' as const, label: '다크' },
-            ] as const
-          ).map((seg) => (
-            <button
-              key={seg.id}
-              type="button"
-              onClick={() => {
-                setTheme(seg.id)
-              }}
-              className={cn(
-                'flex-1 rounded-md px-1.5 py-1.5 transition-colors',
-                theme === seg.id
-                  ? 'bg-white text-teal-800 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-800',
-              )}
-            >
-              {seg.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       <div className="border-t border-slate-100 px-2 py-1">
         <NavLink
