@@ -9,7 +9,13 @@ export {
   demoEmployeeList,
   demoIssue,
   demoIssueList,
-  demoMessageList,
   demoToolCatalog,
   demoTransitionIssue,
 } from './fixtures'
+export {
+  demoMessageList,
+  demoPostMessage,
+  subscribeDemoMessages,
+  demoTypingAuthor,
+  DEMO_VISITOR_UUID,
+} from './message-store'

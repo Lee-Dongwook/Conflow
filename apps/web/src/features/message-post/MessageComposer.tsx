@@ -61,25 +61,42 @@ export const MessageComposer = ({
     : null
 
   return (
-    <div className="space-y-2">
-      <textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        onKeyDown={onKeyDown}
-        placeholder={placeholder ?? '메시지 입력 (Enter 전송, Shift+Enter 줄바꿈)'}
-        rows={2}
-        className="w-full resize-y rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-500 focus:outline-none"
-      />
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-rose-700">{formError ?? ''}</span>
+    <div className="space-y-1.5">
+      <div className="flex items-end gap-2 rounded-xl border border-slate-300 bg-white px-3 py-2 shadow-sm transition focus-within:border-slate-500 focus-within:ring-2 focus-within:ring-slate-100">
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          onKeyDown={onKeyDown}
+          placeholder={placeholder ?? '메시지 보내기…'}
+          rows={1}
+          className="max-h-40 min-h-6 flex-1 resize-none border-0 bg-transparent text-sm leading-relaxed text-slate-800 placeholder:text-slate-400 focus:outline-none"
+        />
         <button
           type="button"
           onClick={() => void send()}
           disabled={post.isPending || !body.trim()}
-          className="rounded-md bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-sm transition disabled:cursor-not-allowed disabled:bg-slate-400"
+          className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-white shadow-sm transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+          aria-label="전송"
         >
-          {post.isPending ? '전송 중…' : '전송'}
+          {post.isPending ? (
+            <span className="size-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+          ) : (
+            <svg
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="size-4"
+              aria-hidden="true"
+            >
+              <path d="M1.5 10.5 18 3l-4 14.5-4.5-5.5L15 6 7.5 11l-6-0.5Z" />
+            </svg>
+          )}
         </button>
+      </div>
+      <div className="flex items-center justify-between px-1">
+        <span className="text-[11px] text-rose-600">{formError ?? ''}</span>
+        <span className="text-[11px] text-slate-400">
+          Enter 전송 · Shift+Enter 줄바꿈
+        </span>
       </div>
     </div>
   )

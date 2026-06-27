@@ -15,15 +15,20 @@ export const CommsChannelsPage = () => {
   const [createOpen, setCreateOpen] = useState(false)
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-900">Channels</h1>
+    <div className="mx-auto max-w-3xl space-y-5">
+      <header className="flex items-end justify-between gap-3">
+        <div className="space-y-1">
+          <h1 className="text-xl font-semibold text-slate-900">채널</h1>
+          <p className="text-sm text-slate-500">
+            팀 대화가 주제별로 모이는 곳이에요. 채널을 열어 스레드를 확인하세요.
+          </p>
+        </div>
         <button
           type="button"
           onClick={() => setCreateOpen(true)}
-          className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
+          className="flex shrink-0 items-center gap-1.5 rounded-lg bg-slate-900 px-3.5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-slate-700"
         >
-          새 채널
+          <span className="text-base leading-none">+</span>새 채널
         </button>
       </header>
 

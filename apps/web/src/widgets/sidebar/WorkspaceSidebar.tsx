@@ -182,80 +182,79 @@ export const WorkspaceSidebar = ({
           </div>
         </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2">
-        <NavLink
-          to={base}
-          end
-          onClick={onClose}
-          className={({ isActive }) =>
-            cn(
-              'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
-              isActive ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50',
-            )
-          }
-        >
-          {({ isActive }) => (
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 py-2">
+          <NavLink
+            to={base}
+            end
+            onClick={onClose}
+            className={({ isActive }) =>
+              cn(
+                'flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors',
+                isActive ? 'bg-teal-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-50',
+              )
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <SidebarIcon
+                  name="dashboard"
+                  className={isActive ? 'text-white' : 'text-slate-500'}
+                />
+                <span className="min-w-0 flex-1 truncate">개요</span>
+              </>
+            )}
+          </NavLink>
+
+          {SECTIONS.map((section) => (
+            <div key={section.label} className="flex flex-col gap-0.5">
+              <SectionLabel>{section.label}</SectionLabel>
+              {section.items.map((item) => (
+                <NavItem key={item.to} item={item} base={base} onNavigate={onClose} />
+              ))}
+            </div>
+          ))}
+        </nav>
+        <div className="border-t border-slate-100 px-2 py-1">
+          <NavLink
+            to="/legal"
+            onClick={onClose}
+            className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-[11px] text-slate-400 transition-colors hover:text-slate-600"
+          >
+            이용약관 · 개인정보처리방침
+          </NavLink>
+        </div>
+
+        <div className="border-t border-slate-100 p-3">
+          {session.status === 'authenticated' ? (
             <>
-              <SidebarIcon
-                name="dashboard"
-                className={isActive ? 'text-white' : 'text-slate-500'}
-              />
-              <span className="min-w-0 flex-1 truncate">개요</span>
-            </>
-          )}
-        </NavLink>
-
-        {SECTIONS.map((section) => (
-          <div key={section.label} className="flex flex-col gap-0.5">
-            <SectionLabel>{section.label}</SectionLabel>
-            {section.items.map((item) => (
-              <NavItem key={item.to} item={item} base={base} onNavigate={onClose} />
-            ))}
-          </div>
-        ))}
-      </nav>
-
-      <div className="border-t border-slate-100 px-2 py-1">
-        <NavLink
-          to="/legal"
-          onClick={onClose}
-          className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-[11px] text-slate-400 transition-colors hover:text-slate-600"
-        >
-          이용약관 · 개인정보처리방침
-        </NavLink>
-      </div>
-
-      <div className="border-t border-slate-100 p-3">
-        {session.status === 'authenticated' ? (
-          <>
-            <div className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5">
-              <div className="flex gap-2.5">
-                <Avatar label={displayName} size="md" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
-                  <p className="truncate text-xs text-slate-500">{displayEmail}</p>
+              <div className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5">
+                <div className="flex gap-2.5">
+                  <Avatar label={displayName} size="md" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-slate-900">{displayName}</p>
+                    <p className="truncate text-xs text-slate-500">{displayEmail}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-            <button
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="mt-2 w-full rounded-md px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+              >
+                로그아웃
+              </button>
+            </>
+          ) : (
+            <Button
               type="button"
-              onClick={handleLogout}
-              className="mt-2 w-full rounded-md px-3 py-1.5 text-xs text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+              variant="secondary"
+              className="w-full text-sm"
+              onClick={onLoginRequest}
             >
-              로그아웃
-            </button>
-          </>
-        ) : (
-          <Button
-            type="button"
-            variant="secondary"
-            className="w-full text-sm"
-            onClick={onLoginRequest}
-          >
-            로그인
-          </Button>
-        )}
-      </div>
+              로그인
+            </Button>
+          )}
+        </div>
       </aside>
     </>
   )

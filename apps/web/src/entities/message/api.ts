@@ -3,7 +3,12 @@
  */
 
 import { apiClient, commsPaths } from 'app/shared/api'
-import { demoGuard, demoMessageList, isDemoWorkspace } from 'app/shared/demo'
+import {
+  demoGuard,
+  demoMessageList,
+  demoPostMessage,
+  isDemoWorkspace,
+} from 'app/shared/demo'
 import {
   MessageListFilter as MessageListFilterSchema,
   type MessageListFilter,
@@ -33,7 +38,12 @@ export async function postMessage(args: {
   readonly workspaceUuid: string
   readonly payload: MessagePostInput
 }): Promise<MessageReadType> {
-  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
+  // Demo exception: comms is the one domain where visitors may "chat" — the
+  // store appends the message locally and simulates a teammate reply.
+  if (isDemoWorkspace(args.workspaceUuid)) {
+    const parsed = MessagePostInputSchema.parse(args.payload)
+    return demoPostMessage(parsed)
+  }
   const parsed = MessagePostInputSchema.parse(args.payload)
   const { data } = await apiClient.post(
     commsPaths.messages(args.workspaceUuid),

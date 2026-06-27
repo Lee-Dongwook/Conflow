@@ -22,8 +22,6 @@ import type {
   IssueListOutput,
   IssueRead,
   IssueTransitionInput,
-  MessageListFilter,
-  MessageListOutput,
   MessageRead,
   ToolCatalogOutput,
 } from 'app/shared/types/api'
@@ -299,61 +297,58 @@ export const demoChannelList = (filters: ChannelListFilter = {}): ChannelListOut
   return { channels: filtered, total: filtered.length }
 }
 
-const MESSAGES: readonly MessageRead[] = [
-  {
-    uuid: 'demo-msg-1',
-    workspace_uuid: WS,
-    channel_uuid: 'demo-channel-general',
-    thread_root_uuid: null,
-    author_member_uuid: M.jiwoo,
-    body: '안녕하세요! 데모 워크스페이스에 오신 걸 환영합니다 👋',
-    attachments: [],
-    mentions: [],
-    created_at: '2026-06-26T07:00:00Z',
-    edited_at: null,
-  },
-  {
-    uuid: 'demo-msg-2',
-    workspace_uuid: WS,
-    channel_uuid: 'demo-channel-general',
-    thread_root_uuid: null,
-    author_member_uuid: M.minseo,
-    body: '이번 주 목표는 랜딩 페이지 카피 확정이에요. product 채널에서 이어가요.',
-    attachments: [],
-    mentions: [],
-    created_at: '2026-06-26T07:05:00Z',
-    edited_at: null,
-  },
-  {
-    uuid: 'demo-msg-3',
-    workspace_uuid: WS,
-    channel_uuid: 'demo-channel-product',
-    thread_root_uuid: null,
-    author_member_uuid: M.minseo,
-    body: '히어로 문구 후보 3개 정리해 뒀습니다. 의견 주세요!',
-    attachments: [],
-    mentions: [],
-    created_at: '2026-06-25T10:00:00Z',
-    edited_at: null,
-  },
-  {
-    uuid: 'demo-msg-4',
-    workspace_uuid: WS,
-    channel_uuid: 'demo-channel-eng',
-    thread_root_uuid: null,
-    author_member_uuid: M.hyun,
-    body: 'OAuth 리다이렉트 이슈 인프라 권한 받으면 바로 풀립니다.',
-    attachments: [],
-    mentions: [],
-    created_at: '2026-06-25T02:00:00Z',
-    edited_at: null,
-  },
-]
+const msg = (
+  i: number,
+  channel: string,
+  author: string,
+  body: string,
+  at: string,
+  extra: Partial<MessageRead> = {},
+): MessageRead => ({
+  uuid: `demo-msg-${i}`,
+  workspace_uuid: WS,
+  channel_uuid: channel,
+  thread_root_uuid: null,
+  author_member_uuid: author,
+  body,
+  attachments: [],
+  mentions: [],
+  created_at: at,
+  edited_at: null,
+  ...extra,
+})
 
-export const demoMessageList = (filters: MessageListFilter): MessageListOutput => {
-  const messages = MESSAGES.filter((m) => m.channel_uuid === filters.channel_uuid)
-  return { messages, has_more: false }
-}
+// Stored newest-first to mirror the backend's DESC-by-created_at default;
+// the MessageStream widget reverses to chronological for display.
+// Exported as the seed for the in-memory demo message store (see
+// `message-store.ts`), which lets demo visitors actually post + get replies.
+export const DEMO_SEED_MESSAGES: readonly MessageRead[] = [
+  // # general
+  msg(20, 'demo-channel-general', M.sora, '저는 디자인 QA 끝나면 공유드릴게요 🙌', '2026-06-26T08:12:00Z'),
+  msg(19, 'demo-channel-general', M.hyun, '백엔드는 스테이징 배포 완료했습니다. 확인 부탁드려요!', '2026-06-26T08:05:00Z'),
+  msg(18, 'demo-channel-general', M.minseo, '좋아요, product 채널에서 카피 후보 이어서 볼게요.', '2026-06-26T07:42:00Z'),
+  msg(17, 'demo-channel-general', M.minseo, '이번 주 목표는 랜딩 페이지 카피 확정입니다.', '2026-06-26T07:41:00Z'),
+  msg(16, 'demo-channel-general', M.jiwoo, '오늘 스탠드업은 10시 30분에 시작할게요. 다들 준비됐나요?', '2026-06-26T07:30:00Z'),
+  msg(15, 'demo-channel-general', M.jiwoo, '안녕하세요! 데모 워크스페이스에 오신 걸 환영합니다 👋', '2026-06-26T07:00:00Z'),
+
+  // # product
+  msg(14, 'demo-channel-product', M.jiwoo, '2안 좋네요. 서브 카피만 조금 더 다듬어 봅시다.', '2026-06-25T10:48:00Z'),
+  msg(13, 'demo-channel-product', M.sora, '개인적으로 2안이 가장 임팩트 있어 보여요.', '2026-06-25T10:35:00Z'),
+  msg(12, 'demo-channel-product', M.minseo, '3안: "흩어진 회의를, 하나의 흐름으로"', '2026-06-25T10:06:00Z'),
+  msg(11, 'demo-channel-product', M.minseo, '2안: "팀의 모든 대화가 실행이 되는 곳"', '2026-06-25T10:05:00Z'),
+  msg(10, 'demo-channel-product', M.minseo, '1안: "회의는 짧게, 실행은 빠르게"', '2026-06-25T10:04:00Z'),
+  msg(9, 'demo-channel-product', M.minseo, '히어로 문구 후보 3개 정리해 뒀습니다. 의견 주세요!', '2026-06-25T10:00:00Z'),
+
+  // # engineering (private)
+  msg(8, 'demo-channel-eng', M.jiwoo, '권한 요청은 제가 인프라팀에 바로 넣을게요.', '2026-06-25T02:18:00Z'),
+  msg(7, 'demo-channel-eng', M.hyun, 'OAuth 리다이렉트 이슈, 인프라 권한 받으면 바로 풀립니다.', '2026-06-25T02:05:00Z'),
+  msg(6, 'demo-channel-eng', M.hyun, '로그인 콜백 URL 화이트리스트 누락이 원인이었어요.', '2026-06-25T02:00:00Z'),
+
+  // # design
+  msg(5, 'demo-channel-design', M.jiwoo, '버튼 호버 상태도 같이 확인 부탁해요!', '2026-06-24T06:40:00Z'),
+  msg(4, 'demo-channel-design', M.minseo, '컬러 토큰 정리된 거 보니 훨씬 일관돼 보이네요 👍', '2026-06-24T06:20:00Z'),
+  msg(3, 'demo-channel-design', M.sora, '채널 리스트 카드 리디자인 시안 올렸어요. 리뷰 부탁드립니다.', '2026-06-24T06:00:00Z'),
+]
 
 // ---------------------------------------------------------------------------
 // HR Employee Profiles
