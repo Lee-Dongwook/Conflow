@@ -26,8 +26,8 @@ import { A2UIToolsPage } from 'app/pages/A2UIToolsPage'
 import { PMIssueDetailPage } from 'app/pages/PMIssueDetailPage'
 import { PMIssuesPage } from 'app/pages/PMIssuesPage'
 import { SurveyPage } from 'app/pages/SurveyPage'
+import { WorkspaceOverviewPage } from 'app/pages/WorkspaceOverviewPage'
 
-import { WorkspaceIndexPlaceholder } from './placeholders'
 import { WorkspaceShell } from './WorkspaceShell'
 
 interface AppRouterProps {
@@ -43,7 +43,7 @@ export const AppRouter = ({ guestLanding }: AppRouterProps) => (
       <Route path="/workspace/new" element={<CreateWorkspacePage />} />
 
       <Route path="/w/:workspaceUuid" element={<WorkspaceShell />}>
-        <Route index element={<WorkspaceIndexPlaceholder />} />
+        <Route index element={<WorkspaceOverviewPage />} />
         <Route path="pm/issues" element={<PMIssuesPage />} />
         <Route
           path="pm/issues/:issueUuid"
