@@ -17,9 +17,11 @@ import type {
   EmployeeProfileListFilter,
   EmployeeProfileListOutput,
   EmployeeProfileOutput,
+  IssueCreateInput,
   IssueListFilter,
   IssueListOutput,
   IssueRead,
+  IssueTransitionInput,
   MessageListFilter,
   MessageListOutput,
   MessageRead,
@@ -48,7 +50,11 @@ const M = {
 // PM Issues
 // ---------------------------------------------------------------------------
 
-const ISSUES: readonly IssueRead[] = [
+// Mutable in-memory store: demo write actions (create/transition) mutate this
+// array so the board feels live within a session. Nothing is persisted — a full
+// page reload re-imports this module and resets to the seed below, exactly as
+// the demo banner promises ("변경 사항은 저장되지 않아요").
+const ISSUES: IssueRead[] = [
   {
     uuid: 'demo-issue-1',
     workspace_uuid: WS,
@@ -165,6 +171,62 @@ export const demoIssueList = (filters: IssueListFilter = {}): IssueListOutput =>
 
 export const demoIssue = (issueUuid: string): IssueRead =>
   ISSUES.find((i) => i.uuid === issueUuid) ?? firstOf(ISSUES)
+
+/**
+ * Append a new demo issue to the in-memory store and return it. Mirrors the
+ * backend default (new issues start in `backlog`); the demo viewer acts as the
+ * reporter. Session-only — see the store note above.
+ */
+export const demoCreateIssue = (payload: IssueCreateInput): IssueRead => {
+  const now = new Date().toISOString()
+  const issue: IssueRead = {
+    uuid: `demo-issue-${ISSUES.length + 1}`,
+    workspace_uuid: WS,
+    project_uuid: payload.project_uuid ?? null,
+    sprint_uuid: payload.sprint_uuid ?? null,
+    title: payload.title,
+    description: payload.description ?? null,
+    status: 'backlog',
+    priority: payload.priority ?? 'medium',
+    reporter_member_uuid: M.jiwoo,
+    assignee_member_uuid: payload.assignee_member_uuid ?? null,
+    due_date: payload.due_date ?? null,
+    blocked_since: null,
+    blocked_reason: null,
+    created_at: now,
+    updated_at: now,
+  }
+  ISSUES.unshift(issue)
+  return issue
+}
+
+/**
+ * Apply a status transition in place. Mirrors the backend's blocked handling:
+ * moving to `blocked` stamps `blocked_since`/`blocked_reason`, leaving it clears
+ * them. Permissive about which transitions are allowed (no state-machine guard).
+ */
+export const demoTransitionIssue = (
+  issueUuid: string,
+  payload: IssueTransitionInput,
+): IssueRead => {
+  const target = ISSUES.find((i) => i.uuid === issueUuid) ?? firstOf(ISSUES)
+  const toBlocked = payload.new_status === 'blocked'
+  const wasBlocked = target.status === 'blocked'
+  const now = new Date().toISOString()
+  const updated: IssueRead = {
+    ...target,
+    status: payload.new_status,
+    blocked_since: toBlocked ? (target.blocked_since ?? now) : wasBlocked ? null : target.blocked_since,
+    blocked_reason: toBlocked
+      ? (payload.blocked_reason ?? target.blocked_reason ?? null)
+      : wasBlocked
+        ? null
+        : target.blocked_reason,
+    updated_at: now,
+  }
+  ISSUES[ISSUES.indexOf(target)] = updated
+  return updated
+}
 
 // ---------------------------------------------------------------------------
 // Comms Channels + Messages

@@ -6,7 +6,13 @@
  */
 
 import { apiClient, pmPaths } from 'app/shared/api'
-import { demoGuard, demoIssue, demoIssueList, isDemoWorkspace } from 'app/shared/demo'
+import {
+  demoCreateIssue,
+  demoIssue,
+  demoIssueList,
+  demoTransitionIssue,
+  isDemoWorkspace,
+} from 'app/shared/demo'
 import {
   IssueCreateInput as IssueCreateInputSchema,
   type IssueCreateInput,
@@ -47,8 +53,8 @@ export async function createIssue(args: {
   readonly workspaceUuid: string
   readonly payload: IssueCreateInput
 }): Promise<IssueReadType> {
-  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = IssueCreateInputSchema.parse(args.payload)
+  if (isDemoWorkspace(args.workspaceUuid)) return demoCreateIssue(parsed)
   const { data } = await apiClient.post(
     pmPaths.issues(args.workspaceUuid),
     parsed,
@@ -61,8 +67,9 @@ export async function transitionIssue(args: {
   readonly issueUuid: string
   readonly payload: IssueTransitionInput
 }): Promise<IssueReadType> {
-  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
   const parsed = IssueTransitionInputSchema.parse(args.payload)
+  if (isDemoWorkspace(args.workspaceUuid))
+    return demoTransitionIssue(args.issueUuid, parsed)
   const { data } = await apiClient.post(
     pmPaths.issueTransition(args.workspaceUuid, args.issueUuid),
     parsed,
