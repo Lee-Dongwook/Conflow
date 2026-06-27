@@ -84,7 +84,11 @@ const makeMessage = (
 /** Read a channel's messages (newest-first), seeded lazily. */
 export const demoMessageList = (filters: MessageListFilter): MessageListOutput => {
   const messages = ensureStore()[filters.channel_uuid] ?? []
-  return { messages, has_more: false }
+  // Return a fresh array each read: the store is mutated in place on post, so
+  // handing back the live reference would let React Query's previous snapshot
+  // mutate underneath it — structural sharing then sees "no change" and skips
+  // the re-render. Copying decouples the cached snapshot from the live store.
+  return { messages: [...messages], has_more: false }
 }
 
 /**
