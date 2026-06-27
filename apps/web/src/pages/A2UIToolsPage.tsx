@@ -20,8 +20,8 @@ export const A2UIToolsPage = () => {
       <header>
         <h1 className="text-xl font-semibold text-slate-900">A2UI Tools</h1>
         <p className="mt-1 text-xs text-slate-500">
-          헤드리스 service 함수를 Tool 로 노출한 카탈로그. tier / permission /
-          cross-domain 게이팅은 dispatcher 가 한 곳에서 강제합니다.
+          추후에 개발될 기능으로, 사용자가 원하는 형태로 글을 작성하면 AI가 분석하여
+          결과에 맞는 문서를 생성합니다.
         </p>
       </header>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-[20rem_1fr]">

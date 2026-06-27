@@ -1,9 +1,9 @@
 /**
  * ToolCatalog widget — Tool cards filterable by domain.
  *
- * Each card shows: id (mono), description, tier/permission badges, and
- * a "cross-domain" pill for the composition Tools. Clicking a card
- * raises `onSelect` so the host page can open the invoke form.
+ * Each card shows: id (mono), description, and tier/permission/phase
+ * badges. Clicking a card raises `onSelect` so the host page can open the
+ * invoke form.
  */
 
 import { isAPIError } from '@conflow/core'
@@ -104,11 +104,6 @@ export const ToolCatalog = ({ onSelect, selectedId }: ToolCatalogProps) => {
                     <h3 className="font-mono text-sm font-semibold text-slate-900">
                       {tool.id}
                     </h3>
-                    {tool.cross_domain && (
-                      <span className="shrink-0 rounded-full bg-fuchsia-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-fuchsia-800">
-                        cross-domain
-                      </span>
-                    )}
                   </div>
                   <p className="mt-1 text-xs text-slate-600">{tool.description}</p>
                   <div className="mt-2 flex flex-wrap gap-1 text-[10px]">

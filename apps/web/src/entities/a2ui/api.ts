@@ -6,7 +6,7 @@
  */
 
 import { apiClient, a2uiPaths } from 'app/shared/api'
-import { demoGuard, demoToolCatalog, isDemoWorkspace } from 'app/shared/demo'
+import { demoInvokeTool, demoToolCatalog, isDemoWorkspace } from 'app/shared/demo'
 import {
   ToolCatalogOutput,
   type ToolCatalogOutput as ToolCatalogOutputType,
@@ -27,7 +27,11 @@ export async function invokeTool(args: {
   readonly toolId: string
   readonly rawInput: Record<string, unknown>
 }): Promise<ToolInvokeOutputType> {
-  if (isDemoWorkspace(args.workspaceUuid)) return demoGuard.blockWrite()
+  // Demo exception: A2UI is a showcase surface — return a canned example
+  // result instead of blocking, so visitors can see a tool "run".
+  if (isDemoWorkspace(args.workspaceUuid)) {
+    return demoInvokeTool(args.toolId, args.rawInput)
+  }
   const { data } = await apiClient.post(
     a2uiPaths.invoke(args.workspaceUuid, args.toolId),
     args.rawInput,

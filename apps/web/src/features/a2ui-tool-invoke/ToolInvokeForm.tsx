@@ -10,25 +10,36 @@
  */
 
 import { isAPIError } from '@conflow/core'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useCurrentWorkspaceUuid } from 'app/app/providers'
 import { useInvokeTool } from 'app/entities/a2ui'
+import { DEMO_TOOL_EXAMPLES } from 'app/shared/demo'
 import type { ToolCatalogEntry } from 'app/shared/types/api'
 
 interface ToolInvokeFormProps {
   readonly tool: ToolCatalogEntry
 }
 
+const EMPTY_INPUT = '{\n  \n}'
+
 export const ToolInvokeForm = ({ tool }: ToolInvokeFormProps) => {
   const workspaceUuid = useCurrentWorkspaceUuid()
   const invoke = useInvokeTool(workspaceUuid)
-  const [raw, setRaw] = useState('{\n  \n}')
+
+  // A ready-to-run example for this tool, if we have one.
+  const example = useMemo(() => DEMO_TOOL_EXAMPLES[tool.id], [tool.id])
+  const exampleJson = useMemo(
+    () => (example ? JSON.stringify(example.input, null, 2) : EMPTY_INPUT),
+    [example],
+  )
+
+  const [raw, setRaw] = useState(exampleJson)
   const [parseError, setParseError] = useState<string | null>(null)
 
-  // Reset when tool changes.
+  // Reset to the example (or empty) when the tool changes.
   useEffect(() => {
-    setRaw('{\n  \n}')
+    setRaw(exampleJson)
     setParseError(null)
     invoke.reset()
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -78,15 +89,35 @@ export const ToolInvokeForm = ({ tool }: ToolInvokeFormProps) => {
       </details>
 
       <label className="block">
-        <span className="block text-sm font-medium text-slate-700">
-          Raw JSON input
-        </span>
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-slate-700">JSON input</span>
+          {example && (
+            <button
+              type="button"
+              onClick={() => {
+                setRaw(exampleJson)
+                setParseError(null)
+              }}
+              className="text-xs font-medium text-slate-500 underline-offset-2 hover:text-slate-800 hover:underline"
+            >
+              예시 입력 채우기
+            </button>
+          )}
+        </div>
         <textarea
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           rows={10}
+          spellCheck={false}
+          placeholder={exampleJson}
           className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-xs shadow-sm focus:border-slate-500 focus:outline-none"
         />
+        {example && (
+          <p className="mt-1 text-[11px] text-slate-400">
+            예시 명령이 채워져 있습니다. <span className="font-medium text-slate-500">실행</span>을
+            누르면 아래에 예시 결과 문서가 나타납니다.
+          </p>
+        )}
       </label>
 
       {parseError && (
@@ -105,10 +136,18 @@ export const ToolInvokeForm = ({ tool }: ToolInvokeFormProps) => {
 
       {invoke.data && (
         <section className="space-y-2 rounded-md border border-emerald-200 bg-emerald-50 p-3">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
-            result
-          </h3>
-          <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded bg-white p-2 font-mono text-[11px] text-slate-800">
+          <div className="flex items-center justify-between">
+            <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-800">
+              <span className="flex size-4 items-center justify-center rounded-full bg-emerald-600 text-[9px] text-white">
+                ✓
+              </span>
+              결과 문서 (예시)
+            </h3>
+            <code className="font-mono text-[10px] text-emerald-700">
+              {invoke.data.tool_id}
+            </code>
+          </div>
+          <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded bg-white p-3 font-mono text-[11px] leading-relaxed text-slate-800">
             {JSON.stringify(invoke.data.result, null, 2)}
           </pre>
         </section>
