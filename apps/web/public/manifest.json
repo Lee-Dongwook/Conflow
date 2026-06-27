@@ -1,7 +1,7 @@
 {
-  "name": "Conflow - 대학생 팀플/스터디 협업 플랫폼",
+  "name": "Conflow — AI 네이티브 통합 워크스페이스",
   "short_name": "Conflow",
-  "description": "회의 자동 요약, 블로커 감지, 스프린트 관리까지. AI 기반 IT 협업 플랫폼.",
+  "description": "이슈·대화·인사·문서를 하나의 데이터 모델 위에 두고, AI가 도메인을 넘나들며 일을 처리하는 AI 네이티브 통합 워크스페이스.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
