@@ -17,13 +17,14 @@ import { DEMO_OVERVIEW, OverviewContent } from 'app/pages/WorkspaceOverviewPage'
 import { DEMO_WORKSPACE_UUID } from 'app/shared/demo'
 import { captureLaunchRef, trackLaunchEvent } from 'app/shared/lib'
 import { ProductHuntBanner } from 'app/widgets/product-hunt-banner'
-import { WorkspaceSidebar } from 'app/widgets/sidebar'
+import { SidebarMobileBar, WorkspaceSidebar } from 'app/widgets/sidebar'
 
 const DEMO_BASE = `/w/${DEMO_WORKSPACE_UUID}`
 
 export const GuestLandingPage = () => {
   const navigate = useNavigate()
   const [loginOpen, setLoginOpen] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   useEffect(() => {
     captureLaunchRef()
@@ -40,7 +41,7 @@ export const GuestLandingPage = () => {
         onLoginRequest={() => setLoginOpen(true)}
         productHuntUrl={import.meta.env.VITE_PRODUCT_HUNT_URL}
       />
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-teal-200 bg-teal-50 px-6 py-2.5 text-sm text-teal-900">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-teal-200 bg-teal-50 px-4 py-2.5 text-sm text-teal-900 sm:px-6">
         <span>로그인 없이 데모로 모든 기능을 둘러볼 수 있어요.</span>
         <button
           type="button"
@@ -54,13 +55,16 @@ export const GuestLandingPage = () => {
         <WorkspaceSidebar
           workspaceUuid={DEMO_WORKSPACE_UUID}
           onLoginRequest={() => setLoginOpen(true)}
+          mobileOpen={mobileNavOpen}
+          onClose={() => setMobileNavOpen(false)}
         />
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="border-b border-slate-200 bg-white px-6 py-4">
+          <SidebarMobileBar onMenu={() => setMobileNavOpen(true)} />
+          <header className="border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
             <p className="text-xs font-medium uppercase tracking-wide text-slate-400">workspace</p>
             <h1 className="mt-1 text-sm font-medium text-slate-700">데모 워크스페이스</h1>
           </header>
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-4 sm:p-6">
             <OverviewContent data={DEMO_OVERVIEW} onNavigate={enterDemo} isDemo />
           </main>
         </div>

@@ -20,7 +20,9 @@ export type SidebarGlyph =
   | "chart"
   | "huddle"
   | "users"
-  | "wrench";
+  | "wrench"
+  | "menu"
+  | "close";
 
 type IconProps = {
   readonly name: SidebarGlyph;
@@ -165,6 +167,10 @@ const Glyph = ({ name }: { readonly name: SidebarGlyph }) => {
       return (
         <path d="M15 4a4 4 0 0 0-3.9 5l-5.6 5.6a2 2 0 1 0 2.8 2.8L14 11.9A4 4 0 1 0 15 4z" />
       );
+    case "menu":
+      return <path d="M4 7h16M4 12h16M4 17h16" />;
+    case "close":
+      return <path d="M6 6l12 12M18 6 6 18" />;
     default:
       return null;
   }
