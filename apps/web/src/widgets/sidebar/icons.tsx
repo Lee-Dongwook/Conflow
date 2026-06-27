@@ -18,7 +18,9 @@ export type SidebarGlyph =
   | "board"
   | "list"
   | "chart"
-  | "huddle";
+  | "huddle"
+  | "users"
+  | "wrench";
 
 type IconProps = {
   readonly name: SidebarGlyph;
@@ -150,6 +152,18 @@ const Glyph = ({ name }: { readonly name: SidebarGlyph }) => {
           <path d="M9 18v2a3 3 0 0 0 6 0v-2" />
           <path d="M8 15h8" />
         </>
+      );
+    case "users":
+      return (
+        <>
+          <circle cx="9" cy="8" r="3" />
+          <path d="M4 19v-1a5 5 0 0 1 10 0v1" />
+          <path d="M16 6a3 3 0 0 1 0 6m4 7v-1a5 5 0 0 0-3-4.6" />
+        </>
+      );
+    case "wrench":
+      return (
+        <path d="M15 4a4 4 0 0 0-3.9 5l-5.6 5.6a2 2 0 1 0 2.8 2.8L14 11.9A4 4 0 1 0 15 4z" />
       );
     default:
       return null;

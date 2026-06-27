@@ -1,2 +1,2 @@
-export type { SideBarProps } from "./SideBar";
-export { SideBar } from "./SideBar";
+export type { WorkspaceSidebarProps } from "./WorkspaceSidebar";
+export { WorkspaceSidebar } from "./WorkspaceSidebar";

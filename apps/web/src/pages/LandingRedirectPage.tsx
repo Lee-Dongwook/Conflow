@@ -3,11 +3,9 @@
  *
  *   loading        → spinner (Supabase getSession race)
  *   authenticated  → `/w/{lastVisited}` if remembered, else `/workspace/new`
- *   unauthenticated → fall back to the legacy AppContent so the marketing
- *                     surface keeps working for guests until the new
- *                     marketing/auth flow lands
+ *   unauthenticated → render the `fallback` (GuestLandingPage)
  *
- * Keeping the legacy fallback under `/` means logged-out visitors don't
+ * Keeping the guest fallback under `/` means logged-out visitors don't
  * see a redirect loop on the create-workspace page (which requires auth
  * to succeed but currently doesn't gate render).
  */

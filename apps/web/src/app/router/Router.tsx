@@ -1,17 +1,18 @@
 /**
  * App-wide router.
  *
- * Two trees coexist until the migration is done:
- *   `/`                     → legacy state-based AppContent
- *   `/legal`                → legacy LegalPage
+ *   `/`                     → auth-aware landing (guest → GuestLandingPage)
+ *   `/legal`                → LegalPage
  *   `/survey`               → SurveyPage (one-off marketing route)
- *   `/w/:workspaceUuid/...` → new workspace-scoped domain pages
+ *   `/workspace/new`        → CreateWorkspacePage
+ *   `/w/:workspaceUuid/...` → workspace-scoped domain pages
+ *   `*`                     → redirect to `/`
  *
- * Legacy pages do NOT need react-router; the catch-all returns the
- * existing AppContent so removing pages happens piecewise.
+ * The legacy state-based AppContent tree has been retired; guests see the
+ * GuestLandingPage and everything unmatched redirects home.
  */
 
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
 import { CommsChannelDetailPage } from 'app/pages/CommsChannelDetailPage'
@@ -30,13 +31,13 @@ import { WorkspaceIndexPlaceholder } from './placeholders'
 import { WorkspaceShell } from './WorkspaceShell'
 
 interface AppRouterProps {
-  readonly legacyApp: ReactNode
+  readonly guestLanding: ReactNode
 }
 
-export const AppRouter = ({ legacyApp }: AppRouterProps) => (
+export const AppRouter = ({ guestLanding }: AppRouterProps) => (
   <BrowserRouter>
     <Routes>
-      <Route path="/" element={<LandingRedirectPage fallback={legacyApp} />} />
+      <Route path="/" element={<LandingRedirectPage fallback={guestLanding} />} />
       <Route path="/survey" element={<SurveyPage />} />
       <Route path="/legal" element={<LegalPage />} />
       <Route path="/workspace/new" element={<CreateWorkspacePage />} />
@@ -61,8 +62,8 @@ export const AppRouter = ({ legacyApp }: AppRouterProps) => (
         <Route path="a2ui/tools" element={<A2UIToolsPage />} />
       </Route>
 
-      {/* Catch-all: legacy state-based UI keeps working until pages migrate. */}
-      <Route path="*" element={legacyApp} />
+      {/* Anything unmatched returns to the auth-aware landing. */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   </BrowserRouter>
 )
