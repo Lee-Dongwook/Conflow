@@ -15,7 +15,7 @@
  * mutation attempt (see `shared/demo`).
  */
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import type { ReactNode } from 'react'
 
@@ -26,28 +26,23 @@ import { WaitlistModal } from 'app/features/waitlist'
 import { demoGuard, isDemoWorkspace } from 'app/shared/demo'
 import { SidebarMobileBar, WorkspaceSidebar } from 'app/widgets/sidebar'
 
-const DemoModeBar = () => {
-  const [waitlistOpen, setWaitlistOpen] = useState(false)
-
+const DemoModeBar = ({ onTrigger }: { readonly onTrigger: () => void }) => {
   useEffect(() => {
-    demoGuard.setOnWriteAttempt(() => setWaitlistOpen(true))
+    demoGuard.setOnWriteAttempt(onTrigger)
     return () => demoGuard.setOnWriteAttempt(null)
-  }, [])
+  }, [onTrigger])
 
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 sm:px-6">
-        <span>🎭 데모 모드로 둘러보는 중입니다 — 변경 사항은 저장되지 않아요.</span>
-        <button
-          type="button"
-          onClick={() => setWaitlistOpen(true)}
-          className="rounded-md bg-amber-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-800"
-        >
-          출시 알림 받기
-        </button>
-      </div>
-      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
-    </>
+    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900 sm:px-6">
+      <span>🎭 데모 모드로 둘러보는 중입니다 — 변경 사항은 저장되지 않아요.</span>
+      <button
+        type="button"
+        onClick={onTrigger}
+        className="rounded-md bg-amber-900 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-amber-800"
+      >
+        출시 알림 받기
+      </button>
+    </div>
   )
 }
 
@@ -114,21 +109,25 @@ const WorkspaceLayout = () => {
   const workspaceUuid = useCurrentWorkspaceUuid()
   const demo = isDemoWorkspace(workspaceUuid)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [waitlistOpen, setWaitlistOpen] = useState(false)
+  const openWaitlist = useCallback(() => setWaitlistOpen(true), [])
   return (
     <div className="flex min-h-screen bg-slate-50">
       <WorkspaceSidebar
         workspaceUuid={workspaceUuid}
+        onLoginRequest={openWaitlist}
         mobileOpen={mobileNavOpen}
         onClose={() => setMobileNavOpen(false)}
       />
       <div className="flex min-w-0 flex-1 flex-col">
         <SidebarMobileBar onMenu={() => setMobileNavOpen(true)} />
-        {demo ? <DemoModeBar /> : null}
+        {demo ? <DemoModeBar onTrigger={openWaitlist} /> : null}
         <WorkspaceHeader />
         <main className="flex-1 p-4 sm:p-6">
           <Outlet />
         </main>
       </div>
+      <WaitlistModal open={waitlistOpen} onClose={() => setWaitlistOpen(false)} />
     </div>
   )
 }
