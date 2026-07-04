@@ -43,11 +43,7 @@ export const GuestLandingPage = () => {
       />
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-teal-200 bg-teal-50 px-4 py-2.5 text-sm text-teal-900 sm:px-6">
         <span>로그인 없이 데모로 모든 기능을 둘러볼 수 있어요.</span>
-        <button
-          type="button"
-          onClick={() => enterDemo()}
-          className="rounded-md bg-teal-600 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-teal-700"
-        >
+        <button type="button" id="demo-cta-btn" onClick={() => enterDemo()} className="rounded-md bg-teal-600 px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-teal-700">
           데모 둘러보기 →
         </button>
       </div>
